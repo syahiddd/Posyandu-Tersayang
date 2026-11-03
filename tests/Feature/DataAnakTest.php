@@ -276,3 +276,94 @@ test('NIK milik anak yang dihapus tetap tidak boleh dipakai (FR-11, FR-53)', fun
     $this->put(route('data-anak.perbarui', $anak), isian_ubah($anak, ['nik' => '1871010101010077']))
         ->assertSessionHasErrors('nik');
 });
+
+test('kader biasa tidak dapat menghapus, melihat data terhapus, atau memulihkan (FR-53)', function () {
+    $anak = Anak::factory()->create(['nama' => 'Raka']);
+
+    $this->get(route('data-anak.detail', $anak))->assertInertia(fn ($page) => $page->where('bolehHapus', false));
+    daftar_anak()->assertInertia(fn ($page) => $page->where('jumlahTerhapus', null));
+    $this->delete(route('data-anak.hapus', $anak), ['konfirmasi' => 'Raka'])->assertForbidden();
+    $this->get(route('data-anak.terhapus'))->assertForbidden();
+
+    $anak->delete();
+    $this->post(route('data-anak.pulihkan', $anak))->assertForbidden();
+    expect($anak->refresh()->trashed())->toBeTrue();
+});
+
+test('Ketua menghapus setelah mengetik nama anak; tercatat di log (FR-53, NFR-06)', function () {
+    $ketua = User::factory()->ketua()->create(['name' => 'Sri']);
+    $this->actingAs($ketua);
+    $anak = Anak::factory()->create(['nama' => 'Raka Pratama']);
+
+    $this->get(route('data-anak.detail', $anak))->assertInertia(fn ($page) => $page->where('bolehHapus', true));
+
+    $this->delete(route('data-anak.hapus', $anak), ['konfirmasi' => 'Raka'])
+        ->assertSessionHasErrors(['konfirmasi' => 'Nama yang diketik tidak sama dengan nama anak.']);
+    expect($anak->refresh()->trashed())->toBeFalse();
+
+    $this->delete(route('data-anak.hapus', $anak), ['konfirmasi' => '  raka pratama '])
+        ->assertRedirect(route('data-anak'));
+
+    expect($anak->refresh()->trashed())->toBeTrue();
+    $log = $anak->activitiesAsSubject()->where('event', 'deleted')->sole();
+    expect($log->causer?->is($ketua))->toBeTrue();
+
+    // Hilang dari daftar dan pencarian Meja 1, muncul di Data terhapus.
+    daftar_anak()->assertInertia(fn ($page) => $page->where('jumlah', 0)->where('jumlahTerhapus', 1));
+    $this->get(route('data-anak.terhapus'))->assertOk()->assertInertia(fn ($page) => $page
+        ->component('data-anak/terhapus')
+        ->has('anak', 1)
+        ->where('anak.0.nama', 'Raka Pratama')
+        ->where('anak.0.dihapusOleh', 'Sri')
+        ->where('anak.0.sisaHari', 30));
+});
+
+test('anak yang masih di antrean hari ini tidak dapat dihapus', function () {
+    $this->actingAs(User::factory()->ketua()->create());
+    $anak = Anak::factory()->create(['nama' => 'Raka']);
+    Kunjungan::factory()->for($anak)->create(['tanggal' => today()]);
+
+    $this->delete(route('data-anak.hapus', $anak), ['konfirmasi' => 'Raka'])
+        ->assertSessionHasErrors('konfirmasi');
+
+    expect($anak->refresh()->trashed())->toBeFalse();
+});
+
+test('Ketua memulihkan anak terhapus beserta riwayatnya (FR-53)', function () {
+    $this->actingAs(User::factory()->ketua()->create());
+    $anak = Anak::factory()->create(['nama' => 'Raka']);
+    Pengukuran::factory()->dariBukuKia()->for($anak)->create();
+    $anak->delete();
+
+    $this->post(route('data-anak.pulihkan', $anak))->assertRedirect(route('data-anak.detail', $anak));
+
+    expect($anak->refresh()->trashed())->toBeFalse()
+        ->and($anak->pengukuran()->count())->toBe(1)
+        ->and($anak->activitiesAsSubject()->where('event', 'restored')->exists())->toBeTrue();
+});
+
+test('model:prune menghapus permanen anak yang terhapus lebih dari 30 hari beserta riwayatnya', function () {
+    $lama = Anak::factory()->create();
+    $kunjungan = Kunjungan::factory()->for($lama)->selesai()->create(['tanggal' => today()->subMonths(2)]);
+    Pengukuran::factory()->for($lama)->create(['kunjungan_id' => $kunjungan->id]);
+    $baru = Anak::factory()->create();
+    $aktif = Anak::factory()->create();
+
+    Carbon::setTestNow(now()->subDays(31));
+    $lama->delete();
+    Carbon::setTestNow(now()->addDays(2));
+    $baru->delete();
+    Carbon::setTestNow();
+
+    $this->artisan('model:prune', ['--model' => [Anak::class]])->assertSuccessful();
+
+    expect(Anak::withTrashed()->find($lama->id))->toBeNull()
+        ->and(Kunjungan::query()->where('anak_id', $lama->id)->exists())->toBeFalse()
+        ->and(Pengukuran::query()->where('anak_id', $lama->id)->exists())->toBeFalse()
+        ->and(Anak::withTrashed()->find($baru->id)?->trashed())->toBeTrue()
+        ->and(Anak::query()->find($aktif->id))->not->toBeNull();
+});
+
+test('pemangkasan dijadwalkan setiap hari', function () {
+    $this->artisan('schedule:list')->expectsOutputToContain('model:prune')->assertSuccessful();
+});

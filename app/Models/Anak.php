@@ -6,8 +6,10 @@ use App\Enums\JenisKelamin;
 use Database\Factories\AnakFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
@@ -44,7 +46,23 @@ use Spatie\Activitylog\Support\LogOptions;
 class Anak extends Model
 {
     /** @use HasFactory<AnakFactory> */
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasFactory, LogsActivity, Prunable, SoftDeletes;
+
+    /** Lama data terhapus dapat dipulihkan sebelum terhapus permanen (FR-53). */
+    public const HARI_PULIH = 30;
+
+    /**
+     * Terhapus permanen oleh `model:prune` (jadwal harian) setelah 30 hari;
+     * kunjungan, pengukuran, dan layanan ikut terhapus lewat FK cascade.
+     * Prunable sendiri menambahkan withTrashed(), sehingga syarat deleted_at
+     * di sini hanya mengenai anak yang sudah dihapus.
+     *
+     * @return Builder<static>
+     */
+    public function prunable(): Builder
+    {
+        return $this->newQuery()->where('deleted_at', '<=', now()->subDays(self::HARI_PULIH));
+    }
 
     /** @var list<string> Yang dicatat: ubah, hapus, dan pulihkan (NFR-06). */
     protected static array $recordEvents = ['updated', 'deleted', 'restored'];

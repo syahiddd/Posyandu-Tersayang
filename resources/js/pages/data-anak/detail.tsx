@@ -1,16 +1,18 @@
-import { Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Banner } from '@/components/dasar/banner';
+import { Dialog } from '@/components/dasar/dialog';
 import { HeaderAnak } from '@/components/dasar/header-anak';
+import { IsianTeks } from '@/components/dasar/isian-teks';
 import { KakiTombol } from '@/components/dasar/kaki-tombol';
 import { Kartu } from '@/components/dasar/kartu';
 import { propsPanel, Tab } from '@/components/dasar/tab';
-import { TombolTautan } from '@/components/dasar/tombol';
+import { Tombol, TombolTautan } from '@/components/dasar/tombol';
 import { formatDesimal } from '@/lib/desimal';
 import { formatUmurTahunBulan } from '@/lib/umur';
 import { dataAnak } from '@/routes';
-import { ubah } from '@/routes/data-anak';
+import { hapus as hapusAnak, ubah } from '@/routes/data-anak';
 import type {
     DetailAnak,
     RiwayatKunjungan,
@@ -24,6 +26,7 @@ type Props = {
     kunjungan: RiwayatKunjungan[];
     layanan: RiwayatLayanan[];
     perubahanTerakhir: { oleh: string; pada: string } | null;
+    bolehHapus: boolean;
 };
 
 type IdTab = 'ringkasan' | 'grafik' | 'riwayat';
@@ -66,8 +69,21 @@ export default function DetailDataAnak({
     kunjungan,
     layanan,
     perubahanTerakhir,
+    bolehHapus,
 }: Props) {
     const [tab, setTab] = useState<IdTab>('ringkasan');
+    const [dialogHapus, setDialogHapus] = useState(false);
+    const hapus = useForm({ konfirmasi: '' });
+    // FR-53 langkah kedua: tombol Hapus aktif setelah nama anak diketik.
+    const namaCocok =
+        hapus.data.konfirmasi.trim().toLocaleLowerCase('id') ===
+        anak.nama.trim().toLocaleLowerCase('id');
+
+    function tutupDialog() {
+        setDialogHapus(false);
+        hapus.reset();
+        hapus.clearErrors();
+    }
     const laki = anak.jenisKelamin === 'L';
     const alamat = [
         anak.alamat,
@@ -174,8 +190,46 @@ export default function DetailDataAnak({
                                     {perubahanTerakhir.pada}
                                 </p>
                             )}
+                            {bolehHapus && (
+                                <Tombol
+                                    varian="bahaya"
+                                    className="self-start"
+                                    onClick={() => setDialogHapus(true)}
+                                >
+                                    Hapus data anak
+                                </Tombol>
+                            )}
                         </div>
                     )}
+
+                    <Dialog
+                        terbuka={dialogHapus}
+                        onTutup={tutupDialog}
+                        judul={`Hapus data ${anak.nama}?`}
+                        labelBahaya="Hapus"
+                        bolehKonfirmasi={namaCocok}
+                        memuat={hapus.processing}
+                        onKonfirmasi={() =>
+                            hapus.delete(hapusAnak.url(anak.id), {
+                                preserveScroll: true,
+                            })
+                        }
+                    >
+                        <p>
+                            Data dan seluruh riwayatnya dapat dipulihkan Ketua
+                            Kader dalam 30 hari. Setelah itu terhapus permanen.
+                        </p>
+                        <IsianTeks
+                            id="isian-konfirmasi"
+                            label={`Ketik nama anak untuk memastikan: ${anak.nama}`}
+                            autoComplete="off"
+                            value={hapus.data.konfirmasi}
+                            onChange={(event) =>
+                                hapus.setData('konfirmasi', event.target.value)
+                            }
+                            galat={hapus.errors.konfirmasi}
+                        />
+                    </Dialog>
 
                     {tab === 'grafik' && (
                         <div

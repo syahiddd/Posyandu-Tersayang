@@ -9,7 +9,7 @@ import {
 import { Tombol, TombolTautan } from '@/components/dasar/tombol';
 import { usePintasanCari } from '@/hooks/use-pintasan-cari';
 import { dataAnak, meja } from '@/routes';
-import { detail } from '@/routes/data-anak';
+import { detail, terhapus } from '@/routes/data-anak';
 import type { JenisKelamin, PenyaringDataAnak, RingkasanAnak } from '@/types';
 
 type Props = {
@@ -19,6 +19,8 @@ type Props = {
     anak: { data: RingkasanAnak[] };
     daftarDusun: string[];
     daftarKelompokUmur: { nilai: string; label: string }[];
+    /** Hanya untuk Ketua Kader; null bagi kader lain (FR-53). */
+    jumlahTerhapus: number | null;
 };
 
 const PROP_DAFTAR = ['penyaring', 'jumlah', 'anak'];
@@ -44,6 +46,7 @@ export default function DaftarDataAnak({
     anak,
     daftarDusun,
     daftarKelompokUmur,
+    jumlahTerhapus,
 }: Props) {
     const [kata, setKata] = useState(penyaring.cari);
     const refCari = useRef<HTMLInputElement>(null);
@@ -217,6 +220,16 @@ export default function DaftarDataAnak({
                         </InfiniteScroll>
                     )}
                 </section>
+
+                {jumlahTerhapus !== null && jumlahTerhapus > 0 && (
+                    <TombolTautan
+                        href={terhapus()}
+                        varian="tersier"
+                        className="self-start"
+                    >
+                        Data terhapus ({jumlahTerhapus})
+                    </TombolTautan>
+                )}
             </div>
         </>
     );

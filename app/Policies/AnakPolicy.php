@@ -37,6 +37,12 @@ class AnakPolicy
         return $user->is_active && $user->isKetua();
     }
 
+    /** Daftar anak terhapus yang masih dapat dipulihkan (FR-53). */
+    public function viewTrashed(User $user): bool
+    {
+        return $user->is_active && $user->isKetua();
+    }
+
     public function restore(User $user, Anak $anak): bool
     {
         return $user->is_active && $user->isKetua();
