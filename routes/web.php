@@ -6,6 +6,7 @@ use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\Meja1Controller;
 use App\Http\Controllers\MejaController;
+use App\Http\Controllers\PengukuranController;
 use App\Http\Controllers\PilihMejaController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
@@ -51,6 +52,9 @@ Route::middleware('auth')->group(function () {
         Route::post('kunjungan/{kunjungan}/tunda', [AntreanController::class, 'tunda'])->name('kunjungan.tunda');
         Route::post('kunjungan/{kunjungan}/lanjutkan', [AntreanController::class, 'lanjutkan'])->name('kunjungan.lanjutkan');
         Route::post('antrean/urungkan', [AntreanController::class, 'urungkan'])->name('antrean.urungkan');
+
+        // Meja 2 Pengukuran (PRD 4.4, FR-18 sampai FR-23).
+        Route::put('kunjungan/{kunjungan}/pengukuran', [PengukuranController::class, 'update'])->name('kunjungan.pengukuran');
 
         // S20: menu Lainnya (DESIGN Tabel 11).
         Route::inertia('lainnya', 'lainnya')->name('lainnya');

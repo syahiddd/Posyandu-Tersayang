@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Antrean\LayananAntrean;
 use App\Antrean\TampilanKunjungan;
+use App\Enums\Meja;
 use App\Models\Kunjungan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,11 +25,14 @@ class KunjunganController extends Controller
                 ->withErrors(['kunjungan' => 'Anak ini tidak sedang Anda layani. Buka lagi dari antrean.']);
         }
 
-        $kunjungan->load('anak');
+        $kunjungan->load(['anak', 'pengukuran']);
 
-        return Inertia::render('kunjungan/layar-sementara', [
-            'anak' => TampilanKunjungan::header($kunjungan),
-            'tahap' => $kunjungan->meja_saat_ini->tahap(),
-        ]);
+        return match ($kunjungan->meja_saat_ini) {
+            Meja::Pengukuran => Inertia::render('kunjungan/pengukuran', PengukuranController::props($kunjungan)),
+            default => Inertia::render('kunjungan/layar-sementara', [
+                'anak' => TampilanKunjungan::header($kunjungan),
+                'tahap' => $kunjungan->meja_saat_ini->tahap(),
+            ]),
+        };
     }
 }

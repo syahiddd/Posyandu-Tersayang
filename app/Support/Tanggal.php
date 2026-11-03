@@ -16,6 +16,12 @@ final class Tanggal
         return self::format($tanggal, 'j M Y');
     }
 
+    /** Contoh: "8 Okt" untuk nilai lalu di petunjuk isian (DESIGN Gambar 4). */
+    public static function pendek(CarbonInterface|string $tanggal): string
+    {
+        return self::format($tanggal, 'j M');
+    }
+
     /** Contoh: "Kamis, 5 November 2026" (DESIGN Gambar 3). */
     public static function panjang(CarbonInterface|string $tanggal): string
     {
