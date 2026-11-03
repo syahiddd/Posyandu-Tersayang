@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -24,6 +26,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureGates();
+    }
+
+    /**
+     * Kelola akun kader (membuat, menonaktifkan, mengatur ulang kata sandi)
+     * hanya untuk Ketua Kader (FR-02, PRD 2.3 Tabel 5).
+     */
+    protected function configureGates(): void
+    {
+        Gate::define('kelola-akun', fn (User $user): bool => $user->is_active && $user->isKetua());
     }
 
     /**
