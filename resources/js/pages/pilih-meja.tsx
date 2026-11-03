@@ -40,8 +40,8 @@ export default function PilihMeja({ tanggal, meja, terpilih }: Props) {
         <>
             <Head title="Pilih meja" />
             <form onSubmit={kirim} className="flex min-h-dvh flex-col bg-paper">
-                <header className="border-b border-ink-200 bg-white px-4 pt-5 pb-4 tablet:px-5">
-                    <div className="mx-auto w-full max-w-xl">
+                <header className="border-b border-ink-200 bg-white pt-5 pb-4">
+                    <div className="mx-auto w-full max-w-xl px-4 tablet:px-5">
                         <h1 className="text-judul-1 text-ink-900">
                             Pilih meja hari ini
                         </h1>
@@ -79,6 +79,7 @@ export default function PilihMeja({ tanggal, meja, terpilih }: Props) {
                                                 type="radio"
                                                 name="meja"
                                                 value={item.nomor}
+                                                aria-label={`Meja ${item.nomor} ${item.tahap}, ${ringkasAntrean(item)}`}
                                                 checked={dipilih}
                                                 onChange={() =>
                                                     form.setData(
