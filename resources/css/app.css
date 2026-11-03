@@ -1,143 +1,181 @@
 @import 'tailwindcss';
 
-@import 'tw-animate-css';
-
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
-@custom-variant dark (&:is(.dark *));
+/* DESIGN 2.3: tanpa mode gelap. Varian dark: dibuat tidak pernah cocok. */
+@custom-variant dark (&:not(*));
 
+/* DESIGN 3.5: Atkinson Hyperlegible, hanya Regular 400 dan Bold 700, di-self-host. */
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../fonts/atkinson-hyperlegible-latin-400-normal.woff2')
+        format('woff2');
+}
+
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/atkinson-hyperlegible-latin-700-normal.woff2')
+        format('woff2');
+}
+
+/*
+ * Design tokens dari docs/DESIGN.md bab 3 (Tabel 4–10), nilai disalin persis.
+ * Palet, font, skala teks, radius, dan bayangan bawaan Tailwind dihapus
+ * (initial) sehingga hanya token di bawah yang dapat dipakai.
+ */
 @theme {
+    --color-*: initial;
+
+    /* 3.1 Warna netral dan aksi (Tabel 4) */
+    --color-ink-900: #1b2333;
+    --color-ink-700: #3a4457;
+    --color-ink-600: #4a5468;
+    --color-ink-500: #626c7f;
+    --color-ink-400: #7d879a;
+    --color-ink-300: #c9cfd9;
+    --color-ink-200: #e3e7ed;
+    --color-ink-100: #f1f3f6;
+    --color-paper: #fafaf7;
+    --color-white: #ffffff;
+
+    /* 3.2 Warna identitas anak (Tabel 5) */
+    --color-boy-700: #1d5fa8;
+    --color-boy-100: #eaf2fb;
+    --color-boy-50: #f5f9fd;
+    --color-girl-700: #b4245f;
+    --color-girl-100: #fbe8f0;
+    --color-girl-50: #fdf5f8;
+
+    /* 3.3 Warna status gizi (Tabel 6): teks dan latar */
+    --color-status-normal-teks: #19703a;
+    --color-status-normal-latar: #e4f3e8;
+    --color-status-waspada-teks: #8a5300;
+    --color-status-waspada-latar: #fff1d6;
+    --color-status-bahaya-teks: #b3261e;
+    --color-status-bahaya-latar: #fce6e4;
+    --color-status-bahaya-berat-teks: #ffffff;
+    --color-status-bahaya-berat-latar: #b3261e;
+    --color-status-info-teks: #3a4457;
+    --color-status-info-latar: #f1f3f6;
+
+    /* 3.4 Warna grafik pertumbuhan (Tabel 7) */
+    --color-garis-z0: #2e8b47;
+    --color-garis-z1: #b86200;
+    --color-garis-z2: #d33a2c;
+    --color-garis-z3: #1b2333;
+    --color-zona-normal: #d9efdf;
+    --color-zona-waspada: #fff0c7;
+    --color-zona-kurang: #fde3c2;
+    --color-zona-sangat-kurang: #f6c7c2;
+    --color-zona-tinggi: #dce8f7;
+
+    /* 3.5 Tipografi (Tabel 8) */
+    --font-*: initial;
     --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+        'Atkinson Hyperlegible', system-ui, 'Segoe UI', Roboto, sans-serif;
 
-    --radius-lg: var(--radius);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-sm: calc(var(--radius) - 4px);
+    --font-weight-*: initial;
+    --font-weight-normal: 400;
+    --font-weight-bold: 700;
 
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
+    --text-*: initial;
+    --text-display: 28px;
+    --text-display--line-height: 34px;
+    --text-display--font-weight: 700;
+    --text-judul-1: 22px;
+    --text-judul-1--line-height: 28px;
+    --text-judul-1--font-weight: 700;
+    --text-judul-2: 18px;
+    --text-judul-2--line-height: 24px;
+    --text-judul-2--font-weight: 700;
+    --text-angka: 24px;
+    --text-angka--line-height: 28px;
+    --text-angka--font-weight: 700;
+    --text-teks: 16px;
+    --text-teks--line-height: 24px;
+    --text-kecil: 14px;
+    --text-kecil--line-height: 20px;
+    --text-keterangan: 13px;
+    --text-keterangan--line-height: 18px;
+    --text-label-seksi: 12px;
+    --text-label-seksi--line-height: 16px;
+    --text-label-seksi--font-weight: 700;
+    --text-label-seksi--letter-spacing: 0.08em;
 
-    --color-card: var(--card);
-    --color-card-foreground: var(--card-foreground);
+    /* 3.6 Spasi (Tabel 9, basis 4 px): p-1 … p-7 = space-1 … space-7 */
+    --spacing: 4px;
+    --spacing-1: 4px;
+    --spacing-2: 8px;
+    --spacing-3: 12px;
+    --spacing-4: 16px;
+    --spacing-5: 24px;
+    --spacing-6: 32px;
+    --spacing-7: 48px;
 
-    --color-popover: var(--popover);
-    --color-popover-foreground: var(--popover-foreground);
+    /* 3.6 Ukuran (Tabel 10) dan ukuran komponen bab 7 dan 9 */
+    --spacing-target-min: 48px;
+    --spacing-control-h: 52px;
+    --spacing-lencana-besar: 44px;
+    --spacing-lencana-kecil: 34px;
+    --spacing-sidebar: 232px;
 
-    --color-primary: var(--primary);
-    --color-primary-foreground: var(--primary-foreground);
+    --radius-*: initial;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-pill: 999px;
 
-    --color-secondary: var(--secondary);
-    --color-secondary-foreground: var(--secondary-foreground);
+    --shadow-*: initial;
+    --shadow-1: 0 1px 2px rgba(27, 35, 51, 0.08);
+    --shadow-2: 0 6px 16px rgba(27, 35, 51, 0.14);
 
-    --color-muted: var(--muted);
-    --color-muted-foreground: var(--muted-foreground);
+    /* Gerak: 150 ms ease-out; 250 ms untuk sheet */
+    --default-transition-duration: 150ms;
+    --default-transition-timing-function: ease-out;
+    --durasi-sheet: 250ms;
 
-    --color-accent: var(--accent);
-    --color-accent-foreground: var(--accent-foreground);
-
-    --color-destructive: var(--destructive);
-    --color-destructive-foreground: var(--destructive-foreground);
-
-    --color-border: var(--border);
-    --color-input: var(--input);
-    --color-ring: var(--ring);
-
-    --color-chart-1: var(--chart-1);
-    --color-chart-2: var(--chart-2);
-    --color-chart-3: var(--chart-3);
-    --color-chart-4: var(--chart-4);
-    --color-chart-5: var(--chart-5);
-
-    --color-sidebar: var(--sidebar);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-ring: var(--sidebar-ring);
-}
-
-:root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
-}
-
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    /* Bab 9: ponsel < 600 px, tablet 600–1023 px, desktop ≥ 1024 px */
+    --breakpoint-*: initial;
+    --breakpoint-tablet: 600px;
+    --breakpoint-desktop: 1024px;
 }
 
 @layer base {
-    * {
-        @apply border-border;
+    html {
+        color-scheme: light;
+        background-color: var(--color-paper);
     }
 
     body {
-        @apply bg-background text-foreground;
+        @apply bg-paper font-sans text-teks text-ink-900;
+    }
+
+    *,
+    ::before,
+    ::after {
+        border-color: var(--color-ink-200);
+    }
+
+    /* Bab 10.3: cincin fokus 3 px tinta dengan jarak 3 px */
+    :focus-visible {
+        outline: 3px solid var(--color-ink-900);
+        outline-offset: 3px;
+    }
+
+    /* Bab 10: dukung pengaturan kurangi gerak */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        ::before,
+        ::after {
+            animation-duration: 0ms !important;
+            transition-duration: 0ms !important;
+        }
     }
 }
