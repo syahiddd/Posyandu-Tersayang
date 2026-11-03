@@ -12,6 +12,7 @@ use App\Http\Controllers\MejaController;
 use App\Http\Controllers\PendataanController;
 use App\Http\Controllers\PengukuranController;
 use App\Http\Controllers\PilihMejaController;
+use App\Http\Controllers\RiwayatBukuKiaController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
@@ -80,7 +81,12 @@ Route::middleware('auth')->group(function () {
             Route::post('data-anak/{anak}/pulihkan', [DataAnakController::class, 'pulihkan'])
                 ->withTrashed()
                 ->name('data-anak.pulihkan');
+
+            // S17 Tambah Riwayat dari Buku KIA (PRD 4.12, FR-64 sampai FR-66).
+            Route::get('data-anak/{anak}/riwayat-buku-kia', [RiwayatBukuKiaController::class, 'create'])->name('riwayat-buku-kia');
+            Route::post('data-anak/{anak}/riwayat-buku-kia', [RiwayatBukuKiaController::class, 'store'])->name('riwayat-buku-kia.simpan');
         });
+        Route::post('data-anak/riwayat-buku-kia/urungkan', [RiwayatBukuKiaController::class, 'urungkan'])->name('riwayat-buku-kia.urungkan');
 
         // Menu yang dikerjakan pada fase berikutnya (halaman sementara).
         Route::inertia('rekap-imunisasi', 'halaman-sementara', [

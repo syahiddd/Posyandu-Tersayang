@@ -11,7 +11,7 @@ import { propsPanel, Tab } from '@/components/dasar/tab';
 import { Tombol, TombolTautan } from '@/components/dasar/tombol';
 import { formatDesimal } from '@/lib/desimal';
 import { formatUmurTahunBulan } from '@/lib/umur';
-import { dataAnak } from '@/routes';
+import { dataAnak, riwayatBukuKia } from '@/routes';
 import { hapus as hapusAnak, ubah } from '@/routes/data-anak';
 import type {
     DetailAnak,
@@ -364,6 +364,13 @@ export default function DetailDataAnak({
                             {...propsPanel('riwayat')}
                             className="flex flex-col gap-4"
                         >
+                            <TombolTautan
+                                href={riwayatBukuKia(anak.id)}
+                                varian="sekunder"
+                                lebarPenuh
+                            >
+                                + Tambah dari Buku KIA
+                            </TombolTautan>
                             <Kartu labelSeksi="Layanan">
                                 {layanan.length === 0 ? (
                                     <p className="py-2 text-teks text-ink-700">

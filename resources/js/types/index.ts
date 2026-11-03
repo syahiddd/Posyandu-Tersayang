@@ -50,6 +50,8 @@ export type FlashToast = {
     pesan: string;
     jenis?: 'sukses' | 'error';
     batal?: boolean;
+    /** Alamat Batal selain antrean, misalnya riwayat Buku KIA. */
+    urlBatal?: string;
 };
 
 /** Ringkasan anak untuk pencarian dan kartu pembanding Meja 1 (FR-15). */

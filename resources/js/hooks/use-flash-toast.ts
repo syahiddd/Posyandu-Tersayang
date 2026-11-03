@@ -5,7 +5,8 @@ import { urungkan } from '@/routes/antrean';
 
 /**
  * Menampilkan notifikasi yang dikirim server lewat flash Inertia. Tombol
- * Batal membatalkan tindakan antrean terakhir (DESIGN Prinsip 1).
+ * Batal membatalkan tindakan antrean terakhir, atau tindakan lain bila
+ * server mengirim urlBatal (DESIGN Prinsip 1).
  */
 export function useFlashToast(): void {
     const toast = useToast();
@@ -29,7 +30,7 @@ export function useFlashToast(): void {
                 data.batal
                     ? () =>
                           router.post(
-                              urungkan.url(),
+                              data.urlBatal ?? urungkan.url(),
                               {},
                               { preserveScroll: true },
                           )

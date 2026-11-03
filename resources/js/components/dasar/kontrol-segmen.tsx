@@ -75,7 +75,7 @@ export function KontrolSegmen<T extends string>({
                         <label
                             key={item.nilai}
                             className={clsx(
-                                'flex cursor-pointer items-center justify-center px-2 text-teks font-bold',
+                                'flex cursor-pointer items-center justify-center px-2 text-center text-teks leading-tight font-bold',
                                 dipilih
                                     ? 'bg-ink-900 text-white'
                                     : 'bg-white text-ink-900',
