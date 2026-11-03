@@ -79,3 +79,11 @@ export type AkunKader = {
     noHp: string | null;
     mejaBiasa: number | null;
 };
+
+/** Penyaring aktif di Data Anak (FR-50); dipakai juga untuk CSV (FR-54). */
+export type PenyaringDataAnak = {
+    cari: string;
+    jk: JenisKelamin | null;
+    umur: string | null;
+    dusun: string | null;
+};

@@ -4,6 +4,7 @@ use App\Enums\Meja;
 use App\Http\Controllers\AkunController;
 use App\Http\Controllers\AntreanController;
 use App\Http\Controllers\BerandaController;
+use App\Http\Controllers\DataAnakController;
 use App\Http\Controllers\GantiSandiController;
 use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\Meja1Controller;
@@ -66,11 +67,10 @@ Route::middleware('auth')->group(function () {
         // S20: menu Lainnya (DESIGN Tabel 11).
         Route::inertia('lainnya', 'lainnya')->name('lainnya');
 
+        // S14–S16 Data Anak (PRD 4.9, FR-50 sampai FR-54).
+        Route::get('data-anak', [DataAnakController::class, 'index'])->name('data-anak');
+
         // Menu yang dikerjakan pada fase berikutnya (halaman sementara).
-        Route::inertia('data-anak', 'halaman-sementara', [
-            'judul' => 'Data Anak',
-            'rujukan' => 'PRD 4.9 (FR-50 sampai FR-54)',
-        ])->name('data-anak');
 
         Route::inertia('rekap-imunisasi', 'halaman-sementara', [
             'judul' => 'Rekapitulasi Imunisasi',

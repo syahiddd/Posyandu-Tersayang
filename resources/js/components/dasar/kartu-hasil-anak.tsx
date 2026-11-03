@@ -23,9 +23,12 @@ export function labelHasilAnak(anak: RingkasanAnak): string {
 export function KartuHasilAnak({
     anak,
     dipilih = false,
+    redupDiAntrean = true,
 }: {
     anak: RingkasanAnak;
     dipilih?: boolean;
+    /** Meja 1 meredupkan anak yang sudah diantre; Data Anak tidak. */
+    redupDiAntrean?: boolean;
 }) {
     const laki = anak.jenisKelamin === 'L';
 
@@ -37,7 +40,7 @@ export function KartuHasilAnak({
                 laki
                     ? 'border-l-boy-700 bg-boy-50'
                     : 'border-l-girl-700 bg-girl-50',
-                anak.sudahDiAntrean && 'opacity-70',
+                redupDiAntrean && anak.sudahDiAntrean && 'opacity-70',
             )}
         >
             <span

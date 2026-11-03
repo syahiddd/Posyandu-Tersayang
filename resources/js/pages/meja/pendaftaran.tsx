@@ -9,6 +9,7 @@ import {
 } from '@/components/dasar/kartu-hasil-anak';
 import { LencanaMeja } from '@/components/dasar/lencana-meja';
 import { Tombol, TombolTautan } from '@/components/dasar/tombol';
+import { usePintasanCari } from '@/hooks/use-pintasan-cari';
 import { meja } from '@/routes';
 import { anakBaru, kirim } from '@/routes/meja1';
 import type { RingkasanAnak } from '@/types';
@@ -48,24 +49,7 @@ export default function Pendaftaran({ cari, cukupUntukMencari, hasil }: Props) {
         return () => clearTimeout(tunda);
     }, [kata, cari]);
 
-    // Bab 10.3: tombol "/" memfokuskan isian cari.
-    useEffect(() => {
-        const tangani = (event: KeyboardEvent) => {
-            const sasaran = event.target as HTMLElement;
-
-            if (
-                event.key === '/' &&
-                !['INPUT', 'TEXTAREA'].includes(sasaran.tagName)
-            ) {
-                event.preventDefault();
-                refCari.current?.focus();
-            }
-        };
-
-        document.addEventListener('keydown', tangani);
-
-        return () => document.removeEventListener('keydown', tangani);
-    }, []);
+    usePintasanCari(refCari);
 
     function cariKembali() {
         setTerpilih(null);

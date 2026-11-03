@@ -6,6 +6,7 @@ use App\Models\Anak;
 use App\Support\Nik;
 use App\Support\Tanggal;
 use App\Support\Umur;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Ringkasan anak untuk hasil pencarian dan kartu pembanding Meja 1
@@ -18,7 +19,13 @@ final class TampilanAnak
      */
     public static function ringkas(Anak $anak): array
     {
-        $terakhir = $anak->kunjungan()->max('tanggal');
+        // Daftar panjang memuat keduanya lewat denganRingkasan() agar tidak N+1.
+        $terakhir = array_key_exists('kunjungan_terakhir', $anak->getAttributes())
+            ? $anak->getAttribute('kunjungan_terakhir')
+            : $anak->kunjungan()->max('tanggal');
+        $hariIni = array_key_exists('di_antrean_hari_ini', $anak->getAttributes())
+            ? (bool) $anak->getAttribute('di_antrean_hari_ini')
+            : $anak->kunjungan()->whereDate('tanggal', today())->exists();
 
         return [
             'id' => $anak->id,
@@ -29,7 +36,20 @@ final class TampilanAnak
             'namaIbu' => $anak->nama_ibu,
             'nikSamar' => Nik::samarkan($anak->nik),
             'kunjunganTerakhir' => is_string($terakhir) ? Tanggal::singkat($terakhir) : null,
-            'sudahDiAntrean' => $anak->kunjungan()->whereDate('tanggal', today())->exists(),
+            'sudahDiAntrean' => $hariIni,
         ];
+    }
+
+    /**
+     * Memuat kunjungan terakhir dan status antrean hari ini dalam satu query.
+     *
+     * @param  Builder<Anak>  $query
+     * @return Builder<Anak>
+     */
+    public static function denganRingkasan(Builder $query): Builder
+    {
+        return $query
+            ->withMax('kunjungan as kunjungan_terakhir', 'tanggal')
+            ->withExists(['kunjungan as di_antrean_hari_ini' => fn (Builder $q) => $q->whereDate('tanggal', today())]);
     }
 }

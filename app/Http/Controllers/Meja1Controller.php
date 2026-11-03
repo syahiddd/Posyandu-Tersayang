@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Anak\PencarianAnak;
 use App\Antrean\LayananAntrean;
 use App\Antrean\TampilanAnak;
 use App\Antrean\Urungan;
 use App\Enums\SumberData;
 use App\Http\Requests\SimpanAnakRequest;
 use App\Models\Anak;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,12 +21,6 @@ use Inertia\Response;
  */
 class Meja1Controller extends Controller
 {
-    /** Minimal huruf untuk mencari sebagian nama (PRD 4.3). */
-    public const MIN_HURUF = 3;
-
-    /** Minimal angka untuk mencari sebagian NIK. */
-    public const MIN_ANGKA = 4;
-
     private const MAKS_HASIL = 20;
 
     public function __construct(private LayananAntrean $antrean) {}
@@ -36,9 +29,12 @@ class Meja1Controller extends Controller
     public function index(Request $request): Response
     {
         $cari = trim((string) $request->query('cari', ''));
-        $kata = $this->kataCari($cari);
+        $kata = PencarianAnak::kata($cari);
 
-        $hasil = $kata === [] ? [] : $this->cariAnak($kata)
+        $hasil = $kata === [] ? [] : PencarianAnak::terapkan(TampilanAnak::denganRingkasan(Anak::query()), $kata)
+            ->orderBy('nama')
+            ->limit(self::MAKS_HASIL)
+            ->get()
             ->map(fn (Anak $anak) => TampilanAnak::ringkas($anak))
             ->all();
 
@@ -126,42 +122,5 @@ class Meja1Controller extends Controller
         ]);
 
         return redirect()->route('meja', 1);
-    }
-
-    /**
-     * Kata pencarian yang cukup panjang: huruf minimal 3, angka minimal 4.
-     *
-     * @return list<string>
-     */
-    private function kataCari(string $cari): array
-    {
-        return array_values(array_filter(
-            preg_split('/\s+/', $cari) ?: [],
-            fn (string $kata) => ctype_digit($kata)
-                ? strlen($kata) >= self::MIN_ANGKA
-                : mb_strlen($kata) >= self::MIN_HURUF,
-        ));
-    }
-
-    /**
-     * Setiap kata harus cocok dengan nama anak, nama ibu, NIK anak, atau
-     * NIK ibu, sehingga kombinasi seperti "nayla dewi" bisa dipakai (FR-14).
-     *
-     * @param  list<string>  $kata
-     * @return Collection<int, Anak>
-     */
-    private function cariAnak(array $kata)
-    {
-        $query = Anak::query();
-
-        foreach ($kata as $satu) {
-            $pola = '%'.addcslashes($satu, '\\%_').'%';
-
-            $query->where(fn (Builder $q) => ctype_digit($satu)
-                ? $q->where('nik', 'like', $pola)->orWhere('nik_ibu', 'like', $pola)
-                : $q->where('nama', 'like', $pola)->orWhere('nama_ibu', 'like', $pola));
-        }
-
-        return $query->orderBy('nama')->limit(self::MAKS_HASIL)->get();
     }
 }
