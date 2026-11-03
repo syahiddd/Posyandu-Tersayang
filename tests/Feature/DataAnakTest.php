@@ -3,6 +3,8 @@
 use App\Anak\KelompokUmur;
 use App\Models\Anak;
 use App\Models\Kunjungan;
+use App\Models\Layanan;
+use App\Models\Pengukuran;
 use App\Models\User;
 use App\Support\MejaAktif;
 use App\Support\Umur;
@@ -117,4 +119,67 @@ test('kartu menandai anak yang sudah di antrean hari ini dan kunjungan terakhir'
     daftar_anak()->assertInertia(fn ($page) => $page
         ->where('anak.data.0.sudahDiAntrean', true)
         ->where('anak.data.0.kunjunganTerakhir', fn ($nilai) => $nilai !== null));
+});
+
+test('detail anak menampilkan identitas lengkap termasuk NIK (FR-51, NFR-05)', function () {
+    $anak = Anak::factory()->create([
+        'nama' => 'Nayla Putri',
+        'jenis_kelamin' => 'P',
+        'nik' => '1871010101010042',
+        'nik_ibu' => '1871010101010001',
+        'rt' => 3,
+        'rw' => 1,
+    ]);
+
+    $this->get(route('data-anak.detail', $anak))->assertOk()->assertInertia(fn ($page) => $page
+        ->component('data-anak/detail')
+        ->where('anak.nama', 'Nayla Putri')
+        ->where('anak.jenisKelamin', 'P')
+        ->where('anak.nik', '1871010101010042')
+        ->where('anak.nikIbu', '1871010101010001')
+        ->where('anak.rt', 3)
+        ->has('pengukuran', 0)
+        ->has('kunjungan', 0)
+        ->has('layanan', 0));
+});
+
+test('detail anak memuat riwayat pengukuran, kunjungan, dan layanan; Buku KIA ditandai (FR-51, FR-66)', function () {
+    $anak = Anak::factory()->create(['tanggal_lahir' => today()->subMonths(14)]);
+    $kunjungan = Kunjungan::factory()->for($anak)->selesai()->create(['tanggal' => today()->subMonth()]);
+    Pengukuran::factory()->for($anak)->create([
+        'kunjungan_id' => $kunjungan->id,
+        'tanggal_ukur' => today()->subMonth(),
+        'bb' => '9.4',
+    ]);
+    Pengukuran::factory()->dariBukuKia()->for($anak)->create([
+        'tanggal_ukur' => today()->subMonths(3),
+        'bb' => '8.1',
+    ]);
+    Layanan::factory()->for($anak)->create([
+        'jenis' => 'imunisasi',
+        'detail' => 'MR 1',
+        'tanggal' => today()->subMonths(5),
+        'sumber' => 'buku_kia',
+        'kunjungan_id' => null,
+    ]);
+
+    $this->get(route('data-anak.detail', $anak))->assertInertia(fn ($page) => $page
+        ->has('pengukuran', 2)
+        ->where('pengukuran.0.bb', '9.4')
+        ->where('pengukuran.0.umurBulan', 13)
+        ->where('pengukuran.0.dariBukuKia', false)
+        ->where('pengukuran.1.dariBukuKia', true)
+        ->has('kunjungan', 1)
+        ->where('kunjungan.0.keadaan', 'Selesai')
+        ->has('layanan', 1)
+        ->where('layanan.0.jenis', 'Imunisasi')
+        ->where('layanan.0.detail', 'MR 1')
+        ->where('layanan.0.dariBukuKia', true));
+});
+
+test('anak yang dihapus tidak dapat dibuka detailnya', function () {
+    $anak = Anak::factory()->create();
+    $anak->delete();
+
+    $this->get(route('data-anak.detail', $anak))->assertNotFound();
 });

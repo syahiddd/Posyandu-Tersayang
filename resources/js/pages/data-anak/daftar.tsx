@@ -1,11 +1,15 @@
-import { Head, InfiniteScroll, router } from '@inertiajs/react';
+import { Head, InfiniteScroll, Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import { ChipPenyaring } from '@/components/dasar/chip-penyaring';
 import { IsianTeks } from '@/components/dasar/isian-teks';
-import { KartuHasilAnak } from '@/components/dasar/kartu-hasil-anak';
+import {
+    KartuHasilAnak,
+    labelHasilAnak,
+} from '@/components/dasar/kartu-hasil-anak';
 import { Tombol, TombolTautan } from '@/components/dasar/tombol';
 import { usePintasanCari } from '@/hooks/use-pintasan-cari';
 import { dataAnak, meja } from '@/routes';
+import { detail } from '@/routes/data-anak';
 import type { JenisKelamin, PenyaringDataAnak, RingkasanAnak } from '@/types';
 
 type Props = {
@@ -197,10 +201,16 @@ export default function DaftarDataAnak({
                             <ul className="flex flex-col gap-3">
                                 {anak.data.map((satu) => (
                                     <li key={satu.id}>
-                                        <KartuHasilAnak
-                                            anak={satu}
-                                            redupDiAntrean={false}
-                                        />
+                                        <Link
+                                            href={detail(satu.id)}
+                                            aria-label={labelHasilAnak(satu)}
+                                            className="block rounded-md"
+                                        >
+                                            <KartuHasilAnak
+                                                anak={satu}
+                                                redupDiAntrean={false}
+                                            />
+                                        </Link>
                                     </li>
                                 ))}
                             </ul>

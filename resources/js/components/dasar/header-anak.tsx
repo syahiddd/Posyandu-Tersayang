@@ -20,7 +20,8 @@ export function HeaderAnak({
     nama: string;
     keterangan?: string;
     jenisKelamin: JenisKelamin | null;
-    meja: number;
+    /** Tanpa meja (misalnya Detail Anak) lencana tidak ditampilkan. */
+    meja?: number;
     kembali: NonNullable<InertiaLinkProps['href']>;
     /** Kembali dari layar anak melepas kunci (POST); dari formulir cukup GET. */
     kembaliLewatPost?: boolean;
@@ -50,7 +51,9 @@ export function HeaderAnak({
                     >
                         <span aria-hidden="true">‹</span> Kembali
                     </Link>
-                    <LencanaMeja nomor={meja} ukuran="kecil" />
+                    {meja !== undefined && (
+                        <LencanaMeja nomor={meja} ukuran="kecil" />
+                    )}
                 </div>
                 <div>
                     <h1 className="text-judul-1">{nama}</h1>

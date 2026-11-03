@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Anak\KelompokUmur;
 use App\Anak\PencarianAnak;
+use App\Anak\TampilanDetailAnak;
 use App\Antrean\TampilanAnak;
 use App\Enums\JenisKelamin;
 use App\Models\Anak;
@@ -39,6 +40,17 @@ class DataAnakController extends Controller
                 fn (KelompokUmur $kelompok) => ['nilai' => $kelompok->value, 'label' => $kelompok->label()],
                 KelompokUmur::cases(),
             ),
+        ]);
+    }
+
+    /** S15 Detail Anak: tab Ringkasan, Grafik, dan Riwayat (FR-51). */
+    public function show(Anak $anak): Response
+    {
+        return Inertia::render('data-anak/detail', [
+            'anak' => TampilanDetailAnak::identitas($anak),
+            'pengukuran' => TampilanDetailAnak::pengukuran($anak),
+            'kunjungan' => TampilanDetailAnak::kunjungan($anak),
+            'layanan' => TampilanDetailAnak::layanan($anak),
         ]);
     }
 

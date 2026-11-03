@@ -87,3 +87,54 @@ export type PenyaringDataAnak = {
     umur: string | null;
     dusun: string | null;
 };
+
+/** Identitas lengkap anak di Detail Anak; NIK lengkap hanya di sini (NFR-05). */
+export type DetailAnak = {
+    id: number;
+    nama: string;
+    jenisKelamin: JenisKelamin;
+    umurBulan: number;
+    tempatLahir: string | null;
+    tanggalLahir: string;
+    nik: string | null;
+    namaIbu: string;
+    nikIbu: string | null;
+    namaAyah: string | null;
+    nikAyah: string | null;
+    noHp: string | null;
+    alamat: string;
+    rt: number | null;
+    rw: number | null;
+    dusun: string;
+};
+
+/** Satu pengukuran di riwayat anak (FR-51); nilai desimal bertitik dari server. */
+export type RiwayatPengukuran = {
+    id: number;
+    tanggal: string;
+    umurBulan: number;
+    bb: string | null;
+    pbTb: string | null;
+    caraUkur: 'telentang' | 'berdiri' | null;
+    lila: string | null;
+    lk: string | null;
+    statusNt: 'N' | 'T' | 'tidak_ditimbang' | null;
+    dariBukuKia: boolean;
+};
+
+export type RiwayatKunjungan = {
+    id: number;
+    tanggal: string;
+    nomorAntrean: number;
+    keadaan: string;
+};
+
+/** Imunisasi, vitamin A, atau obat cacing (FR-51, FR-66). */
+export type RiwayatLayanan = {
+    id: number;
+    jenis: string;
+    detail: string;
+    tanggal: string;
+    nomorBatch: string | null;
+    dariBukuKia: boolean;
+};

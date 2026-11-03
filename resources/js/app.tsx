@@ -21,11 +21,14 @@ void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
-            // Masuk, Pilih Meja, dan layar per anak berdiri sendiri tanpa
-            // navigasi (DESIGN 6.1–6.3): tombol utama di kaki layar.
+            // Masuk, Pilih Meja, dan layar per anak (termasuk Detail Anak)
+            // berdiri sendiri tanpa navigasi (DESIGN 6.1–6.3, 6.5): header
+            // anak berwarna dan tombol utama di kaki layar.
             case name.startsWith('auth/'):
             case name.startsWith('kunjungan/'):
             case name.startsWith('meja1/'):
+            case name.startsWith('data-anak/') &&
+                !['data-anak/daftar', 'data-anak/terhapus'].includes(name):
             case name === 'pilih-meja':
                 return null;
             default:
