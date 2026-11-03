@@ -6,19 +6,23 @@ use App\Anak\KelompokUmur;
 use App\Anak\PencarianAnak;
 use App\Anak\TampilanDetailAnak;
 use App\Antrean\TampilanAnak;
+use App\Ekspor\BerkasCsv;
 use App\Enums\JenisKelamin;
 use App\Enums\StatusAntrean;
 use App\Http\Requests\UbahAnakRequest;
 use App\Models\Anak;
 use App\Models\User;
 use App\Support\Tanggal;
+use App\Support\Umur;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Menu Data Anak (PRD 4.9, DESIGN S14): daftar seluruh anak dengan
@@ -51,6 +55,44 @@ class DataAnakController extends Controller
                 KelompokUmur::cases(),
             ),
         ]);
+    }
+
+    /**
+     * Unduh CSV daftar anak sesuai pencarian dan penyaring aktif (FR-54,
+     * PRD 7.3). NIK ditulis lengkap.
+     */
+    public function unduh(Request $request): StreamedResponse|JsonResponse
+    {
+        $query = TampilanAnak::denganRingkasan($this->query($this->penyaring($request)))
+            ->orderBy('nama')
+            ->orderBy('id');
+
+        if (! $query->clone()->exists()) {
+            return response()->json(['pesan' => 'Tidak ada data untuk penyaring ini.'], 422);
+        }
+
+        return BerkasCsv::unduh('data-anak', [
+            'Nama', 'NIK', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Umur (bulan)',
+            'Nama Ibu', 'NIK Ibu', 'Nama Ayah', 'NIK Ayah', 'No HP',
+            'Alamat', 'RT', 'RW', 'Dusun', 'Kunjungan Terakhir',
+        ], $query->cursor()->map(fn (Anak $anak) => [
+            $anak->nama,
+            BerkasCsv::teks($anak->nik),
+            $anak->jenis_kelamin->label(),
+            $anak->tempat_lahir,
+            BerkasCsv::tanggal($anak->tanggal_lahir),
+            Umur::bulanPenuh($anak->tanggal_lahir),
+            $anak->nama_ibu,
+            BerkasCsv::teks($anak->nik_ibu),
+            $anak->nama_ayah,
+            BerkasCsv::teks($anak->nik_ayah),
+            BerkasCsv::teks($anak->no_hp),
+            $anak->alamat,
+            $anak->rt,
+            $anak->rw,
+            $anak->dusun,
+            BerkasCsv::tanggal($anak->getAttribute('kunjungan_terakhir')),
+        ]));
     }
 
     /** S15 Detail Anak: tab Ringkasan, Grafik, dan Riwayat (FR-51). */

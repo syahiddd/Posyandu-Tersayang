@@ -69,6 +69,7 @@ Route::middleware('auth')->group(function () {
 
         // S14–S16 Data Anak (PRD 4.9, FR-50 sampai FR-54).
         Route::get('data-anak', [DataAnakController::class, 'index'])->name('data-anak');
+        Route::get('data-anak/unduh', [DataAnakController::class, 'unduh'])->name('data-anak.unduh');
         Route::get('data-anak/terhapus', [DataAnakController::class, 'terhapus'])->name('data-anak.terhapus');
         Route::whereNumber('anak')->group(function () {
             Route::get('data-anak/{anak}', [DataAnakController::class, 'show'])->name('data-anak.detail');

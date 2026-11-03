@@ -9,7 +9,8 @@ import {
 import { Tombol, TombolTautan } from '@/components/dasar/tombol';
 import { usePintasanCari } from '@/hooks/use-pintasan-cari';
 import { dataAnak, meja } from '@/routes';
-import { detail, terhapus } from '@/routes/data-anak';
+import { TombolUnduhCsv } from '@/components/tombol-unduh-csv';
+import { detail, terhapus, unduh } from '@/routes/data-anak';
 import type { JenisKelamin, PenyaringDataAnak, RingkasanAnak } from '@/types';
 
 type Props = {
@@ -84,8 +85,14 @@ export default function DaftarDataAnak({
         <>
             <Head title="Data Anak" />
             <div className="flex flex-col gap-4 desktop:max-w-3xl">
-                <header>
+                <header className="flex flex-wrap items-center justify-between gap-3">
                     <h1 className="text-judul-1 text-ink-900">Data Anak</h1>
+                    {adaAnak && (
+                        <TombolUnduhCsv
+                            url={unduh.url({ query: parameter(penyaring) })}
+                            kosong={jumlah === 0}
+                        />
+                    )}
                 </header>
 
                 <IsianTeks

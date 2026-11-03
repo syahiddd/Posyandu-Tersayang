@@ -367,3 +367,60 @@ test('model:prune menghapus permanen anak yang terhapus lebih dari 30 hari beser
 test('pemangkasan dijadwalkan setiap hari', function () {
     $this->artisan('schedule:list')->expectsOutputToContain('model:prune')->assertSuccessful();
 });
+
+test('unduh CSV Data Anak sesuai PRD 7.3: BOM, titik koma, DD/MM/YYYY, NIK teks, nama berkas (FR-54)', function () {
+    Carbon::setTestNow(CarbonImmutable::parse('2026-11-03 09:00'));
+
+    $anak = Anak::factory()->create([
+        'nama' => 'Nayla; Putri',
+        'jenis_kelamin' => 'P',
+        'tempat_lahir' => 'Bandar Lampung',
+        'tanggal_lahir' => '2025-05-09',
+        'nik' => '1871010101010042',
+        'nama_ibu' => 'Dewi "Ani"',
+        'nik_ibu' => null,
+        'nama_ayah' => null,
+        'nik_ayah' => null,
+        'no_hp' => '081234567890',
+        'alamat' => 'Jl. Melati 5',
+        'rt' => 3,
+        'rw' => null,
+        'dusun' => 'Melati',
+    ]);
+    Kunjungan::factory()->for($anak)->selesai()->create(['tanggal' => '2026-10-05']);
+
+    $respons = $this->get(route('data-anak.unduh'));
+    $respons->assertOk()
+        ->assertHeader('Content-Type', 'text/csv; charset=UTF-8')
+        ->assertDownload('data-anak_03-11-2026.csv');
+
+    $isi = $respons->streamedContent();
+
+    expect($isi)->toStartWith("\xEF\xBB\xBF")
+        ->and(explode("\r\n", substr($isi, 3)))->toBe([
+            'Nama;NIK;"Jenis Kelamin";"Tempat Lahir";"Tanggal Lahir";"Umur (bulan)";"Nama Ibu";"NIK Ibu";"Nama Ayah";"NIK Ayah";"No HP";Alamat;RT;RW;Dusun;"Kunjungan Terakhir"',
+            '"Nayla; Putri";"=""1871010101010042""";Perempuan;"Bandar Lampung";09/05/2025;17;"Dewi ""Ani""";;;;"=""081234567890""";"Jl. Melati 5";3;;Melati;05/10/2026',
+            '',
+        ]);
+
+    Carbon::setTestNow();
+});
+
+test('unduh CSV mengikuti cari dan penyaring aktif; kosong ditolak dengan pesan', function () {
+    Anak::factory()->create(['nama' => 'Ayu', 'jenis_kelamin' => 'P']);
+    Anak::factory()->create(['nama' => 'Bima', 'jenis_kelamin' => 'L']);
+    Anak::factory()->create(['nama' => 'Citra', 'jenis_kelamin' => 'P']);
+
+    $baris = fn (array $query) => array_slice(
+        explode("\r\n", trim($this->get(route('data-anak.unduh', $query))->streamedContent())),
+        1,
+    );
+
+    expect($baris(['jk' => 'P']))->toHaveCount(2)
+        ->and($baris(['jk' => 'P'])[0])->toStartWith('Ayu;')
+        ->and($baris(['cari' => 'bima']))->toHaveCount(1);
+
+    $this->get(route('data-anak.unduh', ['cari' => 'zzzz']))
+        ->assertStatus(422)
+        ->assertJson(['pesan' => 'Tidak ada data untuk penyaring ini.']);
+});
