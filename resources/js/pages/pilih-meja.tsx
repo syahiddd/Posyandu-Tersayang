@@ -5,6 +5,7 @@ import { Banner } from '@/components/dasar/banner';
 import { KakiTombol } from '@/components/dasar/kaki-tombol';
 import { LencanaMeja } from '@/components/dasar/lencana-meja';
 import { Tombol } from '@/components/dasar/tombol';
+import { useAntreanRealtime } from '@/hooks/use-antrean-realtime';
 import { update } from '@/routes/pilih-meja';
 import type { AntreanMeja } from '@/types';
 
@@ -26,6 +27,7 @@ function ringkasAntrean({ menunggu, ditunda }: AntreanMeja) {
  */
 export default function PilihMeja({ tanggal, meja, terpilih }: Props) {
     const form = useForm<{ meja: number | null }>({ meja: terpilih });
+    useAntreanRealtime(['meja']);
     const mejaTerpilih = meja.find((item) => item.nomor === form.data.meja);
 
     function kirim(event: FormEvent<HTMLFormElement>) {

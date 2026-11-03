@@ -5,6 +5,7 @@ import { Kartu } from '@/components/dasar/kartu';
 import { LencanaMeja } from '@/components/dasar/lencana-meja';
 import { TileAngka } from '@/components/dasar/tile-angka';
 import { TombolTautan } from '@/components/dasar/tombol';
+import { useAntreanRealtime } from '@/hooks/use-antrean-realtime';
 import { dataAnak, dataPosyandu, meja, rekapImunisasi } from '@/routes';
 import type { AntreanMeja } from '@/types';
 
@@ -20,6 +21,8 @@ type Props = {
  */
 export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
     const { mejaAktif, namaPosyandu, name } = usePage().props;
+    // Angka diperbarui otomatis tanpa memuat ulang halaman (FR-09).
+    useAntreanRealtime(['ringkasan', 'antrean']);
     const antreanSaya = antrean.find((item) => item.nomor === mejaAktif?.nomor);
 
     return (
