@@ -1,6 +1,11 @@
 import { createInertiaApp } from '@inertiajs/react';
 import { PenyediaToast } from '@/components/dasar/toast';
 import TataLetakAplikasi from '@/layouts/tata-letak-aplikasi';
+import { configureEcho } from '@laravel/echo-react';
+
+configureEcho({
+    broadcaster: 'reverb',
+});
 
 const appName = import.meta.env.VITE_APP_NAME || 'Posyandu Lima Meja';
 
