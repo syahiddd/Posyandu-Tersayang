@@ -11,6 +11,7 @@ import {
     beranda,
     dataAnak,
     dataPosyandu,
+    gantiSandi,
     lainnya,
     logout,
     meja,
@@ -33,6 +34,9 @@ export default function TataLetakAplikasi({
     const { mejaAktif, namaPosyandu, bolehKelolaAkun, name } = props;
     const path = url.split('?')[0];
     const aktif = (href: string) => path === href;
+    // Layar turunan (detail, ubah) tetap menandai menu induknya.
+    const diBawah = (href: string) =>
+        aktif(href) || path.startsWith(`${href}/`);
 
     const urlMeja = mejaAktif ? meja(mejaAktif.nomor).url : pilihMeja().url;
     const diMeja = path.startsWith('/meja/');
@@ -41,9 +45,10 @@ export default function TataLetakAplikasi({
         rekapImunisasi(),
         dataPosyandu(),
         pengaturanAkun(),
+        gantiSandi(),
     ]
         .map((rute) => rute.url)
-        .some(aktif);
+        .some(diBawah);
 
     const itemUtama: ItemNavigasi[] = [
         {
@@ -57,7 +62,7 @@ export default function TataLetakAplikasi({
             label: 'Data Anak',
             href: dataAnak().url,
             ikon: Users,
-            aktif: aktif(dataAnak().url),
+            aktif: diBawah(dataAnak().url),
         },
         {
             label: 'Lainnya',
@@ -79,7 +84,7 @@ export default function TataLetakAplikasi({
         {
             label: 'Data Anak',
             href: dataAnak().url,
-            aktif: aktif(dataAnak().url),
+            aktif: diBawah(dataAnak().url),
         },
         {
             label: 'Rekap Imunisasi',
@@ -89,14 +94,14 @@ export default function TataLetakAplikasi({
         {
             label: 'Data Posyandu',
             href: dataPosyandu().url,
-            aktif: aktif(dataPosyandu().url),
+            aktif: diBawah(dataPosyandu().url),
         },
         ...(bolehKelolaAkun
             ? [
                   {
                       label: 'Pengaturan Akun',
                       href: pengaturanAkun().url,
-                      aktif: aktif(pengaturanAkun().url),
+                      aktif: diBawah(pengaturanAkun().url),
                   },
               ]
             : []),

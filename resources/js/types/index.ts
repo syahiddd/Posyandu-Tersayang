@@ -64,3 +64,18 @@ export type RingkasanAnak = {
     kunjunganTerakhir: string | null;
     sudahDiAntrean: boolean;
 };
+
+/** Pilihan meja untuk isian "meja yang biasa dipegang" (FR-60). */
+export type PilihanMeja = {
+    nomor: number;
+    tahap: string;
+};
+
+/** Data akun kader di Pengaturan Akun (FR-02, FR-60). */
+export type AkunKader = {
+    id: number;
+    nama: string;
+    username: string;
+    noHp: string | null;
+    mejaBiasa: number | null;
+};

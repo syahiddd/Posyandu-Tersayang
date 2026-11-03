@@ -3,6 +3,7 @@
 namespace App\Auth;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\LoginRateLimiter;
@@ -56,7 +57,21 @@ class LoginLockout extends LoginRateLimiter
 
     protected function throttleKey(Request $request)
     {
-        return Str::transliterate(Str::lower((string) $request->input(Fortify::username())));
+        return self::normalkan((string) $request->input(Fortify::username()));
+    }
+
+    /**
+     * Membuka kunci akun saat Ketua Kader mengatur ulang kata sandinya (FR-02).
+     */
+    public static function bukaKunci(string $username): void
+    {
+        RateLimiter::clear('login-gagal|'.self::normalkan($username));
+        RateLimiter::clear('login-terkunci|'.self::normalkan($username));
+    }
+
+    private static function normalkan(string $username): string
+    {
+        return Str::transliterate(Str::lower($username));
     }
 
     private function kunciHitungan(Request $request): string

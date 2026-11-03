@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Meja;
 use App\Enums\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -17,6 +18,8 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string $name
  * @property string $username
+ * @property string|null $no_hp
+ * @property Meja|null $meja_biasa
  * @property string $password
  * @property Role $role
  * @property bool $is_active
@@ -24,7 +27,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'username', 'password', 'role', 'is_active'])]
+#[Fillable(['name', 'username', 'no_hp', 'meja_biasa', 'password', 'role', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -41,6 +44,7 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
             'role' => Role::class,
+            'meja_biasa' => Meja::class,
             'is_active' => 'boolean',
         ];
     }

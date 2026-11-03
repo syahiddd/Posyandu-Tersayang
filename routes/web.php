@@ -1,8 +1,10 @@
 <?php
 
 use App\Enums\Meja;
+use App\Http\Controllers\AkunController;
 use App\Http\Controllers\AntreanController;
 use App\Http\Controllers\BerandaController;
+use App\Http\Controllers\GantiSandiController;
 use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\Meja1Controller;
 use App\Http\Controllers\MejaController;
@@ -80,10 +82,19 @@ Route::middleware('auth')->group(function () {
             'rujukan' => 'PRD 4.11 (FR-59 sampai FR-63)',
         ])->name('data-posyandu');
 
-        // Pengaturan Akun khusus Ketua Kader (FR-02).
-        Route::inertia('pengaturan-akun', 'halaman-sementara', [
-            'judul' => 'Pengaturan Akun',
-            'rujukan' => 'PRD 4.1 (FR-02)',
-        ])->middleware('can:kelola-akun')->name('pengaturan-akun');
+        // Kader mengganti kata sandinya sendiri.
+        Route::get('ganti-sandi', [GantiSandiController::class, 'edit'])->name('ganti-sandi');
+        Route::put('ganti-sandi', [GantiSandiController::class, 'update'])->name('ganti-sandi.update');
+
+        // S21 Pengaturan Akun khusus Ketua Kader (FR-02, FR-60).
+        Route::middleware('can:kelola-akun')->group(function () {
+            Route::get('pengaturan-akun', [AkunController::class, 'index'])->name('pengaturan-akun');
+            Route::get('pengaturan-akun/tambah', [AkunController::class, 'create'])->name('akun.tambah');
+            Route::post('pengaturan-akun', [AkunController::class, 'store'])->name('akun.simpan');
+            Route::get('pengaturan-akun/{user}/ubah', [AkunController::class, 'edit'])->name('akun.ubah');
+            Route::put('pengaturan-akun/{user}', [AkunController::class, 'update'])->name('akun.perbarui');
+            Route::put('pengaturan-akun/{user}/status', [AkunController::class, 'status'])->name('akun.status');
+            Route::post('pengaturan-akun/{user}/atur-ulang-sandi', [AkunController::class, 'aturUlangSandi'])->name('akun.atur-ulang-sandi');
+        });
     });
 });

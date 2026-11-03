@@ -2,6 +2,7 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { Kartu } from '@/components/dasar/kartu';
 import {
     dataPosyandu,
+    gantiSandi,
     logout,
     pengaturanAkun,
     pilihMeja,
@@ -13,7 +14,7 @@ const kelasBaris =
 
 /**
  * S20 Lainnya (DESIGN Tabel 11): Rekap Imunisasi, Data Posyandu, Pengaturan
- * Akun (Ketua Kader), Ganti Meja, Keluar (FR-05).
+ * Akun (Ketua Kader), Ganti Meja, Ganti kata sandi, Keluar (FR-05).
  */
 export default function Lainnya() {
     const { auth, bolehKelolaAkun, mejaAktif } = usePage().props;
@@ -65,6 +66,11 @@ export default function Lainnya() {
                         <li>
                             <Link href={pilihMeja()} className={kelasBaris}>
                                 Ganti meja
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href={gantiSandi()} className={kelasBaris}>
+                                Ganti kata sandi
                             </Link>
                         </li>
                         <li>
