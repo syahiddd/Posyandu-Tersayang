@@ -57,6 +57,6 @@ final class RingkasanHariIni
     /** Contoh: "Kamis, 5 November 2026". */
     public static function tanggalPanjang(?CarbonInterface $tanggal = null): string
     {
-        return ($tanggal ?? today())->locale('id')->translatedFormat('l, j F Y');
+        return Tanggal::panjang($tanggal ?? today());
     }
 }

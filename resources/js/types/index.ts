@@ -51,3 +51,16 @@ export type FlashToast = {
     jenis?: 'sukses' | 'error';
     batal?: boolean;
 };
+
+/** Ringkasan anak untuk pencarian dan kartu pembanding Meja 1 (FR-15). */
+export type RingkasanAnak = {
+    id: number;
+    nama: string;
+    jenisKelamin: JenisKelamin;
+    umurBulan: number;
+    tanggalLahir: string;
+    namaIbu: string;
+    nikSamar: string | null;
+    kunjunganTerakhir: string | null;
+    sudahDiAntrean: boolean;
+};

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enums\Meja;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Inertia\Response;
 
 /**
@@ -13,18 +12,17 @@ use Inertia\Response;
  */
 class MejaController extends Controller
 {
-    public function __invoke(Request $request, AntreanController $antrean, int $nomor): Response
-    {
+    public function __invoke(
+        Request $request,
+        AntreanController $antrean,
+        Meja1Controller $pendaftaran,
+        int $nomor,
+    ): Response {
         // Nomor sudah dibatasi 1–5 oleh constraint route.
         $meja = Meja::from($nomor);
 
-        if ($meja !== Meja::Pendaftaran) {
-            return $antrean->index($request, $meja);
-        }
-
-        return Inertia::render('meja', [
-            'nomor' => $meja->value,
-            'tahap' => $meja->tahap(),
-        ]);
+        return $meja === Meja::Pendaftaran
+            ? $pendaftaran->index($request)
+            : $antrean->index($request, $meja);
     }
 }

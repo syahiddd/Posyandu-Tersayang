@@ -25,6 +25,7 @@ void createInertiaApp({
             // navigasi (DESIGN 6.1–6.3): tombol utama di kaki layar.
             case name.startsWith('auth/'):
             case name.startsWith('kunjungan/'):
+            case name.startsWith('meja1/'):
             case name === 'pilih-meja':
                 return null;
             default:

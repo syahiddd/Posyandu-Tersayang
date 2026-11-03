@@ -4,6 +4,7 @@ use App\Enums\Meja;
 use App\Http\Controllers\AntreanController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\KunjunganController;
+use App\Http\Controllers\Meja1Controller;
 use App\Http\Controllers\MejaController;
 use App\Http\Controllers\PilihMejaController;
 use Illuminate\Support\Facades\Route;
@@ -32,10 +33,16 @@ Route::middleware('auth')->group(function () {
         // S03: Beranda (FR-06 sampai FR-08).
         Route::get('beranda', BerandaController::class)->name('beranda');
 
-        // Layar Meja 1–5: halaman sementara di Fase 1.
+        // Layar meja: Meja 1 pencarian, Meja 2–5 antrean.
         Route::get('meja/{meja}', MejaController::class)
             ->whereIn('meja', array_map(fn (Meja $meja) => (string) $meja->value, Meja::cases()))
             ->name('meja');
+
+        // Meja 1 Pendaftaran (PRD 4.3, FR-10 sampai FR-17).
+        Route::get('meja/1/anak-baru', [Meja1Controller::class, 'create'])->name('meja1.anak-baru');
+        Route::post('meja/1/anak', [Meja1Controller::class, 'store'])->name('meja1.simpan');
+        Route::get('meja/1/anak/{anak}', [Meja1Controller::class, 'tersimpan'])->name('meja1.anak');
+        Route::post('meja/1/anak/{anak}/kirim', [Meja1Controller::class, 'kirim'])->name('meja1.kirim');
 
         // Antrean dan layar kerja per anak (PRD 3.2–3.3, FR-47 sampai FR-49).
         Route::get('kunjungan/{kunjungan}', [KunjunganController::class, 'layar'])->name('kunjungan.layar');

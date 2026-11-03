@@ -18,7 +18,7 @@ type PropsUmum = {
 
 type PropsIsianTeks = PropsUmum &
     Omit<ComponentProps<'input'>, 'className' | 'type'> & {
-        jenis?: 'teks' | 'cari' | 'kata-sandi';
+        jenis?: 'teks' | 'cari' | 'kata-sandi' | 'tanggal' | 'telepon';
         /** Untuk jenis cari: menampilkan tombol Hapus saat ada isi. */
         onHapus?: () => void;
     };
@@ -53,14 +53,13 @@ export function IsianTeks({
             </button>
         ) : null;
 
-    const type =
-        jenis === 'kata-sandi'
-            ? tampilkanSandi
-                ? 'text'
-                : 'password'
-            : jenis === 'cari'
-              ? 'search'
-              : 'text';
+    const type = {
+        'kata-sandi': tampilkanSandi ? 'text' : 'password',
+        cari: 'search',
+        tanggal: 'date',
+        telepon: 'tel',
+        teks: 'text',
+    }[jenis];
 
     const adaIsi = typeof value === 'string' ? value.length > 0 : false;
 
