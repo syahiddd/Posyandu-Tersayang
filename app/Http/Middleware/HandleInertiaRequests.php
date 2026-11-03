@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Posyandu;
+use App\Support\MejaAktif;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,13 +37,20 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $mejaAktif = MejaAktif::dari($request);
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user()?->only(['id', 'name', 'username', 'role']),
             ],
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'mejaAktif' => $mejaAktif ? [
+                'nomor' => $mejaAktif->value,
+                'tahap' => $mejaAktif->tahap(),
+            ] : null,
+            'namaPosyandu' => fn () => Posyandu::query()->value('nama'),
+            'bolehKelolaAkun' => fn () => $request->user()?->can('kelola-akun') ?? false,
         ];
     }
 }

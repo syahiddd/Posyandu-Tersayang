@@ -21,16 +21,16 @@ export function NavigasiBawah({ item }: { item: ItemNavigasi[] }) {
     return (
         <nav
             aria-label="Menu utama"
-            className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-200 bg-white tablet:hidden"
+            className="fixed inset-x-0 bottom-0 z-40 h-19 border-t border-ink-200 bg-white tablet:hidden"
         >
-            <ul className="grid grid-cols-4">
+            <ul className="grid h-full grid-cols-4">
                 {item.map(({ label, href, ikon: Ikon, aktif }) => (
                     <li key={label}>
                         <Link
                             href={href}
                             aria-current={aktif ? 'page' : undefined}
                             className={clsx(
-                                'flex min-h-target-min flex-col items-center justify-center gap-1 px-1 pt-2 pb-3 text-keterangan',
+                                'flex h-full min-h-target-min flex-col items-center justify-center gap-1 px-1 text-keterangan',
                                 aktif
                                     ? 'font-bold text-ink-900'
                                     : 'text-ink-600',

@@ -25,6 +25,10 @@ class FortifyServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(LoginRateLimiter::class, LoginLockout::class);
+
+        // Hanya login dan logout yang dipakai; route-nya didaftarkan di
+        // routes/web.php agar route Fortify lain (konfirmasi sandi) tidak ada.
+        Fortify::ignoreRoutes();
     }
 
     /**

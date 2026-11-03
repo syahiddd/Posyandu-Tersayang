@@ -14,6 +14,7 @@ Sumber kebenaran: `docs/PRD.md` (apa yang dibangun), `docs/DESIGN.md` (tampilan,
 - Jangan menjalankan perintah destruktif (`migrate:fresh` selain DB lokal, `rm -rf`, force push) dan jangan commit `.env`.
 
 Perintah (PHP dari php.new di `%USERPROFILE%\.config\herd-lite\bin`):
+
 - Dev: `composer dev` · Build: `npm run build` · Tes PHP: `php artisan test` · Tes TS: `npx vp test run`
 - Lint/typecheck: `npx tsc --noEmit`, `npm run check`, `vendor/bin/pint --test`
 - DB lokal: `php artisan migrate:fresh --seed` (DB `posyandu`; tes memakai `posyandu_testing`)
