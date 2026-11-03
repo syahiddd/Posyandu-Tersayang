@@ -25,10 +25,11 @@ class KunjunganController extends Controller
                 ->withErrors(['kunjungan' => 'Anak ini tidak sedang Anda layani. Buka lagi dari antrean.']);
         }
 
-        $kunjungan->load(['anak', 'pengukuran']);
+        $kunjungan->load(['anak', 'pengukuran', 'pendataan']);
 
         return match ($kunjungan->meja_saat_ini) {
             Meja::Pengukuran => Inertia::render('kunjungan/pengukuran', PengukuranController::props($kunjungan)),
+            Meja::Pendataan => Inertia::render('kunjungan/pendataan', PendataanController::props($kunjungan)),
             default => Inertia::render('kunjungan/layar-sementara', [
                 'anak' => TampilanKunjungan::header($kunjungan),
                 'tahap' => $kunjungan->meja_saat_ini->tahap(),

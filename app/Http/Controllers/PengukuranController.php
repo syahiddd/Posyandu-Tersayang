@@ -8,6 +8,7 @@ use App\Antrean\Urungan;
 use App\Enums\CaraUkur;
 use App\Enums\Meja;
 use App\Enums\SumberData;
+use App\Gizi\PengukuranSebelumnya;
 use App\Gizi\StatusPenimbangan;
 use App\Http\Requests\SimpanPengukuranRequest;
 use App\Models\Kunjungan;
@@ -41,16 +42,7 @@ class PengukuranController extends Controller
         $umur = Umur::bulanPenuh($anak->tanggal_lahir, $kunjungan->tanggal);
         $sekarang = $kunjungan->pengukuran;
 
-        // Pembanding: pengukuran terakhir sebelum kunjungan ini, termasuk
-        // data yang disalin dari Buku KIA saat pendaftaran.
-        $sebelumnya = Pengukuran::query()
-            ->where('anak_id', $anak->id)
-            ->whereDate('tanggal_ukur', '<=', $kunjungan->tanggal)
-            ->when($sekarang, fn ($q) => $q->whereKeyNot($sekarang->id))
-            ->where(fn ($q) => $q->whereNull('kunjungan_id')->orWhere('kunjungan_id', '!=', $kunjungan->id))
-            ->orderByDesc('tanggal_ukur')
-            ->orderByDesc('id')
-            ->first();
+        $sebelumnya = PengukuranSebelumnya::untuk($kunjungan);
 
         $draf = ($kunjungan->draf ?? [])[Meja::Pengukuran->value] ?? null;
 

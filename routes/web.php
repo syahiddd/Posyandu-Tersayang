@@ -6,6 +6,7 @@ use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\Meja1Controller;
 use App\Http\Controllers\MejaController;
+use App\Http\Controllers\PendataanController;
 use App\Http\Controllers\PengukuranController;
 use App\Http\Controllers\PilihMejaController;
 use Illuminate\Support\Facades\Route;
@@ -55,6 +56,10 @@ Route::middleware('auth')->group(function () {
 
         // Meja 2 Pengukuran (PRD 4.4, FR-18 sampai FR-23).
         Route::put('kunjungan/{kunjungan}/pengukuran', [PengukuranController::class, 'update'])->name('kunjungan.pengukuran');
+
+        // Meja 3 Pendataan (PRD 4.5, FR-24 sampai FR-29); nilai ukur tidak dapat diubah di sini.
+        Route::post('kunjungan/{kunjungan}/pendataan', [PendataanController::class, 'simpan'])->name('kunjungan.pendataan');
+        Route::post('kunjungan/{kunjungan}/kembalikan', [PendataanController::class, 'kembalikan'])->name('kunjungan.kembalikan');
 
         // S20: menu Lainnya (DESIGN Tabel 11).
         Route::inertia('lainnya', 'lainnya')->name('lainnya');
