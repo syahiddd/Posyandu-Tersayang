@@ -1,108 +1,129 @@
-import { Form, Head } from '@inertiajs/react';
-import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
-import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { useRef, useState } from 'react';
+import type { FormEvent } from 'react';
+import { Banner } from '@/components/dasar/banner';
+import { IsianTeks } from '@/components/dasar/isian-teks';
+import { LencanaMeja } from '@/components/dasar/lencana-meja';
+import { Tombol } from '@/components/dasar/tombol';
 import { store } from '@/routes/login';
-import { request } from '@/routes/password';
 
-type Props = {
-    status?: string;
-    canResetPassword: boolean;
-};
+type GalatIsian = { username?: string; password?: string };
 
-export default function Login({ status, canResetPassword }: Props) {
+/**
+ * S01 Masuk (FR-01, DESIGN 6.1 Tabel 22): nama pengguna dan kata sandi,
+ * tanpa daftar akun, tanpa login Google, tanpa lupa sandi via email.
+ * Pesan gagal dari server bersifat umum dan tampil di bawah tombol.
+ */
+export default function Masuk() {
+    const { name } = usePage<{ name: string }>().props;
+    const form = useForm({ username: '', password: '' });
+    const [galatIsian, setGalatIsian] = useState<GalatIsian>({});
+    const refUsername = useRef<HTMLInputElement>(null);
+    const refPassword = useRef<HTMLInputElement>(null);
+
+    const pesanUmum = form.errors.username ?? form.errors.password;
+
+    function kirim(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        const galat: GalatIsian = {
+            username: form.data.username.trim()
+                ? undefined
+                : 'Isi nama pengguna.',
+            password: form.data.password ? undefined : 'Isi kata sandi.',
+        };
+        setGalatIsian(galat);
+
+        if (galat.username) {
+            refUsername.current?.focus();
+
+            return;
+        }
+
+        if (galat.password) {
+            refPassword.current?.focus();
+
+            return;
+        }
+
+        form.post(store.url(), {
+            onError: () => form.reset('password'),
+        });
+    }
+
     return (
         <>
-            <Head title="Log in" />
+            <Head title="Masuk" />
+            <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pt-7 pb-4 tablet:justify-center tablet:pb-7">
+                <header className="flex items-center gap-4">
+                    <LencanaMeja nomor="1–5" denganLabel />
+                    <div>
+                        <h1 className="text-judul-1 text-ink-900">{name}</h1>
+                        <p className="text-teks text-ink-700">
+                            Khusus kader posyandu
+                        </p>
+                    </div>
+                </header>
 
+                <form
+                    noValidate
+                    onSubmit={kirim}
+                    className="mt-7 flex flex-col gap-5"
+                >
+                    <IsianTeks
+                        ref={refUsername}
+                        label="Nama pengguna"
+                        name="username"
+                        autoComplete="username"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        required
+                        value={form.data.username}
+                        onChange={(event) =>
+                            form.setData('username', event.target.value)
+                        }
+                        galat={galatIsian.username}
+                    />
+                    <IsianTeks
+                        ref={refPassword}
+                        jenis="kata-sandi"
+                        label="Kata sandi"
+                        name="password"
+                        autoComplete="current-password"
+                        required
+                        value={form.data.password}
+                        onChange={(event) =>
+                            form.setData('password', event.target.value)
+                        }
+                        galat={galatIsian.password}
+                    />
 
-            <Form
-                {...store.form()}
-                resetOnSuccess={['password']}
-                className="flex flex-col gap-6"
-            >
-                {({ processing, errors }) => (
-                    <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    required
-                                    autoFocus
-                                    tabIndex={1}
-                                    autoComplete="email"
-                                    placeholder="email@example.com"
-                                />
-                                <InputError message={errors.email} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
-                                    {canResetPassword && (
-                                        <TextLink
-                                            href={request()}
-                                            className="ml-auto text-sm"
-                                            tabIndex={5}
-                                        >
-                                            Forgot your password?
-                                        </TextLink>
-                                    )}
-                                </div>
-                                <PasswordInput
-                                    id="password"
-                                    name="password"
-                                    required
-                                    tabIndex={2}
-                                    autoComplete="current-password"
-                                    placeholder="Password"
-                                />
-                                <InputError message={errors.password} />
-                            </div>
-
-                            <div className="flex items-center space-x-3">
-                                <Checkbox
-                                    id="remember"
-                                    name="remember"
-                                    tabIndex={3}
-                                />
-                                <Label htmlFor="remember">Remember me</Label>
-                            </div>
-
-                            <Button
-                                type="submit"
-                                className="mt-4 w-full"
-                                tabIndex={4}
-                                disabled={processing}
-                                data-test="login-button"
+                    <div className="mt-2 flex flex-col gap-3">
+                        <Tombol
+                            type="submit"
+                            lebarPenuh
+                            memuat={form.processing}
+                            teksMemuat="Memeriksa…"
+                        >
+                            Masuk
+                        </Tombol>
+                        {pesanUmum && (
+                            <p
+                                role="alert"
+                                className="text-teks font-bold text-status-bahaya-teks"
                             >
-                                {processing && <Spinner />}
-                                Log in
-                            </Button>
-                        </div>
+                                {pesanUmum}
+                            </p>
+                        )}
+                    </div>
+                </form>
 
-                    </>
-                )}
-            </Form>
-
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+                <Banner varian="info" className="mt-auto tablet:mt-7">
+                    Akun dibuat oleh Ketua Kader. Lupa kata sandi? Minta Ketua
+                    Kader mengatur ulang.
+                </Banner>
+            </main>
         </>
     );
 }
-
-Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
-};

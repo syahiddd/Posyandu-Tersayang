@@ -1,7 +1,5 @@
 <?php
 
-use Laravel\Fortify\Features;
-
 return [
 
     /*
@@ -45,7 +43,7 @@ return [
     |
     */
 
-    'username' => 'email',
+    'username' => 'username',
 
     'email' => 'email',
 
@@ -115,7 +113,9 @@ return [
     */
 
     'limiters' => [
-        'login' => 'login',
+        // Null: Fortify memakai LoginRateLimiter di pipeline login, yang
+        // diganti App\Auth\LoginLockout (kunci 15 menit, FR-04).
+        'login' => null,
     ],
 
     /*
@@ -142,8 +142,8 @@ return [
     |
     */
 
-    'features' => [
-        Features::resetPasswords(),
-    ],
+    // Tanpa registrasi, lupa sandi via email, verifikasi email, dan 2FA
+    // (PRD 4.1, FR-01, FR-02). Kata sandi diatur ulang oleh Ketua Kader.
+    'features' => [],
 
 ];

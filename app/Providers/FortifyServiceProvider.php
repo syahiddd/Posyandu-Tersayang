@@ -2,25 +2,29 @@
 
 namespace App\Providers;
 
-use App\Actions\Fortify\ResetUserPassword;
-use Illuminate\Cache\RateLimiting\Limit;
+use App\Auth\LoginLockout;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
-use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
+use Laravel\Fortify\LoginRateLimiter;
 
 class FortifyServiceProvider extends ServiceProvider
 {
+    /**
+     * Hash bcrypt dari nilai acak yang dibuang; dipakai saat username tidak
+     * ditemukan agar biaya pemeriksaan sama dengan akun yang ada.
+     */
+    private const HASH_PENGGANTI = '$2y$12$HdFtyNeDRRCSlIRfid/umuJJ5uoa47QRp1/yrRRz1X/pW2J6aoPSi';
+
     /**
      * Register any application services.
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(LoginRateLimiter::class, LoginLockout::class);
     }
 
     /**
@@ -28,17 +32,30 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->configureActions();
+        $this->configureAuthentication();
         $this->configureViews();
-        $this->configureRateLimiting();
     }
 
     /**
-     * Configure Fortify actions.
+     * Masuk dengan username dan kata sandi (FR-01). Akun nonaktif ditolak
+     * dengan pesan yang sama seperti kata sandi salah (PRD 4.1).
      */
-    private function configureActions(): void
+    private function configureAuthentication(): void
     {
-        Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
+        Fortify::authenticateUsing(function (Request $request): ?User {
+            $user = User::query()
+                ->where('username', (string) $request->input('username'))
+                ->first();
+
+            // Hash tetap diperiksa walau akun tidak ada, agar waktu respons
+            // tidak membedakan username terdaftar dan tidak.
+            $cocok = Hash::check(
+                (string) $request->input('password'),
+                $user->password ?? self::HASH_PENGGANTI,
+            );
+
+            return $user && $user->is_active && $cocok ? $user : null;
+        });
     }
 
     /**
@@ -46,34 +63,6 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureViews(): void
     {
-        Fortify::loginView(fn (Request $request) => Inertia::render('auth/login', [
-            'canResetPassword' => Features::enabled(Features::resetPasswords()),
-            'status' => $request->session()->get('status'),
-        ]));
-
-        Fortify::resetPasswordView(fn (Request $request) => Inertia::render('auth/reset-password', [
-            'email' => $request->email,
-            'token' => $request->route('token'),
-            'passwordRules' => Password::defaults()->toPasswordRulesString(),
-        ]));
-
-        Fortify::requestPasswordResetLinkView(fn (Request $request) => Inertia::render('auth/forgot-password', [
-            'status' => $request->session()->get('status'),
-        ]));
-
-    }
-
-    /**
-     * Configure rate limiting.
-     */
-    private function configureRateLimiting(): void
-    {
-
-        RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
-
-            return Limit::perMinute(5)->by($throttleKey);
-        });
-
+        Fortify::loginView(fn () => Inertia::render('auth/login'));
     }
 }

@@ -54,9 +54,16 @@ export function Bidang({
     children,
     className,
 }: PropsBidang) {
+    // Grid: kananLabel tampil di baris label tetapi berada setelah isian di
+    // DOM, sehingga urutan fokus mengikuti DESIGN 10.2 (isian → Tampilkan).
     return (
-        <div className={clsx('flex flex-col gap-1', className)}>
-            <div className="flex items-center justify-between gap-2">
+        <div
+            className={clsx(
+                'grid grid-cols-[1fr_auto] items-center gap-x-2 gap-y-1',
+                className,
+            )}
+        >
+            <div className="col-start-1 row-start-1 min-w-0">
                 <label
                     htmlFor={id}
                     className="text-kecil font-bold text-ink-900"
@@ -75,11 +82,18 @@ export function Bidang({
                         </>
                     )}
                 </label>
-                {kananLabel}
             </div>
-            {children}
+            <div className="col-span-2 row-start-2">{children}</div>
+            {kananLabel && (
+                <div className="col-start-2 row-start-1 justify-self-end">
+                    {kananLabel}
+                </div>
+            )}
             {petunjuk && (
-                <p id={idPetunjuk(id)} className="text-keterangan text-ink-600">
+                <p
+                    id={idPetunjuk(id)}
+                    className="col-span-2 text-keterangan text-ink-600"
+                >
                     {petunjuk}
                 </p>
             )}
@@ -87,7 +101,7 @@ export function Bidang({
                 <p
                     id={idPesan(id)}
                     className={clsx(
-                        'text-keterangan font-bold',
+                        'col-span-2 text-keterangan font-bold',
                         galat
                             ? 'text-status-bahaya-teks'
                             : 'text-status-waspada-teks',

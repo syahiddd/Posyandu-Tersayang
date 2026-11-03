@@ -2,10 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'welcome')->name('home');
+// Halaman pertama adalah halaman masuk (FR-01); tamu tidak dapat membuka
+// halaman lain (PRD 4.1, kriteria penerimaan).
+Route::get('/', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'login'))
+    ->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 });
-
-require __DIR__.'/settings.php';

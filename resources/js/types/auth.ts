@@ -1,16 +1,15 @@
+export type Role = 'kader' | 'ketua';
+
 export type User = {
     id: number;
     name: string;
-    email: string;
-    avatar?: string;
-    email_verified_at: string | null;
+    username: string;
+    role: Role;
+    is_active: boolean;
     created_at: string;
     updated_at: string;
-    [key: string]: unknown;
 };
 
 export type Auth = {
     user: User;
 };
-
-
