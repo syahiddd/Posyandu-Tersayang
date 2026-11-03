@@ -7,8 +7,10 @@ use App\Anak\PencarianAnak;
 use App\Anak\TampilanDetailAnak;
 use App\Antrean\TampilanAnak;
 use App\Enums\JenisKelamin;
+use App\Http\Requests\UbahAnakRequest;
 use App\Models\Anak;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -51,7 +53,30 @@ class DataAnakController extends Controller
             'pengukuran' => TampilanDetailAnak::pengukuran($anak),
             'kunjungan' => TampilanDetailAnak::kunjungan($anak),
             'layanan' => TampilanDetailAnak::layanan($anak),
+            'perubahanTerakhir' => TampilanDetailAnak::perubahanTerakhir($anak),
         ]);
+    }
+
+    /** S16 Ubah Data Anak (FR-52). */
+    public function edit(Anak $anak): Response
+    {
+        return Inertia::render('data-anak/ubah', [
+            'anak' => TampilanDetailAnak::isian($anak),
+            'hariIni' => today()->toDateString(),
+            'daftarDusun' => Anak::query()->distinct()->orderBy('dusun')->pluck('dusun'),
+        ]);
+    }
+
+    /** Perubahan dicatat di log aktivitas beserta akun dan waktunya (NFR-06). */
+    public function update(UbahAnakRequest $request, Anak $anak): RedirectResponse
+    {
+        $anak->update(collect($request->validated())->only(UbahAnakRequest::KOLOM_IDENTITAS)->all());
+
+        Inertia::flash('toast', [
+            'pesan' => $anak->wasChanged() ? "Data {$anak->nama} disimpan" : 'Tidak ada perubahan',
+        ]);
+
+        return redirect()->route('data-anak.detail', $anak);
     }
 
     /**

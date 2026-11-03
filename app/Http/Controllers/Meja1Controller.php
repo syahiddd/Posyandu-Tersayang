@@ -75,11 +75,7 @@ class Meja1Controller extends Controller
         }
 
         $anak = DB::transaction(function () use ($data) {
-            $anak = Anak::query()->create(collect($data)->only([
-                'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'nik',
-                'nama_ibu', 'nik_ibu', 'nama_ayah', 'nik_ayah', 'no_hp',
-                'alamat', 'rt', 'rw', 'dusun',
-            ])->all());
+            $anak = Anak::query()->create(collect($data)->only(SimpanAnakRequest::KOLOM_IDENTITAS)->all());
 
             // Ukuran terakhir dari Buku KIA dipakai sebagai pembanding (Tabel 10).
             if (collect(['ukur_bb', 'ukur_pb_tb', 'ukur_lila', 'ukur_lk'])->contains(fn ($kolom) => filled($data[$kolom] ?? null))) {

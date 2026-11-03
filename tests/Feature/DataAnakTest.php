@@ -183,3 +183,96 @@ test('anak yang dihapus tidak dapat dibuka detailnya', function () {
 
     $this->get(route('data-anak.detail', $anak))->assertNotFound();
 });
+
+function isian_ubah(Anak $anak, array $ganti = []): array
+{
+    return [
+        'nama' => $anak->nama,
+        'jenis_kelamin' => $anak->jenis_kelamin->value,
+        'tempat_lahir' => $anak->tempat_lahir,
+        'tanggal_lahir' => $anak->tanggal_lahir->toDateString(),
+        'nik' => $anak->nik,
+        'nama_ibu' => $anak->nama_ibu,
+        'nik_ibu' => $anak->nik_ibu,
+        'nama_ayah' => $anak->nama_ayah,
+        'nik_ayah' => $anak->nik_ayah,
+        'no_hp' => $anak->no_hp,
+        'alamat' => $anak->alamat,
+        'rt' => $anak->rt,
+        'rw' => $anak->rw,
+        'dusun' => $anak->dusun,
+        ...$ganti,
+    ];
+}
+
+test('formulir ubah terisi data anak (S16)', function () {
+    $anak = Anak::factory()->create(['nama' => 'Raka', 'rt' => null, 'nik' => null]);
+
+    $this->get(route('data-anak.ubah', $anak))->assertOk()->assertInertia(fn ($page) => $page
+        ->component('data-anak/ubah')
+        ->where('anak.nama', 'Raka')
+        ->where('anak.rt', '')
+        ->where('anak.nik', '')
+        ->where('anak.tanggal_lahir', $anak->tanggal_lahir->toDateString()));
+});
+
+test('kader mengubah data anak dan perubahan tercatat di log aktivitas (FR-52, NFR-06)', function () {
+    $kader = User::factory()->create(['name' => 'Dewi Lestari']);
+    $this->actingAs($kader);
+    $anak = Anak::factory()->create(['nama' => 'Raka', 'alamat' => 'Jl. Lama', 'dusun' => 'Melati']);
+
+    $this->put(route('data-anak.perbarui', $anak), isian_ubah($anak, [
+        'nama' => 'Raka Pratama',
+        'alamat' => 'Jl. Baru 7',
+        'no_hp' => '0812 3456 7890',
+    ]))->assertRedirect(route('data-anak.detail', $anak));
+
+    $anak->refresh();
+    expect($anak->nama)->toBe('Raka Pratama')
+        ->and($anak->alamat)->toBe('Jl. Baru 7')
+        ->and($anak->no_hp)->toBe('081234567890');
+
+    $log = $anak->activitiesAsSubject()->sole();
+    expect($log->event)->toBe('updated')
+        ->and($log->log_name)->toBe('anak')
+        ->and($log->causer?->is($kader))->toBeTrue()
+        ->and($log->attribute_changes['attributes'])->toBe(['nama' => 'Raka Pratama', 'no_hp' => '081234567890', 'alamat' => 'Jl. Baru 7'])
+        ->and($log->attribute_changes['old'])->toMatchArray(['nama' => 'Raka', 'alamat' => 'Jl. Lama']);
+
+    $this->get(route('data-anak.detail', $anak))->assertInertia(fn ($page) => $page
+        ->where('perubahanTerakhir.oleh', 'Dewi Lestari'));
+});
+
+test('menyimpan tanpa perubahan tidak menambah log', function () {
+    $anak = Anak::factory()->create();
+
+    $this->put(route('data-anak.perbarui', $anak), isian_ubah($anak))->assertRedirect();
+
+    expect($anak->activitiesAsSubject()->count())->toBe(0);
+});
+
+test('validasi ubah data sama dengan Tambah Anak; NIK sendiri boleh tetap (PRD 7.2)', function () {
+    $lain = Anak::factory()->create(['nik' => '1871010101010099']);
+    $anak = Anak::factory()->create(['nik' => '1871010101010042']);
+
+    $this->put(route('data-anak.perbarui', $anak), isian_ubah($anak))->assertSessionHasNoErrors();
+
+    $this->put(route('data-anak.perbarui', $anak), isian_ubah($anak, [
+        'nik' => '1871010101010099',
+        'nama' => '',
+        'tanggal_lahir' => today()->addDay()->toDateString(),
+        'no_hp' => '123',
+        'jenis_kelamin' => 'X',
+    ]))->assertSessionHasErrors(['nik', 'nama', 'tanggal_lahir', 'no_hp', 'jenis_kelamin']);
+
+    expect($anak->refresh()->nik)->toBe('1871010101010042');
+});
+
+test('NIK milik anak yang dihapus tetap tidak boleh dipakai (FR-11, FR-53)', function () {
+    $terhapus = Anak::factory()->create(['nik' => '1871010101010077']);
+    $terhapus->delete();
+    $anak = Anak::factory()->create();
+
+    $this->put(route('data-anak.perbarui', $anak), isian_ubah($anak, ['nik' => '1871010101010077']))
+        ->assertSessionHasErrors('nik');
+});

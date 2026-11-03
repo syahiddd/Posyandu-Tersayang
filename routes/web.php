@@ -70,9 +70,10 @@ Route::middleware('auth')->group(function () {
         // S14–S16 Data Anak (PRD 4.9, FR-50 sampai FR-54).
         Route::get('data-anak', [DataAnakController::class, 'index'])->name('data-anak');
         Route::get('data-anak/{anak}', [DataAnakController::class, 'show'])->name('data-anak.detail');
+        Route::get('data-anak/{anak}/ubah', [DataAnakController::class, 'edit'])->name('data-anak.ubah');
+        Route::put('data-anak/{anak}', [DataAnakController::class, 'update'])->name('data-anak.perbarui');
 
         // Menu yang dikerjakan pada fase berikutnya (halaman sementara).
-
         Route::inertia('rekap-imunisasi', 'halaman-sementara', [
             'judul' => 'Rekapitulasi Imunisasi',
             'rujukan' => 'PRD 4.10 (FR-55 sampai FR-58)',

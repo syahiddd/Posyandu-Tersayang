@@ -3,11 +3,14 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Banner } from '@/components/dasar/banner';
 import { HeaderAnak } from '@/components/dasar/header-anak';
+import { KakiTombol } from '@/components/dasar/kaki-tombol';
 import { Kartu } from '@/components/dasar/kartu';
 import { propsPanel, Tab } from '@/components/dasar/tab';
+import { TombolTautan } from '@/components/dasar/tombol';
 import { formatDesimal } from '@/lib/desimal';
 import { formatUmurTahunBulan } from '@/lib/umur';
 import { dataAnak } from '@/routes';
+import { ubah } from '@/routes/data-anak';
 import type {
     DetailAnak,
     RiwayatKunjungan,
@@ -20,6 +23,7 @@ type Props = {
     pengukuran: RiwayatPengukuran[];
     kunjungan: RiwayatKunjungan[];
     layanan: RiwayatLayanan[];
+    perubahanTerakhir: { oleh: string; pada: string } | null;
 };
 
 type IdTab = 'ringkasan' | 'grafik' | 'riwayat';
@@ -61,6 +65,7 @@ export default function DetailDataAnak({
     pengukuran,
     kunjungan,
     layanan,
+    perubahanTerakhir,
 }: Props) {
     const [tab, setTab] = useState<IdTab>('ringkasan');
     const laki = anak.jenisKelamin === 'L';
@@ -162,6 +167,13 @@ export default function DetailDataAnak({
                                     <Baris label="Dusun" nilai={anak.dusun} />
                                 </dl>
                             </Kartu>
+                            {perubahanTerakhir && (
+                                <p className="text-kecil text-ink-700">
+                                    Diubah terakhir oleh{' '}
+                                    {perubahanTerakhir.oleh},{' '}
+                                    {perubahanTerakhir.pada}
+                                </p>
+                            )}
                         </div>
                     )}
 
@@ -359,6 +371,12 @@ export default function DetailDataAnak({
                             </Kartu>
                         </div>
                     )}
+
+                    <KakiTombol denganNavigasi={false}>
+                        <TombolTautan href={ubah(anak.id)} lebarPenuh>
+                            Ubah data
+                        </TombolTautan>
+                    </KakiTombol>
                 </main>
             </div>
         </>

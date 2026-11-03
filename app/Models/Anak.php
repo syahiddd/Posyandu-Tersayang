@@ -11,9 +11,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * Data anak (PRD 7.1, Tabel 10). Dihapus lunak agar dapat dipulihkan (FR-53).
+ * Ubah, hapus, dan pulihkan tercatat di log aktivitas (FR-52, NFR-06).
  *
  * @property int $id
  * @property string $nama
@@ -41,7 +44,23 @@ use Illuminate\Support\Carbon;
 class Anak extends Model
 {
     /** @use HasFactory<AnakFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
+
+    /** @var list<string> Yang dicatat: ubah, hapus, dan pulihkan (NFR-06). */
+    protected static array $recordEvents = ['updated', 'deleted', 'restored'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('anak')
+            ->logOnly([
+                'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'nik',
+                'nama_ibu', 'nik_ibu', 'nama_ayah', 'nik_ayah', 'no_hp',
+                'alamat', 'rt', 'rw', 'dusun',
+            ])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
+    }
 
     /**
      * @return array<string, string>

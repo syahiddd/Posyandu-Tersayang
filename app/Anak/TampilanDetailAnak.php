@@ -9,8 +9,10 @@ use App\Models\Anak;
 use App\Models\Kunjungan;
 use App\Models\Layanan;
 use App\Models\Pengukuran;
+use App\Models\User;
 use App\Support\Tanggal;
 use App\Support\Umur;
+use Spatie\Activitylog\Models\Activity;
 
 /**
  * Isi halaman Detail Anak (FR-51, DESIGN S15): identitas lengkap termasuk
@@ -118,5 +120,56 @@ final class TampilanDetailAnak
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * Nilai isian formulir Ubah Data Anak, dalam format yang sama dengan
+     * formulir Tambah Anak (tanggal Y-m-d, angka sebagai teks).
+     *
+     * @return array<string, string|int>
+     */
+    public static function isian(Anak $anak): array
+    {
+        return [
+            'id' => $anak->id,
+            'nama' => $anak->nama,
+            'jenis_kelamin' => $anak->jenis_kelamin->value,
+            'tempat_lahir' => $anak->tempat_lahir ?? '',
+            'tanggal_lahir' => $anak->tanggal_lahir->toDateString(),
+            'nik' => $anak->nik ?? '',
+            'nama_ibu' => $anak->nama_ibu,
+            'nik_ibu' => $anak->nik_ibu ?? '',
+            'nama_ayah' => $anak->nama_ayah ?? '',
+            'nik_ayah' => $anak->nik_ayah ?? '',
+            'no_hp' => $anak->no_hp ?? '',
+            'alamat' => $anak->alamat,
+            'rt' => $anak->rt === null ? '' : (string) $anak->rt,
+            'rw' => $anak->rw === null ? '' : (string) $anak->rw,
+            'dusun' => $anak->dusun,
+        ];
+    }
+
+    /**
+     * "Diubah terakhir oleh … pada …" dari log aktivitas (NFR-06).
+     *
+     * @return array{oleh: string, pada: string}|null
+     */
+    public static function perubahanTerakhir(Anak $anak): ?array
+    {
+        $aktivitas = $anak->activitiesAsSubject()
+            ->where('event', 'updated')
+            ->latest('id')
+            ->first();
+
+        if (! $aktivitas instanceof Activity) {
+            return null;
+        }
+
+        $causer = $aktivitas->causer;
+
+        return [
+            'oleh' => $causer instanceof User ? $causer->name : 'sistem',
+            'pada' => Tanggal::singkat($aktivitas->created_at).' '.$aktivitas->created_at->format('H.i'),
+        ];
     }
 }
