@@ -47,14 +47,17 @@ class DatabaseSeeder extends Seeder
             'password' => $sandi,
         ]);
 
+        // Nomor HP fiktif dan meja yang biasa dipegang (FR-60).
         $kader = collect([
-            ['Dewi Lestari', 'dewi'],
-            ['Siti Rahma', 'sitirahma'],
-            ['Yuni Astuti', 'yuni'],
-            ['Lestari Ningsih', 'lestari'],
+            ['Dewi Lestari', 'dewi', '081200000001', Meja::Pengukuran],
+            ['Siti Rahma', 'sitirahma', '081200000002', Meja::Pendaftaran],
+            ['Yuni Astuti', 'yuni', '081200000003', Meja::Pelayanan],
+            ['Lestari Ningsih', 'lestari', null, null],
         ])->map(fn (array $data) => User::factory()->create([
             'name' => $data[0],
             'username' => $data[1],
+            'no_hp' => $data[2],
+            'meja_biasa' => $data[3],
             'password' => $sandi,
         ]));
 

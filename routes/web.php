@@ -5,6 +5,7 @@ use App\Http\Controllers\AkunController;
 use App\Http\Controllers\AntreanController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\DataAnakController;
+use App\Http\Controllers\DataPosyanduController;
 use App\Http\Controllers\GantiSandiController;
 use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\Meja1Controller;
@@ -88,16 +89,16 @@ Route::middleware('auth')->group(function () {
         });
         Route::post('data-anak/riwayat-buku-kia/urungkan', [RiwayatBukuKiaController::class, 'urungkan'])->name('riwayat-buku-kia.urungkan');
 
+        // S19 Data Posyandu: profil dan daftar kader (PRD 4.11, FR-59, FR-60).
+        Route::get('data-posyandu', [DataPosyanduController::class, 'index'])->name('data-posyandu');
+        Route::get('data-posyandu/ubah', [DataPosyanduController::class, 'edit'])->name('data-posyandu.ubah');
+        Route::put('data-posyandu', [DataPosyanduController::class, 'update'])->name('data-posyandu.perbarui');
+
         // Menu yang dikerjakan pada fase berikutnya (halaman sementara).
         Route::inertia('rekap-imunisasi', 'halaman-sementara', [
             'judul' => 'Rekapitulasi Imunisasi',
             'rujukan' => 'PRD 4.10 (FR-55 sampai FR-58)',
         ])->name('rekap-imunisasi');
-
-        Route::inertia('data-posyandu', 'halaman-sementara', [
-            'judul' => 'Data Posyandu',
-            'rujukan' => 'PRD 4.11 (FR-59 sampai FR-63)',
-        ])->name('data-posyandu');
 
         // Kader mengganti kata sandinya sendiri.
         Route::get('ganti-sandi', [GantiSandiController::class, 'edit'])->name('ganti-sandi');
