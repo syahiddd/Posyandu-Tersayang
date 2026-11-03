@@ -8,23 +8,33 @@ import { useEffect, useRef } from 'react';
 export function RingkasanGalat({
     galat,
     labelIsian,
+    percobaan,
 }: {
     /** Pesan per nama isian. */
     galat: Record<string, string | undefined>;
     /** Nama isian → id elemen yang dituju tautan. */
     labelIsian: Record<string, string>;
+    /**
+     * Nomor percobaan simpan. Bila diisi, fokus hanya pindah saat nomor ini
+     * berubah, sehingga galat yang muncul saat isian ditinggalkan tidak
+     * merebut fokus. Bila kosong, fokus pindah setiap daftar galat berubah.
+     */
+    percobaan?: number;
 }) {
     const ref = useRef<HTMLDivElement>(null);
     const daftar = Object.entries(galat).filter(
         (entri): entri is [string, string] => Boolean(entri[1]),
     );
     const kunci = daftar.map(([nama]) => nama).join(',');
+    const adaGalat = useRef(false);
+    adaGalat.current = kunci !== '';
+    const pemicu = percobaan ?? kunci;
 
     useEffect(() => {
-        if (kunci !== '') {
+        if (adaGalat.current) {
             ref.current?.focus();
         }
-    }, [kunci]);
+    }, [pemicu]);
 
     if (daftar.length === 0) {
         return null;

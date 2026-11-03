@@ -59,6 +59,9 @@ export default function Pengukuran({
     const [galatLokal, setGalatLokal] = useState<
         Partial<Record<keyof Nilai, string | null>>
     >({});
+    // Ringkasan galat muncul dan menerima fokus setelah simpan dicoba
+    // (DESIGN Tabel 33, bab 10.2), bukan saat isian ditinggalkan.
+    const [percobaan, setPercobaan] = useState(0);
 
     const labelPbTb =
         form.data.cara_ukur === 'telentang' ? 'Panjang badan' : 'Tinggi badan';
@@ -116,12 +119,15 @@ export default function Pengukuran({
             ]),
         ) as Record<JenisUkur, string | null>;
         setGalatLokal(hasil);
+        setPercobaan((n) => n + 1);
 
         if (Object.values(hasil).some(Boolean)) {
             return;
         }
 
-        form.put(pengukuran.url(anak.id));
+        form.put(pengukuran.url(anak.id), {
+            onError: () => setPercobaan((n) => n + 1),
+        });
     }
 
     const ringkasan = Object.fromEntries(
@@ -156,16 +162,19 @@ export default function Pengukuran({
                             {anak.alasanKembali ?? 'Dikembalikan dari Meja 3.'}
                         </Banner>
                     )}
-                    <RingkasanGalat
-                        galat={ringkasan}
-                        labelIsian={{
-                            bb: 'isian-bb',
-                            pb_tb: 'isian-pb_tb',
-                            cara_ukur: 'isian-cara_ukur',
-                            lila: 'isian-lila',
-                            lk: 'isian-lk',
-                        }}
-                    />
+                    {percobaan > 0 && (
+                        <RingkasanGalat
+                            percobaan={percobaan}
+                            galat={ringkasan}
+                            labelIsian={{
+                                bb: 'isian-bb',
+                                pb_tb: 'isian-pb_tb',
+                                cara_ukur: 'isian-cara_ukur',
+                                lila: 'isian-lila',
+                                lk: 'isian-lk',
+                            }}
+                        />
+                    )}
                     {peringatan.length > 0 && (
                         <Banner varian="peringatan" judul="Periksa lagi">
                             {peringatan.join(' ')} Tetap boleh disimpan.
