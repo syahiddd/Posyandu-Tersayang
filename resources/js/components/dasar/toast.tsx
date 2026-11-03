@@ -1,6 +1,7 @@
 import {
     createContext,
     useContext,
+    useMemo,
     useState,
     useSyncExternalStore,
 } from 'react';
@@ -28,19 +29,24 @@ export function PenyediaToast({ children }: { children: ReactNode }) {
 }
 
 export function useToast() {
-    const antrean = useContext(KonteksToast);
+    const konteks = useContext(KonteksToast);
 
-    if (!antrean) {
+    if (!konteks) {
         throw new Error('useToast harus dipakai di dalam <PenyediaToast>.');
     }
 
-    return {
-        sukses: (pesan: string, onBatal?: () => void) =>
-            antrean.tampilkan({ jenis: 'sukses', pesan, aksi: onBatal }),
-        error: (pesan: string, onCobaLagi?: () => void) =>
-            antrean.tampilkan({ jenis: 'error', pesan, aksi: onCobaLagi }),
-        tutup: antrean.tutup,
-    };
+    const antrean = konteks;
+
+    return useMemo(
+        () => ({
+            sukses: (pesan: string, onBatal?: () => void) =>
+                antrean.tampilkan({ jenis: 'sukses', pesan, aksi: onBatal }),
+            error: (pesan: string, onCobaLagi?: () => void) =>
+                antrean.tampilkan({ jenis: 'error', pesan, aksi: onCobaLagi }),
+            tutup: antrean.tutup,
+        }),
+        [antrean],
+    );
 }
 
 function WilayahToast({ antrean }: { antrean: AntreanToast }) {

@@ -1,7 +1,9 @@
 <?php
 
 use App\Enums\Meja;
+use App\Http\Controllers\AntreanController;
 use App\Http\Controllers\BerandaController;
+use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\MejaController;
 use App\Http\Controllers\PilihMejaController;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +36,14 @@ Route::middleware('auth')->group(function () {
         Route::get('meja/{meja}', MejaController::class)
             ->whereIn('meja', array_map(fn (Meja $meja) => (string) $meja->value, Meja::cases()))
             ->name('meja');
+
+        // Antrean dan layar kerja per anak (PRD 3.2–3.3, FR-47 sampai FR-49).
+        Route::get('kunjungan/{kunjungan}', [KunjunganController::class, 'layar'])->name('kunjungan.layar');
+        Route::post('kunjungan/{kunjungan}/buka', [AntreanController::class, 'buka'])->name('kunjungan.buka');
+        Route::post('kunjungan/{kunjungan}/lepas', [AntreanController::class, 'lepas'])->name('kunjungan.lepas');
+        Route::post('kunjungan/{kunjungan}/tunda', [AntreanController::class, 'tunda'])->name('kunjungan.tunda');
+        Route::post('kunjungan/{kunjungan}/lanjutkan', [AntreanController::class, 'lanjutkan'])->name('kunjungan.lanjutkan');
+        Route::post('antrean/urungkan', [AntreanController::class, 'urungkan'])->name('antrean.urungkan');
 
         // S20: menu Lainnya (DESIGN Tabel 11).
         Route::inertia('lainnya', 'lainnya')->name('lainnya');

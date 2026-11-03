@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Antrean\LayananAntrean;
+use App\Antrean\TampilanKunjungan;
+use App\Models\Kunjungan;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+/**
+ * Layar kerja satu anak di meja yang sedang ia tempati (S09, S10).
+ */
+class KunjunganController extends Controller
+{
+    public function __construct(private LayananAntrean $antrean) {}
+
+    public function layar(Request $request, Kunjungan $kunjungan): Response|RedirectResponse
+    {
+        if (! $kunjungan->tanggal->isToday() || ! $this->antrean->dipegangOleh($kunjungan, $request->user())) {
+            return redirect()->route('meja', $kunjungan->meja_saat_ini->value)
+                ->withErrors(['kunjungan' => 'Anak ini tidak sedang Anda layani. Buka lagi dari antrean.']);
+        }
+
+        $kunjungan->load('anak');
+
+        return Inertia::render('kunjungan/layar-sementara', [
+            'anak' => TampilanKunjungan::header($kunjungan),
+            'tahap' => $kunjungan->meja_saat_ini->tahap(),
+        ]);
+    }
+}

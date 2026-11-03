@@ -35,6 +35,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $selesai_meja_3_pada
  * @property Carbon|null $selesai_meja_4_pada
  * @property Carbon|null $selesai_meja_5_pada
+ * @property array<int|string, array<string, mixed>>|null $draf
+ * @property bool $perlu_ukur_ulang
+ * @property string|null $alasan_kembali
  */
 #[Table('kunjungan')]
 #[Fillable([
@@ -42,6 +45,7 @@ use Illuminate\Support\Carbon;
     'dibuka_oleh', 'dibuka_pada', 'masuk_meja_pada', 'ditunda_pada',
     'selesai_meja_1_pada', 'selesai_meja_2_pada', 'selesai_meja_3_pada',
     'selesai_meja_4_pada', 'selesai_meja_5_pada',
+    'draf', 'perlu_ukur_ulang', 'alasan_kembali',
 ])]
 class Kunjungan extends Model
 {
@@ -65,6 +69,8 @@ class Kunjungan extends Model
             'selesai_meja_3_pada' => 'datetime',
             'selesai_meja_4_pada' => 'datetime',
             'selesai_meja_5_pada' => 'datetime',
+            'draf' => 'array',
+            'perlu_ukur_ulang' => 'boolean',
         ];
     }
 

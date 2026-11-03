@@ -1,4 +1,4 @@
-import type { MejaAktif } from '@/types';
+import type { FlashToast, MejaAktif } from '@/types';
 import type { Auth } from '@/types/auth';
 
 declare module '@inertiajs/core' {
@@ -10,6 +10,9 @@ declare module '@inertiajs/core' {
             namaPosyandu: string | null;
             bolehKelolaAkun: boolean;
             [key: string]: unknown;
+        };
+        flashDataType: {
+            toast?: FlashToast;
         };
     }
 }
