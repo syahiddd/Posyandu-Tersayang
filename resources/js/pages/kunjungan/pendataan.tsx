@@ -12,6 +12,7 @@ import { Kartu } from '@/components/dasar/kartu';
 import { KontrolSegmen } from '@/components/dasar/kontrol-segmen';
 import { SheetBawah } from '@/components/dasar/sheet-bawah';
 import { Tombol } from '@/components/dasar/tombol';
+import { DetailDuaKolom } from '@/components/detail-dua-kolom';
 import { perubahan, teksKbm, teksPerubahan } from '@/lib/perbandingan';
 import { formatUmurBulan } from '@/lib/umur';
 import { kembalikan, lepas, pendataan, tunda } from '@/routes/kunjungan';
@@ -142,7 +143,7 @@ export default function Pendataan({
                     selebarPanel
                 />
 
-                <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-5 tablet:px-5 panel:mx-0 panel:px-6">
+                <div className="@container mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-5 tablet:px-5 panel:mx-0 panel:max-w-5xl panel:px-6">
                     {errors.kunjungan && (
                         <Banner varian="bahaya">{errors.kunjungan}</Banner>
                     )}
@@ -150,125 +151,147 @@ export default function Pendataan({
                         Hanya untuk dibaca. Salin ke Buku KIA.
                     </Banner>
 
-                    <Kartu aria-label="Hasil ukur hari ini">
-                        <dl className="divide-y divide-ink-200">
-                            {baris.map(
-                                ({ kunci, label, satuan, namaSatuan }) => {
-                                    const hasil = perubahan(
-                                        sekarang?.[kunci] ?? null,
-                                        sebelumnya?.[kunci] ?? null,
-                                    );
-                                    const teks =
-                                        hasil && sebelumnya
-                                            ? teksPerubahan(
-                                                  hasil,
-                                                  satuan,
-                                                  sebelumnya.tanggal,
-                                              )
-                                            : undefined;
+                    <DetailDuaKolom
+                        className="gap-4"
+                        kiri={
+                            <>
+                                <Kartu aria-label="Hasil ukur hari ini">
+                                    <dl className="divide-y divide-ink-200">
+                                        {baris.map(
+                                            ({
+                                                kunci,
+                                                label,
+                                                satuan,
+                                                namaSatuan,
+                                            }) => {
+                                                const hasil = perubahan(
+                                                    sekarang?.[kunci] ?? null,
+                                                    sebelumnya?.[kunci] ?? null,
+                                                );
+                                                const teks =
+                                                    hasil && sebelumnya
+                                                        ? teksPerubahan(
+                                                              hasil,
+                                                              satuan,
+                                                              sebelumnya.tanggal,
+                                                          )
+                                                        : undefined;
 
-                                    return (
-                                        <BarisNilai
-                                            key={kunci}
-                                            label={label}
-                                            nilai={sekarang?.[kunci] ?? null}
-                                            satuan={satuan}
-                                            namaSatuan={namaSatuan}
-                                            perubahan={teks}
-                                            perubahanSr={
-                                                hasil && sebelumnya
-                                                    ? hasil.arah === 'tetap'
-                                                        ? `tetap sejak ${sebelumnya.tanggal}`
-                                                        : `${hasil.arah} ${String(hasil.selisih).replace('.', ',')} ${namaSatuan} dari ${sebelumnya.tanggal}`
-                                                    : undefined
-                                            }
-                                        />
-                                    );
-                                },
-                            )}
-                        </dl>
-                        {!sebelumnya && (
-                            <p className="pb-2 text-kecil text-ink-700">
-                                Kunjungan pertama, belum ada perbandingan.
-                            </p>
-                        )}
-                    </Kartu>
-
-                    {status && penimbangan && (
-                        <Kartu aria-label="Status penimbangan">
-                            <div className="flex flex-wrap items-center gap-3">
-                                <ChipStatus varian={status.varian}>
-                                    {status.teks}
-                                </ChipStatus>
-                                {penimbangan.kenaikanGram !== null &&
-                                    penimbangan.kbmGram !== null && (
-                                        <span className="text-teks text-ink-900">
-                                            {teksKbm(
-                                                penimbangan.kenaikanGram,
-                                                penimbangan.kbmGram,
-                                            )}
-                                        </span>
+                                                return (
+                                                    <BarisNilai
+                                                        key={kunci}
+                                                        label={label}
+                                                        nilai={
+                                                            sekarang?.[kunci] ??
+                                                            null
+                                                        }
+                                                        satuan={satuan}
+                                                        namaSatuan={namaSatuan}
+                                                        perubahan={teks}
+                                                        perubahanSr={
+                                                            hasil && sebelumnya
+                                                                ? hasil.arah ===
+                                                                  'tetap'
+                                                                    ? `tetap sejak ${sebelumnya.tanggal}`
+                                                                    : `${hasil.arah} ${String(hasil.selisih).replace('.', ',')} ${namaSatuan} dari ${sebelumnya.tanggal}`
+                                                                : undefined
+                                                        }
+                                                    />
+                                                );
+                                            },
+                                        )}
+                                    </dl>
+                                    {!sebelumnya && (
+                                        <p className="pb-2 text-kecil text-ink-700">
+                                            Kunjungan pertama, belum ada
+                                            perbandingan.
+                                        </p>
                                     )}
-                            </div>
-                        </Kartu>
-                    )}
+                                </Kartu>
+                            </>
+                        }
+                        kanan={
+                            <>
+                                {status && penimbangan && (
+                                    <Kartu aria-label="Status penimbangan">
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            <ChipStatus varian={status.varian}>
+                                                {status.teks}
+                                            </ChipStatus>
+                                            {penimbangan.kenaikanGram !==
+                                                null &&
+                                                penimbangan.kbmGram !==
+                                                    null && (
+                                                    <span className="text-teks text-ink-900">
+                                                        {teksKbm(
+                                                            penimbangan.kenaikanGram,
+                                                            penimbangan.kbmGram,
+                                                        )}
+                                                    </span>
+                                                )}
+                                        </div>
+                                    </Kartu>
+                                )}
 
-                    {asi.isian ? (
-                        <KontrolSegmen
-                            label="ASI eksklusif"
-                            nama="asi_eksklusif"
-                            opsi={[
-                                { nilai: 'ya', label: 'Ya' },
-                                { nilai: 'tidak', label: 'Tidak' },
-                            ]}
-                            nilai={form.data.asi_eksklusif || null}
-                            onUbah={(nilai) =>
-                                form.setData('asi_eksklusif', nilai)
-                            }
-                            galat={form.errors.asi_eksklusif}
-                        />
-                    ) : (
-                        <Kartu>
-                            <p className="text-teks text-ink-900">
-                                <span className="font-bold">
-                                    ASI eksklusif:
-                                </span>{' '}
-                                {asi.terakhir
-                                    ? `${asi.terakhir.nilai ? 'Ya' : 'Tidak'} (tercatat ${asi.terakhir.tanggal}, saat 0–6 bulan)`
-                                    : 'Belum tercatat'}
-                            </p>
-                        </Kartu>
-                    )}
+                                {asi.isian ? (
+                                    <KontrolSegmen
+                                        label="ASI eksklusif"
+                                        nama="asi_eksklusif"
+                                        opsi={[
+                                            { nilai: 'ya', label: 'Ya' },
+                                            { nilai: 'tidak', label: 'Tidak' },
+                                        ]}
+                                        nilai={form.data.asi_eksklusif || null}
+                                        onUbah={(nilai) =>
+                                            form.setData('asi_eksklusif', nilai)
+                                        }
+                                        galat={form.errors.asi_eksklusif}
+                                    />
+                                ) : (
+                                    <Kartu>
+                                        <p className="text-teks text-ink-900">
+                                            <span className="font-bold">
+                                                ASI eksklusif:
+                                            </span>{' '}
+                                            {asi.terakhir
+                                                ? `${asi.terakhir.nilai ? 'Ya' : 'Tidak'} (tercatat ${asi.terakhir.tanggal}, saat 0–6 bulan)`
+                                                : 'Belum tercatat'}
+                                        </p>
+                                    </Kartu>
+                                )}
 
-                    <div className="flex justify-center">
-                        <Tombol
-                            varian="tersier"
-                            onClick={() => setSheetKembali(true)}
-                        >
-                            Data keliru? Kembalikan ke Meja 2
-                        </Tombol>
-                    </div>
+                                <div className="flex justify-center">
+                                    <Tombol
+                                        varian="tersier"
+                                        onClick={() => setSheetKembali(true)}
+                                    >
+                                        Data keliru? Kembalikan ke Meja 2
+                                    </Tombol>
+                                </div>
 
-                    <KakiTombol denganNavigasi={false}>
-                        <Tombol
-                            varian="sekunder"
-                            className="shrink-0"
-                            onClick={() =>
-                                router.post(tunda.url(anak.id), {
-                                    draf: form.data,
-                                })
-                            }
-                        >
-                            Tunda
-                        </Tombol>
-                        <Tombol
-                            type="submit"
-                            lebarPenuh
-                            memuat={form.processing}
-                        >
-                            Sudah disalin ke KIA
-                        </Tombol>
-                    </KakiTombol>
+                                <KakiTombol denganNavigasi={false}>
+                                    <Tombol
+                                        varian="sekunder"
+                                        className="shrink-0"
+                                        onClick={() =>
+                                            router.post(tunda.url(anak.id), {
+                                                draf: form.data,
+                                            })
+                                        }
+                                    >
+                                        Tunda
+                                    </Tombol>
+                                    <Tombol
+                                        type="submit"
+                                        lebarPenuh
+                                        memuat={form.processing}
+                                    >
+                                        Sudah disalin ke KIA
+                                    </Tombol>
+                                </KakiTombol>
+                            </>
+                        }
+                    />
                 </div>
             </form>
 

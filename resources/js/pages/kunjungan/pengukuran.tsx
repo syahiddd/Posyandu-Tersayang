@@ -8,6 +8,7 @@ import { KakiTombol } from '@/components/dasar/kaki-tombol';
 import { KontrolSegmen } from '@/components/dasar/kontrol-segmen';
 import { RingkasanGalat } from '@/components/dasar/ringkasan-galat';
 import { Tombol } from '@/components/dasar/tombol';
+import { DetailDuaKolom } from '@/components/detail-dua-kolom';
 import { formatDesimal } from '@/lib/desimal';
 import { periksaUkur, peringatanPerubahan } from '@/lib/pengukuran';
 import type { JenisUkur } from '@/lib/pengukuran';
@@ -154,7 +155,7 @@ export default function Pengukuran({
                     selebarPanel
                 />
 
-                <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-5 px-4 pt-5 tablet:px-5 panel:mx-0 panel:px-6">
+                <div className="@container mx-auto flex w-full max-w-2xl flex-1 flex-col gap-5 px-4 pt-5 tablet:px-5 panel:mx-0 panel:max-w-5xl panel:px-6">
                     {galatServer.kunjungan && (
                         <Banner varian="bahaya">{galatServer.kunjungan}</Banner>
                     )}
@@ -187,91 +188,117 @@ export default function Pengukuran({
                         </p>
                     )}
 
-                    <IsianAngka
-                        id="isian-bb"
-                        name="bb"
-                        label="Berat badan"
-                        satuan="kg"
-                        wajib
-                        nilai={form.data.bb}
-                        onUbah={(nilai) => form.setData('bb', nilai)}
-                        onBlur={() => periksa('bb')}
-                        nilaiLalu={nilaiLalu('bb', 'kg')}
-                        galat={galat('bb')}
-                    />
+                    <DetailDuaKolom
+                        className="gap-5"
+                        kiri={
+                            <>
+                                <IsianAngka
+                                    id="isian-bb"
+                                    name="bb"
+                                    label="Berat badan"
+                                    satuan="kg"
+                                    wajib
+                                    nilai={form.data.bb}
+                                    onUbah={(nilai) =>
+                                        form.setData('bb', nilai)
+                                    }
+                                    onBlur={() => periksa('bb')}
+                                    nilaiLalu={nilaiLalu('bb', 'kg')}
+                                    galat={galat('bb')}
+                                />
 
-                    <div className="flex flex-col gap-3">
-                        <IsianAngka
-                            id="isian-pb_tb"
-                            name="pb_tb"
-                            label={labelPbTb}
-                            satuan="cm"
-                            wajib
-                            nilai={form.data.pb_tb}
-                            onUbah={(nilai) => form.setData('pb_tb', nilai)}
-                            onBlur={() => periksa('pb_tb')}
-                            nilaiLalu={nilaiLalu('pb_tb', 'cm')}
-                            galat={galat('pb_tb')}
-                        />
-                        <KontrolSegmen
-                            id="isian-cara_ukur"
-                            label="Cara ukur"
-                            nama="cara_ukur"
-                            opsi={[
-                                { nilai: 'telentang', label: 'Telentang' },
-                                { nilai: 'berdiri', label: 'Berdiri' },
-                            ]}
-                            nilai={form.data.cara_ukur}
-                            onUbah={(nilai) => form.setData('cara_ukur', nilai)}
-                            galat={galat('cara_ukur')}
-                        />
-                    </div>
+                                <div className="flex flex-col gap-3">
+                                    <IsianAngka
+                                        id="isian-pb_tb"
+                                        name="pb_tb"
+                                        label={labelPbTb}
+                                        satuan="cm"
+                                        wajib
+                                        nilai={form.data.pb_tb}
+                                        onUbah={(nilai) =>
+                                            form.setData('pb_tb', nilai)
+                                        }
+                                        onBlur={() => periksa('pb_tb')}
+                                        nilaiLalu={nilaiLalu('pb_tb', 'cm')}
+                                        galat={galat('pb_tb')}
+                                    />
+                                    <KontrolSegmen
+                                        id="isian-cara_ukur"
+                                        label="Cara ukur"
+                                        nama="cara_ukur"
+                                        opsi={[
+                                            {
+                                                nilai: 'telentang',
+                                                label: 'Telentang',
+                                            },
+                                            {
+                                                nilai: 'berdiri',
+                                                label: 'Berdiri',
+                                            },
+                                        ]}
+                                        nilai={form.data.cara_ukur}
+                                        onUbah={(nilai) =>
+                                            form.setData('cara_ukur', nilai)
+                                        }
+                                        galat={galat('cara_ukur')}
+                                    />
+                                </div>
+                            </>
+                        }
+                        kanan={
+                            <>
+                                <IsianAngka
+                                    id="isian-lila"
+                                    name="lila"
+                                    label="Lingkar lengan atas"
+                                    satuan="cm"
+                                    dianjurkan
+                                    nilai={form.data.lila}
+                                    onUbah={(nilai) =>
+                                        form.setData('lila', nilai)
+                                    }
+                                    onBlur={() => periksa('lila')}
+                                    nilaiLalu={nilaiLalu('lila', 'cm')}
+                                    galat={galat('lila')}
+                                />
+                                <IsianAngka
+                                    id="isian-lk"
+                                    name="lk"
+                                    label="Lingkar kepala"
+                                    satuan="cm"
+                                    dianjurkan
+                                    nilai={form.data.lk}
+                                    onUbah={(nilai) =>
+                                        form.setData('lk', nilai)
+                                    }
+                                    onBlur={() => periksa('lk')}
+                                    nilaiLalu={nilaiLalu('lk', 'cm')}
+                                    galat={galat('lk')}
+                                />
 
-                    <IsianAngka
-                        id="isian-lila"
-                        name="lila"
-                        label="Lingkar lengan atas"
-                        satuan="cm"
-                        dianjurkan
-                        nilai={form.data.lila}
-                        onUbah={(nilai) => form.setData('lila', nilai)}
-                        onBlur={() => periksa('lila')}
-                        nilaiLalu={nilaiLalu('lila', 'cm')}
-                        galat={galat('lila')}
+                                <KakiTombol denganNavigasi={false}>
+                                    <Tombol
+                                        varian="sekunder"
+                                        className="shrink-0"
+                                        onClick={() =>
+                                            router.post(tunda.url(anak.id), {
+                                                draf: form.data,
+                                            })
+                                        }
+                                    >
+                                        Tunda
+                                    </Tombol>
+                                    <Tombol
+                                        type="submit"
+                                        lebarPenuh
+                                        memuat={form.processing}
+                                    >
+                                        Simpan · ke Meja 3
+                                    </Tombol>
+                                </KakiTombol>
+                            </>
+                        }
                     />
-                    <IsianAngka
-                        id="isian-lk"
-                        name="lk"
-                        label="Lingkar kepala"
-                        satuan="cm"
-                        dianjurkan
-                        nilai={form.data.lk}
-                        onUbah={(nilai) => form.setData('lk', nilai)}
-                        onBlur={() => periksa('lk')}
-                        nilaiLalu={nilaiLalu('lk', 'cm')}
-                        galat={galat('lk')}
-                    />
-
-                    <KakiTombol denganNavigasi={false}>
-                        <Tombol
-                            varian="sekunder"
-                            className="shrink-0"
-                            onClick={() =>
-                                router.post(tunda.url(anak.id), {
-                                    draf: form.data,
-                                })
-                            }
-                        >
-                            Tunda
-                        </Tombol>
-                        <Tombol
-                            type="submit"
-                            lebarPenuh
-                            memuat={form.processing}
-                        >
-                            Simpan · ke Meja 3
-                        </Tombol>
-                    </KakiTombol>
                 </div>
             </form>
         </>
