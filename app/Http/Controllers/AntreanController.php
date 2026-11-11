@@ -42,19 +42,40 @@ class AntreanController extends Controller
         return redirect()->route('kunjungan.layar', $kunjungan);
     }
 
+    /**
+     * Kembali ke antrean tanpa menyimpan. Dengan `buka`, anak lain di meja
+     * yang sama langsung dibuka (kolom antrean tablet/desktop, DESIGN bab 9).
+     */
     public function lepas(Request $request, Kunjungan $kunjungan): RedirectResponse
     {
+        $berikutnya = $this->berikutnya($request, $kunjungan);
         $this->antrean->lepas($kunjungan, $request->user());
 
-        return redirect()->route('meja', $kunjungan->meja_saat_ini->value);
+        return $berikutnya
+            ? $this->bukaBerikutnya($request, $berikutnya)
+            : redirect()->route('meja', $kunjungan->meja_saat_ini->value);
     }
 
+    /**
+     * Menunda anak (FR-47). Dengan `buka`, anak lain di meja yang sama
+     * langsung dibuka setelah kader menyetujui dialog di kolom antrean;
+     * pada alur itu notifikasi tanpa Batal agar kader tidak memegang dua
+     * anak sekaligus.
+     */
     public function tunda(Request $request, Kunjungan $kunjungan): RedirectResponse
     {
         $data = $request->validate(['draf' => ['nullable', 'array']]);
+        $berikutnya = $this->berikutnya($request, $kunjungan);
 
         $sebelum = Urungan::potret($kunjungan);
         $this->antrean->tunda($kunjungan, $request->user(), $data['draf'] ?? []);
+
+        if ($berikutnya) {
+            Inertia::flash('toast', ['pesan' => "{$kunjungan->anak->nama} ditunda"]);
+
+            return $this->bukaBerikutnya($request, $berikutnya);
+        }
+
         Urungan::catat($request, $kunjungan, $sebelum);
 
         Inertia::flash('toast', [
@@ -63,6 +84,39 @@ class AntreanController extends Controller
         ]);
 
         return redirect()->route('meja', $kunjungan->meja_saat_ini->value);
+    }
+
+    /**
+     * Anak yang diminta dibuka sesudahnya: kunjungan lain hari ini di meja
+     * yang sama. Diperiksa sebelum anak sekarang dilepas atau ditunda.
+     */
+    private function berikutnya(Request $request, Kunjungan $kunjungan): ?Kunjungan
+    {
+        $request->validate(['buka' => ['nullable', 'integer']]);
+
+        if (! $request->filled('buka')) {
+            return null;
+        }
+
+        $berikutnya = Kunjungan::query()->hariIni()->whereKey($request->integer('buka'))->first();
+
+        if ($berikutnya === null || $berikutnya->is($kunjungan) || $berikutnya->meja_saat_ini !== $kunjungan->meja_saat_ini) {
+            throw ValidationException::withMessages(['kunjungan' => 'Anak itu tidak ada di antrean meja ini.']);
+        }
+
+        return $berikutnya;
+    }
+
+    /** Bila anak berikutnya sudah dibuka kader lain, kader kembali ke antrean dengan pesan. */
+    private function bukaBerikutnya(Request $request, Kunjungan $berikutnya): RedirectResponse
+    {
+        try {
+            $this->antrean->buka($berikutnya, $request->user());
+        } catch (ValidationException $galat) {
+            return redirect()->route('meja', $berikutnya->meja_saat_ini->value)->withErrors($galat->errors());
+        }
+
+        return redirect()->route('kunjungan.layar', $berikutnya);
     }
 
     public function lanjutkan(Kunjungan $kunjungan): RedirectResponse

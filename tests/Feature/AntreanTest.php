@@ -256,3 +256,54 @@ test('layar anak membawa antrean mejanya untuk kolom antrean tablet/desktop (DES
         ->where('antreanMeja.antrean.0.terkunci', false)
         ->where('antreanMeja.antrean.1.id', $lain->id));
 });
+
+test('dari kolom antrean: Tunda lalu buka anak lain menyimpan draf dan memindahkan kunci (DESIGN bab 9, FR-47)', function () {
+    $sekarang = Kunjungan::factory()->diMeja(Meja::Pengukuran)->create(['nomor_antrean' => 1]);
+    $lain = Kunjungan::factory()->diMeja(Meja::Pengukuran)->create(['nomor_antrean' => 2]);
+    $dewi = kader();
+    $this->post(route('kunjungan.buka', $sekarang));
+
+    $this->post(route('kunjungan.tunda', $sekarang), ['draf' => ['bb' => '8,5'], 'buka' => $lain->id])
+        ->assertRedirect(route('kunjungan.layar', $lain))
+        ->assertSessionMissing('urungan');
+
+    expect($sekarang->fresh())
+        ->status->toBe(StatusAntrean::Ditunda)
+        ->draf->toBe(['2' => ['bb' => '8,5']])
+        ->dibuka_oleh->toBeNull()
+        ->and($lain->fresh())
+        ->status->toBe(StatusAntrean::SedangDilayani)
+        ->dibuka_oleh->toBe($dewi->id);
+});
+
+test('dari kolom antrean: tanpa perubahan isian, anak sekarang dilepas lalu anak lain dibuka', function () {
+    $sekarang = Kunjungan::factory()->diMeja(Meja::Pengukuran)->create(['nomor_antrean' => 1]);
+    $lain = Kunjungan::factory()->diMeja(Meja::Pengukuran)->create(['nomor_antrean' => 2]);
+    $dewi = kader();
+    $this->post(route('kunjungan.buka', $sekarang));
+
+    $this->post(route('kunjungan.lepas', $sekarang), ['buka' => $lain->id])
+        ->assertRedirect(route('kunjungan.layar', $lain));
+
+    expect($sekarang->fresh()->status)->toBe(StatusAntrean::Menunggu)
+        ->and($lain->fresh()->dibuka_oleh)->toBe($dewi->id);
+});
+
+test('anak berikutnya di meja lain ditolak tanpa mengubah anak sekarang; yang dibuka kader lain kembali ke antrean', function () {
+    $sekarang = Kunjungan::factory()->diMeja(Meja::Pengukuran)->create(['nomor_antrean' => 1]);
+    $mejaLain = Kunjungan::factory()->diMeja(Meja::Pendataan)->create(['nomor_antrean' => 2]);
+    $dipegang = Kunjungan::factory()->diMeja(Meja::Pengukuran)->create(['nomor_antrean' => 3]);
+    kader();
+    $this->post(route('kunjungan.buka', $dipegang));
+    $dewi = kader();
+    $this->post(route('kunjungan.buka', $sekarang));
+
+    $this->post(route('kunjungan.tunda', $sekarang), ['buka' => $mejaLain->id])
+        ->assertSessionHasErrors(['kunjungan' => 'Anak itu tidak ada di antrean meja ini.']);
+    expect($sekarang->fresh()->dibuka_oleh)->toBe($dewi->id);
+
+    $this->post(route('kunjungan.lepas', $sekarang), ['buka' => $dipegang->id])
+        ->assertRedirect(route('meja', 2))
+        ->assertSessionHasErrors(['kunjungan' => 'Anak ini sedang dilayani kader lain.']);
+    expect($sekarang->fresh()->status)->toBe(StatusAntrean::Menunggu);
+});

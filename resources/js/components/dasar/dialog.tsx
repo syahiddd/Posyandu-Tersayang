@@ -3,8 +3,9 @@ import type { ReactNode } from 'react';
 import { Tombol } from './tombol';
 
 /**
- * Dialog konfirmasi (DESIGN bab 7): hanya untuk tindakan permanen; tombol
- * Bahaya di kanan, Batal di kiri. Memakai <dialog> bawaan dengan
+ * Dialog konfirmasi (DESIGN bab 7): untuk tindakan permanen dengan tombol
+ * Bahaya di kanan, Batal di kiri. Varian `utama` untuk konfirmasi yang
+ * bukan penghapusan (pindah anak dari kolom antrean, bab 9). Memakai <dialog> bawaan dengan
  * showModal() sehingga fokus terkunci, Esc menutup, dan fokus kembali ke
  * tombol pembuka (DESIGN 10.3, 10.4).
  */
@@ -18,6 +19,7 @@ export function Dialog({
     memuat = false,
     teksMemuat = 'Menghapus…',
     onKonfirmasi,
+    varianKonfirmasi = 'bahaya',
 }: {
     terbuka: boolean;
     onTutup: () => void;
@@ -29,6 +31,7 @@ export function Dialog({
     memuat?: boolean;
     teksMemuat?: string;
     onKonfirmasi: () => void;
+    varianKonfirmasi?: 'bahaya' | 'utama';
 }) {
     const idJudul = useId();
     const ref = useRef<HTMLDialogElement>(null);
@@ -85,7 +88,7 @@ export function Dialog({
                         </Tombol>
                         <Tombol
                             type="submit"
-                            varian="bahaya"
+                            varian={varianKonfirmasi}
                             lebarPenuh
                             disabled={!bolehKonfirmasi}
                             memuat={memuat}

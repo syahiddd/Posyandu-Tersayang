@@ -30,10 +30,13 @@ export type AntreanMeja = {
 export function PanelAntrean({
     antreanMeja,
     kunjunganAktif = null,
+    onPilih,
 }: {
     antreanMeja: AntreanMeja;
     /** Id kunjungan yang sedang dibuka; null di layar antrean. */
     kunjunganAktif?: number | null;
+    /** Di samping layar anak: memindahkan kader ke anak lain (bab 9). */
+    onPilih?: (anak: KartuAntrean) => void;
 }) {
     const { nomor, tahap, tersedia, antrean, ditunda } = antreanMeja;
     const { errors } = usePage().props;
@@ -131,7 +134,20 @@ export function PanelAntrean({
 
                             return (
                                 <li key={anak.id}>
-                                    {bisaDibuka ? (
+                                    {bisaDibuka && onPilih ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => onPilih(anak)}
+                                            aria-label={labelKartuAnak(anak)}
+                                            className="block w-full cursor-pointer rounded-md"
+                                        >
+                                            <KartuAnak
+                                                anak={anak}
+                                                sekarang={sekarang}
+                                                ringkasDiKolom
+                                            />
+                                        </button>
+                                    ) : bisaDibuka ? (
                                         <Link
                                             href={buka(anak.id)}
                                             as="button"

@@ -13,6 +13,7 @@ import { KontrolSegmen } from '@/components/dasar/kontrol-segmen';
 import { SheetBawah } from '@/components/dasar/sheet-bawah';
 import { Tombol } from '@/components/dasar/tombol';
 import { DetailDuaKolom } from '@/components/detail-dua-kolom';
+import { useDaftarLayarAnak } from '@/hooks/use-layar-anak';
 import { perubahan, teksKbm, teksPerubahan } from '@/lib/perbandingan';
 import { formatUmurBulan } from '@/lib/umur';
 import { kembalikan, lepas, pendataan, tunda } from '@/routes/kunjungan';
@@ -61,6 +62,11 @@ export default function Pendataan({
     const { errors } = usePage().props;
     const form = useForm<{ asi_eksklusif: 'ya' | 'tidak' | '' }>({
         asi_eksklusif: asi.nilai === null ? '' : asi.nilai ? 'ya' : 'tidak',
+    });
+    // Kolom antrean (bab 9) menanyakan isian ini sebelum pindah anak.
+    useDaftarLayarAnak({
+        adaPerubahan: () => form.isDirty,
+        draf: () => form.data,
     });
     const formKembali = useForm({ alasan: '' });
     const [sheetKembali, setSheetKembali] = useState(false);

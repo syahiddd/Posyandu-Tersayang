@@ -9,6 +9,7 @@ import { KontrolSegmen } from '@/components/dasar/kontrol-segmen';
 import { RingkasanGalat } from '@/components/dasar/ringkasan-galat';
 import { Tombol } from '@/components/dasar/tombol';
 import { DetailDuaKolom } from '@/components/detail-dua-kolom';
+import { useDaftarLayarAnak } from '@/hooks/use-layar-anak';
 import { formatDesimal } from '@/lib/desimal';
 import { periksaUkur, peringatanPerubahan } from '@/lib/pengukuran';
 import type { JenisUkur } from '@/lib/pengukuran';
@@ -56,6 +57,11 @@ export default function Pengukuran({
         cara_ukur: nilaiAwal?.cara_ukur ?? caraUkurBawaan,
         lila: nilaiAwal?.lila ?? '',
         lk: nilaiAwal?.lk ?? '',
+    });
+    // Kolom antrean (bab 9) menanyakan isian ini sebelum pindah anak.
+    useDaftarLayarAnak({
+        adaPerubahan: () => form.isDirty,
+        draf: () => form.data,
     });
     const [galatLokal, setGalatLokal] = useState<
         Partial<Record<keyof Nilai, string | null>>
