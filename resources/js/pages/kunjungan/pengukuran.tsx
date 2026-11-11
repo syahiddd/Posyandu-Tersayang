@@ -151,9 +151,10 @@ export default function Pengukuran({
                     jenisKelamin={anak.jenisKelamin}
                     meja={2}
                     kembali={lepas(anak.id)}
+                    selebarPanel
                 />
 
-                <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-5 px-4 pt-5 tablet:px-5">
+                <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-5 px-4 pt-5 tablet:px-5 panel:mx-0 panel:px-6">
                     {galatServer.kunjungan && (
                         <Banner varian="bahaya">{galatServer.kunjungan}</Banner>
                     )}
@@ -271,7 +272,7 @@ export default function Pengukuran({
                             Simpan · ke Meja 3
                         </Tombol>
                     </KakiTombol>
-                </main>
+                </div>
             </form>
         </>
     );

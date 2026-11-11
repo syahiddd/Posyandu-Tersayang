@@ -139,9 +139,10 @@ export default function Pendataan({
                     jenisKelamin={anak.jenisKelamin}
                     meja={3}
                     kembali={lepas(anak.id)}
+                    selebarPanel
                 />
 
-                <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-5 tablet:px-5">
+                <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-5 tablet:px-5 panel:mx-0 panel:px-6">
                     {errors.kunjungan && (
                         <Banner varian="bahaya">{errors.kunjungan}</Banner>
                     )}
@@ -268,7 +269,7 @@ export default function Pendataan({
                             Sudah disalin ke KIA
                         </Tombol>
                     </KakiTombol>
-                </main>
+                </div>
             </form>
 
             <SheetBawah

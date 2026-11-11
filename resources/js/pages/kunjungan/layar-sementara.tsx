@@ -28,8 +28,9 @@ export default function LayarSementara({
                     jenisKelamin={anak.jenisKelamin}
                     meja={anak.meja}
                     kembali={lepas(anak.id)}
+                    selebarPanel
                 />
-                <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-5 tablet:px-5">
+                <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-5 tablet:px-5 panel:mx-0 panel:px-6">
                     <Banner varian="info" judul="Belum tersedia">
                         Isian Meja {anak.meja} ({tahap}) dikerjakan pada fase
                         berikutnya.
@@ -43,7 +44,7 @@ export default function LayarSementara({
                             Tunda
                         </Tombol>
                     </KakiTombol>
-                </main>
+                </div>
             </div>
         </>
     );

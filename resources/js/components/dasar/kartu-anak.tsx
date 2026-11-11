@@ -29,11 +29,17 @@ export function KartuAnak({
     anak,
     sekarang,
     redup = false,
+    aktif = false,
+    ringkasDiKolom = false,
     keterangan,
 }: {
     anak: KartuAntrean;
     sekarang: Date;
     redup?: boolean;
+    /** Anak yang sedang dibuka di kolom antrean (DESIGN Gambar 10). */
+    aktif?: boolean;
+    /** Di kolom antrean 300–320 px (bab 9) nama ibu disembunyikan. */
+    ringkasDiKolom?: boolean;
     /** Baris tambahan, misalnya lama ditunda. */
     keterangan?: ReactNode;
 }) {
@@ -47,6 +53,7 @@ export function KartuAnak({
                     ? 'border-ink-200 border-l-boy-700 bg-boy-50'
                     : 'border-ink-200 border-l-girl-700 bg-girl-50',
                 redup && 'opacity-70',
+                aktif && 'outline-2 outline-ink-900',
             )}
         >
             <span
@@ -59,12 +66,22 @@ export function KartuAnak({
                 {inisial(anak.nama)}
             </span>
             <span className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="truncate text-teks font-bold text-ink-900">
+                <span
+                    className={clsx(
+                        'truncate text-teks font-bold text-ink-900',
+                        ringkasDiKolom &&
+                            'panel:line-clamp-2 panel:whitespace-normal',
+                    )}
+                >
                     {anak.nama}
                 </span>
                 <span className="text-kecil text-ink-700">
                     {laki ? 'Laki-laki' : 'Perempuan'} ·{' '}
-                    {formatUmurBulan(anak.umurBulan)} · Ibu: {anak.namaIbu}
+                    {formatUmurBulan(anak.umurBulan)}
+                    <span className={clsx(ringkasDiKolom && 'panel:hidden')}>
+                        {' '}
+                        · Ibu: {anak.namaIbu}
+                    </span>
                 </span>
                 {anak.terkunci && anak.dibukaOleh && anak.dibukaPada && (
                     <span className="text-kecil font-bold text-ink-700">

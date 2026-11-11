@@ -144,6 +144,10 @@
     /* Bab 9: ponsel < 600 px, tablet 600–1023 px, desktop ≥ 1024 px */
     --breakpoint-*: initial;
     --breakpoint-tablet: 600px;
+    /* Kolom antrean di samping layar anak muncul saat formulir masih
+       mendapat >= 360 px: rel 96 + antrean 320 + 360 (keputusan pemilik
+       produk; 600 px terlalu sempit untuk dua panel). */
+    --breakpoint-panel: 776px;
     --breakpoint-desktop: 1024px;
 }
 

@@ -24,13 +24,19 @@ import {
  * Tata letak setelah masuk (DESIGN bab 9, PRD 8.2): navigasi bawah di
  * ponsel, rel samping di tablet, sidebar 232 px di desktop. Margin tepi
  * 16/24/32 px. Tautan "Lewati ke konten" pertama kali difokus (bab 10.3).
+ *
+ * Layar meja (antrean dan layar anak) mengatur margin sendiri lewat
+ * TataLetakMeja; layar anak di ponsel penuh tanpa navigasi bawah.
  */
 export default function TataLetakAplikasi({
     children,
 }: {
     children: ReactNode;
 }) {
-    const { url, props } = usePage();
+    const { url, props, component } = usePage();
+    const layarMeja =
+        component === 'meja/antrean' || component.startsWith('kunjungan/');
+    const layarAnak = component.startsWith('kunjungan/');
     const { mejaAktif, namaPosyandu, bolehKelolaAkun, name } = props;
     const path = url.split('?')[0];
     const aktif = (href: string) => path === href;
@@ -39,7 +45,7 @@ export default function TataLetakAplikasi({
         aktif(href) || path.startsWith(`${href}/`);
 
     const urlMeja = mejaAktif ? meja(mejaAktif.nomor).url : pilihMeja().url;
-    const diMeja = path.startsWith('/meja/');
+    const diMeja = path.startsWith('/meja/') || layarAnak;
     const diLainnya = [
         lainnya(),
         rekapImunisasi(),
@@ -138,11 +144,15 @@ export default function TataLetakAplikasi({
                 }
             />
             <NavigasiRel item={itemUtama} />
-            <NavigasiBawah item={itemUtama} />
+            {!layarAnak && <NavigasiBawah item={itemUtama} />}
 
             <main
                 id="konten"
-                className="flex min-h-dvh flex-col px-4 pt-5 pb-19 tablet:pr-5 tablet:pb-0 tablet:pl-30 desktop:pt-6 desktop:pr-6 desktop:pb-6 desktop:pl-66"
+                className={
+                    layarMeja
+                        ? 'flex min-h-dvh flex-col tablet:pl-24 desktop:pl-sidebar'
+                        : 'flex min-h-dvh flex-col px-4 pt-5 pb-19 tablet:pr-5 tablet:pb-0 tablet:pl-30 desktop:pt-6 desktop:pr-6 desktop:pb-6 desktop:pl-66'
+                }
             >
                 {children}
             </main>

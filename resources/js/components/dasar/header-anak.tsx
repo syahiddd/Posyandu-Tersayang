@@ -16,6 +16,7 @@ export function HeaderAnak({
     meja,
     kembali,
     kembaliLewatPost = true,
+    selebarPanel = false,
 }: {
     nama: string;
     keterangan?: string;
@@ -25,6 +26,8 @@ export function HeaderAnak({
     kembali: NonNullable<InertiaLinkProps['href']>;
     /** Kembali dari layar anak melepas kunci (POST); dari formulir cukup GET. */
     kembaliLewatPost?: boolean;
+    /** Layar anak di samping kolom antrean: header selebar area detail (bab 9). */
+    selebarPanel?: boolean;
 }) {
     const berwarna = jenisKelamin !== null;
 
@@ -37,7 +40,12 @@ export function HeaderAnak({
                 !berwarna && 'border-b border-ink-200 bg-white text-ink-900',
             )}
         >
-            <div className="mx-auto flex w-full max-w-2xl flex-col gap-2 px-4 pt-2 pb-4 tablet:px-5">
+            <div
+                className={clsx(
+                    'mx-auto flex w-full max-w-2xl flex-col gap-2 px-4 pt-2 pb-4 tablet:px-5',
+                    selebarPanel && 'panel:mx-0 panel:max-w-none panel:px-6',
+                )}
+            >
                 <div className="flex items-center justify-between gap-3">
                     <Link
                         href={kembali}
