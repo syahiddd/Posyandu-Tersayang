@@ -4,8 +4,10 @@ import { ChipPenyaring } from '@/components/dasar/chip-penyaring';
 import { IsianTeks } from '@/components/dasar/isian-teks';
 import { TileAngka } from '@/components/dasar/tile-angka';
 import { Tombol, TombolTautan } from '@/components/dasar/tombol';
+import { TombolUnduhCsv } from '@/components/tombol-unduh-csv';
 import { meja, rekapImunisasi } from '@/routes';
 import { detail } from '@/routes/data-anak';
+import { unduh } from '@/routes/rekap-imunisasi';
 import type { JenisKelamin } from '@/types';
 
 type Penyaring = {
@@ -50,7 +52,8 @@ function parameter(penyaring: Penyaring) {
  * S18 Rekapitulasi Imunisasi (FR-55, FR-56; DESIGN 6.5 dan bab 9):
  * penyaring periode, jenis vaksin, dusun; tile cakupan per vaksin; tabel
  * anak × vaksin yang digulir horizontal di dalam kartunya dengan kolom
- * nama tetap. Riwayat dari Buku KIA diberi label teks (FR-66).
+ * nama tetap. Riwayat dari Buku KIA diberi label teks (FR-66). Unduh CSV
+ * mengikuti penyaring aktif (FR-58).
  */
 export default function RekapImunisasi({
     penyaring,
@@ -85,6 +88,12 @@ export default function RekapImunisasi({
                     <h1 className="text-judul-1 text-ink-900">
                         Rekapitulasi Imunisasi
                     </h1>
+                    {adaAnak && (
+                        <TombolUnduhCsv
+                            url={unduh.url({ query: parameter(penyaring) })}
+                            kosong={galatPeriode !== null || baris.length === 0}
+                        />
+                    )}
                 </header>
 
                 <div className="flex flex-col gap-3 desktop:max-w-3xl">

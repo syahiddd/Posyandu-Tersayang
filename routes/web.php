@@ -95,8 +95,9 @@ Route::middleware('auth')->group(function () {
         Route::get('data-posyandu/ubah', [DataPosyanduController::class, 'edit'])->name('data-posyandu.ubah');
         Route::put('data-posyandu', [DataPosyanduController::class, 'update'])->name('data-posyandu.perbarui');
 
-        // S18 Rekapitulasi Imunisasi (PRD 4.10, FR-55, FR-56).
+        // S18 Rekapitulasi Imunisasi (PRD 4.10, FR-55, FR-56, FR-58).
         Route::get('rekap-imunisasi', [RekapImunisasiController::class, 'index'])->name('rekap-imunisasi');
+        Route::get('rekap-imunisasi/unduh', [RekapImunisasiController::class, 'unduh'])->name('rekap-imunisasi.unduh');
 
         // Kader mengganti kata sandinya sendiri.
         Route::get('ganti-sandi', [GantiSandiController::class, 'edit'])->name('ganti-sandi');

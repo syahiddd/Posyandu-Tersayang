@@ -2,20 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Ekspor\BerkasCsv;
 use App\Models\Anak;
 use App\Rekap\RekapImunisasi;
 use App\Support\Tanggal;
 use App\Support\Umur;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * S18 Rekapitulasi Imunisasi (PRD 4.10, DESIGN 6.5): penyaring periode,
  * jenis vaksin, dan dusun; tile cakupan per vaksin; tabel anak × vaksin
- * (FR-55, FR-56). Penandaan imunisasi terlambat (FR-57) menunggu tabel
- * Pelayanan Imunisasi Buku KIA.
+ * (FR-55, FR-56) dan unduh CSV (FR-58). Penandaan imunisasi terlambat
+ * (FR-57) menunggu tabel Pelayanan Imunisasi Buku KIA.
  */
 class RekapImunisasiController extends Controller
 {
@@ -57,6 +60,37 @@ class RekapImunisasiController extends Controller
                 ])
                 ->values(),
         ]);
+    }
+
+    /**
+     * Unduh CSV sesuai penyaring aktif (FR-58, PRD 7.3): satu kolom per
+     * dosis berisi tanggal pemberian, lalu baris jumlah anak per dosis.
+     */
+    public function unduh(Request $request): StreamedResponse|JsonResponse
+    {
+        $penyaring = $this->penyaring($request);
+        $rekap = $penyaring['galat'] === null ? $this->rekap($penyaring) : null;
+        $baris = $rekap?->baris() ?? [];
+
+        if ($rekap === null || $baris === []) {
+            return response()->json(['pesan' => 'Tidak ada data untuk penyaring ini.'], 422);
+        }
+
+        $kolom = $rekap->kolom();
+        $isi = array_map(fn (array $satu) => [
+            $satu['anak']->nama,
+            BerkasCsv::teks($satu['anak']->nik),
+            $satu['anak']->jenis_kelamin->label(),
+            BerkasCsv::tanggal($satu['anak']->tanggal_lahir),
+            $satu['anak']->dusun,
+            ...array_values(array_map(fn (?array $sel) => BerkasCsv::tanggal($sel['tanggal'] ?? null), $satu['sel'])),
+        ], $baris);
+        $isi[] = ['Jumlah anak', '', '', '', '', ...array_values($rekap->jumlahPerDosis($baris))];
+
+        return BerkasCsv::unduh('rekap-imunisasi', [
+            'Nama', 'NIK', 'Jenis Kelamin', 'Tanggal Lahir', 'Dusun',
+            ...array_keys($kolom),
+        ], $isi);
     }
 
     /**

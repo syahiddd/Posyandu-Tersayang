@@ -143,3 +143,47 @@ test('penyaring tidak sah diabaikan; sampai sebelum dari ditolak dengan pesan', 
         ->where('galatPeriode', 'Tanggal sampai tidak boleh sebelum tanggal dari.')
         ->where('baris', []));
 });
+
+test('unduh CSV rekap sesuai PRD 7.3: BOM, titik koma, DD/MM/YYYY, NIK teks, baris jumlah (FR-58)', function () {
+    $nayla = Anak::factory()->perempuan()->create([
+        'nama' => 'Nayla',
+        'nik' => '1871010101010042',
+        'tanggal_lahir' => '2026-01-10',
+        'dusun' => 'Melati',
+    ]);
+    Anak::factory()->lakiLaki()->create([
+        'nama' => 'Raka',
+        'nik' => null,
+        'tanggal_lahir' => '2026-02-01',
+        'dusun' => 'Melati',
+    ]);
+    imunisasi($nayla, 'PCV 1', '2026-03-10', SumberData::BukuKia);
+    imunisasi($nayla, 'PCV 2', '2026-04-10');
+
+    $respons = $this->get(route('rekap-imunisasi.unduh', ['vaksin' => 'PCV']));
+    $respons->assertOk()
+        ->assertHeader('Content-Type', 'text/csv; charset=UTF-8')
+        ->assertDownload('rekap-imunisasi_11-11-2026.csv');
+
+    $isi = $respons->streamedContent();
+
+    expect($isi)->toStartWith("\xEF\xBB\xBF")
+        ->and(explode("\r\n", substr($isi, 3)))->toBe([
+            'Nama;NIK;"Jenis Kelamin";"Tanggal Lahir";Dusun;"PCV 1";"PCV 2";"PCV 3"',
+            'Nayla;"=""1871010101010042""";Perempuan;10/01/2026;Melati;10/03/2026;10/04/2026;',
+            'Raka;;Laki-laki;01/02/2026;Melati;;;',
+            '"Jumlah anak";;;;;1;1;0',
+            '',
+        ]);
+});
+
+test('unduh CSV rekap kosong atau periode salah ditolak dengan pesan', function () {
+    $this->get(route('rekap-imunisasi.unduh'))
+        ->assertStatus(422)
+        ->assertJson(['pesan' => 'Tidak ada data untuk penyaring ini.']);
+
+    Anak::factory()->create(['tanggal_lahir' => '2026-01-10']);
+
+    $this->get(route('rekap-imunisasi.unduh', ['dari' => '2026-05-01', 'sampai' => '2026-04-01']))->assertStatus(422);
+    $this->get(route('rekap-imunisasi.unduh'))->assertOk();
+});
