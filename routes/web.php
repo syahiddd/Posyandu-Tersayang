@@ -13,6 +13,7 @@ use App\Http\Controllers\MejaController;
 use App\Http\Controllers\PendataanController;
 use App\Http\Controllers\PengukuranController;
 use App\Http\Controllers\PilihMejaController;
+use App\Http\Controllers\RekapImunisasiController;
 use App\Http\Controllers\RiwayatBukuKiaController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
@@ -94,11 +95,8 @@ Route::middleware('auth')->group(function () {
         Route::get('data-posyandu/ubah', [DataPosyanduController::class, 'edit'])->name('data-posyandu.ubah');
         Route::put('data-posyandu', [DataPosyanduController::class, 'update'])->name('data-posyandu.perbarui');
 
-        // Menu yang dikerjakan pada fase berikutnya (halaman sementara).
-        Route::inertia('rekap-imunisasi', 'halaman-sementara', [
-            'judul' => 'Rekapitulasi Imunisasi',
-            'rujukan' => 'PRD 4.10 (FR-55 sampai FR-58)',
-        ])->name('rekap-imunisasi');
+        // S18 Rekapitulasi Imunisasi (PRD 4.10, FR-55, FR-56).
+        Route::get('rekap-imunisasi', [RekapImunisasiController::class, 'index'])->name('rekap-imunisasi');
 
         // Kader mengganti kata sandinya sendiri.
         Route::get('ganti-sandi', [GantiSandiController::class, 'edit'])->name('ganti-sandi');
