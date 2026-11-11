@@ -195,3 +195,38 @@ test('rekap bawaan bulan berjalan; bulan tidak sah atau mendatang diabaikan; pem
 
     Carbon::setTestNow();
 })->with([null, '2026-12', '2026-13', 'November', '1999-12']);
+
+test('unduh CSV rekap Data Posyandu per bulan sesuai PRD 7.3 (FR-63)', function () {
+    Carbon::setTestNow(CarbonImmutable::parse('2026-03-11 09:00'));
+    masuk_posyandu(User::factory()->create());
+
+    $anak = balita_skdn(['tanggal_lahir' => '2025-01-01', 'punya_buku_kia' => true]);
+    timbang(balita_skdn(['tanggal_lahir' => '2025-02-01', 'punya_buku_kia' => false]), '2026-02-05', StatusNT::TidakNaik);
+    timbang($anak, '2026-01-05', StatusNT::TidakDitimbangBulanLalu);
+    timbang($anak, '2026-02-05', StatusNT::Naik);
+    beri($anak, JenisLayanan::VitaminA, 'Kapsul merah', '2026-02-05');
+
+    $respons = $this->get(route('data-posyandu.unduh', ['tahun' => '2026']));
+    $respons->assertOk()
+        ->assertHeader('Content-Type', 'text/csv; charset=UTF-8')
+        ->assertDownload('data-posyandu_11-03-2026.csv');
+
+    $isi = $respons->streamedContent();
+
+    expect($isi)->toStartWith("\xEF\xBB\xBF")
+        ->and(explode("\r\n", substr($isi, 3)))->toBe([
+            'Bulan;S;K;D;N;"D/S (%)";"N/D (%)";"Imunisasi (dosis)";"Vitamin A biru";"Vitamin A merah";"Obat cacing"',
+            '"Januari 2026";2;1;1;0;50,0;0,0;0;0;0;0',
+            '"Februari 2026";2;1;2;1;100,0;50,0;0;0;1;0',
+            '"Maret 2026";2;1;0;0;0,0;;0;0;0;0',
+            '',
+        ]);
+
+    // Tahun lalu berisi dua belas bulan; tahun mendatang atau tidak sah memakai tahun berjalan.
+    $baris = fn (array $query) => count(explode("\r\n", trim($this->get(route('data-posyandu.unduh', $query))->streamedContent()))) - 1;
+    expect($baris(['tahun' => '2025']))->toBe(12)
+        ->and($baris(['tahun' => '2027']))->toBe(3)
+        ->and($baris(['tahun' => 'abc']))->toBe(3);
+
+    Carbon::setTestNow();
+});

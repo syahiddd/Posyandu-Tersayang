@@ -90,8 +90,9 @@ Route::middleware('auth')->group(function () {
         });
         Route::post('data-anak/riwayat-buku-kia/urungkan', [RiwayatBukuKiaController::class, 'urungkan'])->name('riwayat-buku-kia.urungkan');
 
-        // S19 Data Posyandu: profil dan daftar kader (PRD 4.11, FR-59, FR-60).
+        // S19 Data Posyandu: profil, kader, rekap SKDN dan layanan, CSV (PRD 4.11, FR-59 sampai FR-63).
         Route::get('data-posyandu', [DataPosyanduController::class, 'index'])->name('data-posyandu');
+        Route::get('data-posyandu/unduh', [DataPosyanduController::class, 'unduh'])->name('data-posyandu.unduh');
         Route::get('data-posyandu/ubah', [DataPosyanduController::class, 'edit'])->name('data-posyandu.ubah');
         Route::put('data-posyandu', [DataPosyanduController::class, 'update'])->name('data-posyandu.perbarui');
 

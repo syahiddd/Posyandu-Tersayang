@@ -2,8 +2,9 @@ import { Head } from '@inertiajs/react';
 import { Banner } from '@/components/dasar/banner';
 import { Kartu } from '@/components/dasar/kartu';
 import { TombolTautan } from '@/components/dasar/tombol';
+import { TombolUnduhCsv } from '@/components/tombol-unduh-csv';
 import { dataPosyandu } from '@/routes';
-import { ubah } from '@/routes/data-posyandu';
+import { ubah, unduh } from '@/routes/data-posyandu';
 
 export type ProfilPosyandu = {
     nama: string | null;
@@ -90,6 +91,7 @@ function persen(nilai: string | null): string {
  * berjalan dengan persentase D/S dan N/D (FR-61); jumlah layanan per bulan
  * dan tempat jumlah per status gizi (FR-62); daftar kader dengan nomor HP
  * dan meja yang biasa dipegang (FR-60). Profil diubah oleh Ketua Kader.
+ * Unduh CSV berisi rekap setiap bulan pada tahun yang ditampilkan (FR-63).
  */
 export default function DataPosyandu({
     profil,
@@ -101,8 +103,18 @@ export default function DataPosyandu({
         <>
             <Head title="Data Posyandu" />
             <div className="flex flex-col gap-4 desktop:max-w-3xl">
-                <header>
+                <header className="flex flex-wrap items-center justify-between gap-3">
                     <h1 className="text-judul-1 text-ink-900">Data Posyandu</h1>
+                    <div className="flex flex-col items-start gap-1">
+                        <TombolUnduhCsv
+                            url={unduh.url({
+                                query: { tahun: rekap.bulan.slice(0, 4) },
+                            })}
+                        />
+                        <p className="text-keterangan text-ink-700">
+                            Rekap setiap bulan tahun {rekap.bulan.slice(0, 4)}
+                        </p>
+                    </div>
                 </header>
 
                 <Kartu judul={profil.nama ?? 'Profil posyandu belum diisi'}>

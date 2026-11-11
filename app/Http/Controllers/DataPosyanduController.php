@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Ekspor\BerkasCsv;
 use App\Models\Posyandu;
 use App\Models\User;
 use App\Rekap\RekapBulanan;
@@ -12,12 +13,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * S19 Data Posyandu (PRD 4.11): profil posyandu yang diubah Ketua Kader
  * (FR-59) dan daftar kader dengan nomor HP serta meja yang biasa dipegang
- * (FR-60), serta rekap SKDN dan layanan bulanan (FR-61, FR-62). Jumlah per
- * status gizi dan risiko stunting menunggu tabel standar WHO.
+ * (FR-60), serta rekap SKDN dan layanan bulanan (FR-61, FR-62) beserta
+ * unduh CSV (FR-63). Jumlah per status gizi dan risiko stunting menunggu
+ * tabel standar WHO.
  */
 class DataPosyanduController extends Controller
 {
@@ -93,6 +96,45 @@ class DataPosyanduController extends Controller
         Inertia::flash('toast', ['pesan' => 'Profil posyandu disimpan']);
 
         return redirect()->route('data-posyandu');
+    }
+
+    /**
+     * Unduh CSV rekap Data Posyandu sebagai bahan arsip cetak (FR-63, PRD
+     * 7.3): satu baris per bulan, Januari sampai Desember atau sampai bulan
+     * berjalan untuk tahun ini. Tahun yang tidak sah memakai tahun berjalan.
+     */
+    public function unduh(Request $request): StreamedResponse
+    {
+        $bulanIni = CarbonImmutable::today()->startOfMonth();
+        $tahun = $request->query('tahun');
+        $tahun = is_string($tahun) && preg_match('/^\d{4}$/', $tahun) === 1
+            && (int) $tahun >= 2000 && (int) $tahun <= $bulanIni->year
+            ? (int) $tahun
+            : $bulanIni->year;
+
+        $baris = [];
+
+        for ($bulan = CarbonImmutable::create($tahun, 1, 1); $bulan <= $bulanIni && $bulan->year === $tahun; $bulan = $bulan->addMonthNoOverflow()) {
+            $rekap = (new RekapBulanan($bulan))->hitung();
+            $baris[] = [
+                Tanggal::bulan($bulan),
+                $rekap['s'],
+                $rekap['k'],
+                $rekap['d'],
+                $rekap['n'],
+                $rekap['persenDS'],
+                $rekap['persenND'],
+                $rekap['imunisasi'],
+                $rekap['vitaminABiru'],
+                $rekap['vitaminAMerah'],
+                $rekap['obatCacing'],
+            ];
+        }
+
+        return BerkasCsv::unduh('data-posyandu', [
+            'Bulan', 'S', 'K', 'D', 'N', 'D/S (%)', 'N/D (%)',
+            'Imunisasi (dosis)', 'Vitamin A biru', 'Vitamin A merah', 'Obat cacing',
+        ], $baris);
     }
 
     /**
