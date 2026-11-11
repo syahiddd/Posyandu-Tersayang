@@ -72,12 +72,17 @@ class DataAnakController extends Controller
         }
 
         return BerkasCsv::unduh('data-anak', [
-            'Nama', 'NIK', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Umur (bulan)',
+            'Nama', 'NIK', 'Punya Buku KIA', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Umur (bulan)',
             'Nama Ibu', 'NIK Ibu', 'Nama Ayah', 'NIK Ayah', 'No HP',
             'Alamat', 'RT', 'RW', 'Dusun', 'Kunjungan Terakhir',
         ], $query->cursor()->map(fn (Anak $anak) => [
             $anak->nama,
             BerkasCsv::teks($anak->nik),
+            match ($anak->punya_buku_kia) {
+                true => 'Ya',
+                false => 'Tidak',
+                null => '',
+            },
             $anak->jenis_kelamin->label(),
             $anak->tempat_lahir,
             BerkasCsv::tanggal($anak->tanggal_lahir),

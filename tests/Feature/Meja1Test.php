@@ -23,6 +23,7 @@ function data_anak(array $ganti = []): array
         'tempat_lahir' => 'Bandar Lampung',
         'tanggal_lahir' => today()->subMonths(18)->toDateString(),
         'nik' => '1871010101010042',
+        'punya_buku_kia' => '1',
         'nama_ibu' => 'Dewi Sartika',
         'nik_ibu' => '1871010101010001',
         'nama_ayah' => 'Budi',
@@ -92,7 +93,8 @@ test('tambah anak menyimpan data dan ukuran Buku KIA dengan koma desimal (FR-10)
 
     $anak = Anak::query()->where('nama', 'Nayla Putri')->sole();
     expect($anak->no_hp)->toBe('081234567890')
-        ->and($anak->nik)->toBe('1871010101010042');
+        ->and($anak->nik)->toBe('1871010101010042')
+        ->and($anak->punya_buku_kia)->toBeTrue();
 
     $pengukuran = $anak->pengukuran()->sole();
     expect($pengukuran->sumber)->toBe(SumberData::BukuKia)
@@ -127,6 +129,7 @@ test('isian wajib dan aturan PRD 7.2 divalidasi', function (array $ganti, string
     'RT bukan angka' => [['rt' => 'tiga'], 'rt'],
     'alamat kosong' => [['alamat' => ''], 'alamat'],
     'dusun kosong' => [['dusun' => ''], 'dusun'],
+    'punya Buku KIA belum dipilih' => [['punya_buku_kia' => ''], 'punya_buku_kia'],
     'BB di atas 35' => [['ukur_tanggal' => today()->toDateString(), 'ukur_bb' => '35,1'], 'ukur_bb'],
     'PB di bawah 40' => [['ukur_tanggal' => today()->toDateString(), 'ukur_pb_tb' => '39,9'], 'ukur_pb_tb'],
     'dua angka di belakang koma' => [['ukur_tanggal' => today()->toDateString(), 'ukur_bb' => '8,55'], 'ukur_bb'],

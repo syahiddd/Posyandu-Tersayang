@@ -28,6 +28,7 @@ class AnakFactory extends Factory
             // Umur balita 0–59 bulan (PRD 7.2).
             'tanggal_lahir' => fake()->dateTimeBetween('-59 months', '-1 week')->format('Y-m-d'),
             'nik' => fake()->optional(0.7)->numerify('################'),
+            'punya_buku_kia' => fake()->boolean(90),
             'nama_ibu' => fake()->name('female'),
             'nik_ibu' => fake()->optional(0.7)->numerify('################'),
             'nama_ayah' => fake()->optional()->name('male'),

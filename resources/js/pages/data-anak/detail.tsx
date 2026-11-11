@@ -154,6 +154,16 @@ export default function DetailDataAnak({
                                             )
                                         }
                                     />
+                                    <Baris
+                                        label="Punya Buku KIA"
+                                        nilai={
+                                            anak.punyaBukuKia === null
+                                                ? 'Belum diisi'
+                                                : anak.punyaBukuKia
+                                                  ? 'Ya'
+                                                  : 'Tidak'
+                                        }
+                                    />
                                 </dl>
                             </Kartu>
                             <Kartu labelSeksi="Orang tua">

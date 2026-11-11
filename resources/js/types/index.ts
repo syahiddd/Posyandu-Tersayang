@@ -99,6 +99,8 @@ export type DetailAnak = {
     tempatLahir: string | null;
     tanggalLahir: string;
     nik: string | null;
+    /** Huruf K pada SKDN (FR-61); null bila belum diisi. */
+    punyaBukuKia: boolean | null;
     namaIbu: string;
     nikIbu: string | null;
     namaAyah: string | null;

@@ -11,6 +11,8 @@ export type DataIdentitasAnak = {
     tempat_lahir: string;
     tanggal_lahir: string;
     nik: string;
+    /** "1" = Ya, "0" = Tidak, "" = belum dipilih (huruf K SKDN, FR-61). */
+    punya_buku_kia: string;
     nama_ibu: string;
     nik_ibu: string;
     nama_ayah: string;
@@ -28,6 +30,7 @@ export const IDENTITAS_KOSONG: DataIdentitasAnak = {
     tempat_lahir: '',
     tanggal_lahir: '',
     nik: '',
+    punya_buku_kia: '',
     nama_ibu: '',
     nik_ibu: '',
     nama_ayah: '',
@@ -125,6 +128,19 @@ export function IsianIdentitasAnak({
                     petunjuk="16 digit, boleh dikosongkan"
                     maxLength={16}
                     {...angka('nik')}
+                />
+                <KontrolSegmen
+                    id="isian-punya_buku_kia"
+                    label="Punya Buku KIA"
+                    nama="punya_buku_kia"
+                    wajib
+                    opsi={[
+                        { nilai: '1', label: 'Ya' },
+                        { nilai: '0', label: 'Tidak' },
+                    ]}
+                    nilai={(data.punya_buku_kia || null) as '1' | '0' | null}
+                    onUbah={(nilai) => ubah('punya_buku_kia', nilai)}
+                    galat={galat.punya_buku_kia}
                 />
             </Seksi>
 

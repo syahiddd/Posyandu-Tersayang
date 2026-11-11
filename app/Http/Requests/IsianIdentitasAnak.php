@@ -15,7 +15,7 @@ trait IsianIdentitasAnak
     /** Kolom yang disimpan ke tabel anak. */
     public const KOLOM_IDENTITAS = [
         'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'nik',
-        'nama_ibu', 'nik_ibu', 'nama_ayah', 'nik_ayah', 'no_hp',
+        'punya_buku_kia', 'nama_ibu', 'nik_ibu', 'nama_ayah', 'nik_ayah', 'no_hp',
         'alamat', 'rt', 'rw', 'dusun',
     ];
 
@@ -41,6 +41,8 @@ trait IsianIdentitasAnak
             'tempat_lahir' => ['nullable', 'string', 'max:100'],
             'tanggal_lahir' => ['required', 'date', 'before_or_equal:today'],
             'nik' => ['nullable', 'digits:16', Rule::unique('anak', 'nik')->ignore($abaikan)],
+            // Huruf K pada SKDN (FR-61); wajib dipilih, termasuk data lama saat diubah.
+            'punya_buku_kia' => ['required', 'boolean'],
             'nama_ibu' => ['required', 'string', 'max:100'],
             'nik_ibu' => ['nullable', 'digits:16'],
             'nama_ayah' => ['nullable', 'string', 'max:100'],
@@ -58,6 +60,7 @@ trait IsianIdentitasAnak
     {
         return [
             'no_hp.regex' => 'Nomor HP 10 sampai 13 digit, diawali 08 atau +62.',
+            'punya_buku_kia.required' => 'Pilih apakah anak punya Buku KIA.',
         ];
     }
 }

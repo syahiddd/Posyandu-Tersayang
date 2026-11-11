@@ -192,6 +192,7 @@ function isian_ubah(Anak $anak, array $ganti = []): array
         'tempat_lahir' => $anak->tempat_lahir,
         'tanggal_lahir' => $anak->tanggal_lahir->toDateString(),
         'nik' => $anak->nik,
+        'punya_buku_kia' => $anak->punya_buku_kia === null ? '' : ($anak->punya_buku_kia ? '1' : '0'),
         'nama_ibu' => $anak->nama_ibu,
         'nik_ibu' => $anak->nik_ibu,
         'nama_ayah' => $anak->nama_ayah,
@@ -241,6 +242,24 @@ test('kader mengubah data anak dan perubahan tercatat di log aktivitas (FR-52, N
 
     $this->get(route('data-anak.detail', $anak))->assertInertia(fn ($page) => $page
         ->where('perubahanTerakhir.oleh', 'Dewi Lestari'));
+});
+
+test('punya Buku KIA wajib dipilih saat mengubah data lama dan tercatat di log (FR-52, FR-61)', function () {
+    $anak = Anak::factory()->create(['punya_buku_kia' => null]);
+
+    $this->get(route('data-anak.ubah', $anak))->assertInertia(fn ($page) => $page
+        ->where('anak.punya_buku_kia', ''));
+    $this->get(route('data-anak.detail', $anak))->assertInertia(fn ($page) => $page
+        ->where('anak.punyaBukuKia', null));
+
+    $this->put(route('data-anak.perbarui', $anak), isian_ubah($anak))
+        ->assertSessionHasErrors(['punya_buku_kia' => 'Pilih apakah anak punya Buku KIA.']);
+
+    $this->put(route('data-anak.perbarui', $anak), isian_ubah($anak, ['punya_buku_kia' => '0']))
+        ->assertSessionHasNoErrors();
+
+    expect($anak->refresh()->punya_buku_kia)->toBeFalse()
+        ->and($anak->activitiesAsSubject()->sole()->attribute_changes['attributes'])->toBe(['punya_buku_kia' => false]);
 });
 
 test('menyimpan tanpa perubahan tidak menambah log', function () {
@@ -377,6 +396,7 @@ test('unduh CSV Data Anak sesuai PRD 7.3: BOM, titik koma, DD/MM/YYYY, NIK teks,
         'tempat_lahir' => 'Bandar Lampung',
         'tanggal_lahir' => '2025-05-09',
         'nik' => '1871010101010042',
+        'punya_buku_kia' => true,
         'nama_ibu' => 'Dewi "Ani"',
         'nik_ibu' => null,
         'nama_ayah' => null,
@@ -398,8 +418,8 @@ test('unduh CSV Data Anak sesuai PRD 7.3: BOM, titik koma, DD/MM/YYYY, NIK teks,
 
     expect($isi)->toStartWith("\xEF\xBB\xBF")
         ->and(explode("\r\n", substr($isi, 3)))->toBe([
-            'Nama;NIK;"Jenis Kelamin";"Tempat Lahir";"Tanggal Lahir";"Umur (bulan)";"Nama Ibu";"NIK Ibu";"Nama Ayah";"NIK Ayah";"No HP";Alamat;RT;RW;Dusun;"Kunjungan Terakhir"',
-            '"Nayla; Putri";"=""1871010101010042""";Perempuan;"Bandar Lampung";09/05/2025;17;"Dewi ""Ani""";;;;"=""081234567890""";"Jl. Melati 5";3;;Melati;05/10/2026',
+            'Nama;NIK;"Punya Buku KIA";"Jenis Kelamin";"Tempat Lahir";"Tanggal Lahir";"Umur (bulan)";"Nama Ibu";"NIK Ibu";"Nama Ayah";"NIK Ayah";"No HP";Alamat;RT;RW;Dusun;"Kunjungan Terakhir"',
+            '"Nayla; Putri";"=""1871010101010042""";Ya;Perempuan;"Bandar Lampung";09/05/2025;17;"Dewi ""Ani""";;;;"=""081234567890""";"Jl. Melati 5";3;;Melati;05/10/2026',
             '',
         ]);
 
