@@ -235,7 +235,9 @@ const SEL_NAMA = 'sticky left-0 border-r border-ink-200 bg-white';
 
 /**
  * Tabel anak × vaksin (DESIGN bab 9): gulir horizontal di dalam kartu,
- * kolom nama tetap; di desktop baris kepala menempel saat digulir.
+ * kolom nama tetap; di desktop baris kepala menempel saat digulir. Wadah
+ * gulir `relative` agar teks sr-only (absolut) di sel tidak melebarkan
+ * halaman (bab 9: tanpa gulir horizontal halaman).
  */
 function TabelRekap({
     kolom,
@@ -247,7 +249,7 @@ function TabelRekap({
             tabIndex={0}
             role="region"
             aria-labelledby="judul-tabel"
-            className="overflow-x-auto rounded-md border border-ink-200 bg-white shadow-1 desktop:max-h-[calc(100dvh-8rem)] desktop:overflow-y-auto"
+            className="relative overflow-x-auto rounded-md border border-ink-200 bg-white shadow-1 desktop:max-h-[calc(100dvh-8rem)] desktop:overflow-y-auto"
         >
             <table className="w-max min-w-full border-separate border-spacing-0">
                 <caption className="sr-only">
