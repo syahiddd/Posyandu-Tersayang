@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Antrean\LayananAntrean;
-use App\Antrean\TampilanKunjungan;
+use App\Antrean\PanelAntrean;
 use App\Antrean\Urungan;
 use App\Enums\Meja;
-use App\Enums\StatusAntrean;
 use App\Models\Kunjungan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,27 +26,8 @@ class AntreanController extends Controller
 
     public function index(Request $request, Meja $meja): Response
     {
-        $user = $request->user();
-        $kunjungan = Kunjungan::query()
-            ->hariIni()
-            ->where('meja_saat_ini', $meja)
-            ->with(['anak', 'pembuka'])
-            ->get();
-
-        $kartu = fn (Kunjungan $k) => TampilanKunjungan::kartu($k, $user);
-
         return Inertia::render('meja/antrean', [
-            'nomor' => $meja->value,
-            'tahap' => $meja->tahap(),
-            'tersedia' => in_array($meja, self::MEJA_TERSEDIA, true),
-            'antrean' => $kunjungan
-                ->whereIn('status', [StatusAntrean::Menunggu, StatusAntrean::SedangDilayani])
-                ->sortBy([['masuk_meja_pada', 'asc'], ['nomor_antrean', 'asc']])
-                ->map($kartu)->values(),
-            'ditunda' => $kunjungan
-                ->where('status', StatusAntrean::Ditunda)
-                ->sortBy('ditunda_pada')
-                ->map($kartu)->values(),
+            'antreanMeja' => PanelAntrean::props($meja, $request->user()),
         ]);
     }
 

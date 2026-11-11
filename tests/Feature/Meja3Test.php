@@ -134,7 +134,7 @@ test('kembalikan ke Meja 2 wajib alasan dan menandai perlu ukur ulang (FR-28)', 
         ->alasan_kembali->toBe('BB tertukar')
         ->selesai_meja_2_pada->toBeNull();
 
-    $this->get(route('meja', 2))->assertInertia(fn ($page) => $page->where('antrean.0.perluUkurUlang', true));
+    $this->get(route('meja', 2))->assertInertia(fn ($page) => $page->where('antreanMeja.antrean.0.perluUkurUlang', true));
 });
 
 test('hanya kader yang membuka anak yang boleh menyalin atau mengembalikan', function () {

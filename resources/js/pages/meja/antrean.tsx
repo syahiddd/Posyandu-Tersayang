@@ -12,7 +12,7 @@ import { lamaSejak } from '@/lib/waktu';
 import { buka, lanjutkan } from '@/routes/kunjungan';
 import type { KartuAntrean } from '@/types';
 
-type Props = {
+export type AntreanMeja = {
     nomor: number;
     tahap: string;
     tersedia: boolean;
@@ -20,25 +20,22 @@ type Props = {
     ditunda: KartuAntrean[];
 };
 
+type Props = { antreanMeja: AntreanMeja };
+
 /**
  * S08 Antrean meja dan S13 Daftar Ditunda (PRD 3.2–3.3, FR-18,
  * FR-47 sampai FR-49; DESIGN 5.4, 5.8, Gambar 9). Diperbarui otomatis
  * saat meja lain menyimpan (FR-09, NFR-02).
  */
-export default function Antrean({
-    nomor,
-    tahap,
-    tersedia,
-    antrean,
-    ditunda,
-}: Props) {
+export default function Antrean({ antreanMeja }: Props) {
+    const { nomor, tahap, tersedia, antrean, ditunda } = antreanMeja;
     const { errors } = usePage().props;
     const sekarang = useSekarang();
     const [sheetTerbuka, setSheetTerbuka] = useState(false);
     const [pengumuman, setPengumuman] = useState('');
     const jumlahSebelumnya = useRef(antrean.length);
 
-    useAntreanRealtime(['antrean', 'ditunda'], nomor);
+    useAntreanRealtime(['antreanMeja'], nomor);
 
     // Bab 10.4: umumkan anak baru di antrean lewat wilayah aria-live.
     useEffect(() => {

@@ -78,13 +78,13 @@ test('layar antrean menampilkan anak menunggu urut waktu masuk dan daftar ditund
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('meja/antrean')
-            ->where('tersedia', true)
-            ->has('antrean', 2)
-            ->where('antrean.0.id', $pertama->id)
-            ->where('antrean.1.id', $kedua->id)
-            ->has('ditunda', 1)
-            ->where('ditunda.0.id', $ditunda->id)
-            ->missing('antrean.0.nik'));
+            ->where('antreanMeja.tersedia', true)
+            ->has('antreanMeja.antrean', 2)
+            ->where('antreanMeja.antrean.0.id', $pertama->id)
+            ->where('antreanMeja.antrean.1.id', $kedua->id)
+            ->has('antreanMeja.ditunda', 1)
+            ->where('antreanMeja.ditunda.0.id', $ditunda->id)
+            ->missing('antreanMeja.antrean.0.nik'));
 });
 
 test('membuka anak menguncinya untuk satu kader (PRD 3.3)', function () {
@@ -99,8 +99,8 @@ test('membuka anak menguncinya untuk satu kader (PRD 3.3)', function () {
     kader();
     $this->post(route('kunjungan.buka', $kunjungan))->assertSessionHasErrors(['kunjungan' => 'Anak ini sedang dilayani kader lain.']);
     $this->get(route('meja', 2))->assertInertia(fn ($page) => $page
-        ->where('antrean.0.terkunci', true)
-        ->where('antrean.0.dibukaOleh', $dewi->name));
+        ->where('antreanMeja.antrean.0.terkunci', true)
+        ->where('antreanMeja.antrean.0.dibukaOleh', $dewi->name));
 });
 
 test('kunci lepas otomatis setelah 10 menit sehingga kader lain dapat mengambil alih', function () {
@@ -224,7 +224,7 @@ test('Meja 4 dan 5 menampilkan antrean tetapi belum bisa dibuka', function () {
     $kunjungan = Kunjungan::factory()->diMeja(Meja::Pelayanan)->create();
     kader(4);
 
-    $this->get(route('meja', 4))->assertInertia(fn ($page) => $page->where('tersedia', false)->has('antrean', 1));
+    $this->get(route('meja', 4))->assertInertia(fn ($page) => $page->where('antreanMeja.tersedia', false)->has('antreanMeja.antrean', 1));
     $this->post(route('kunjungan.buka', $kunjungan))->assertSessionHasErrors('kunjungan');
 });
 
@@ -238,4 +238,21 @@ test('setiap perubahan antrean disiarkan ke meja terkait (FR-09)', function () {
     $this->post(route('kunjungan.lanjutkan', $kunjungan));
 
     Event::assertDispatchedTimes(AntreanBerubah::class, 3);
+});
+
+test('layar anak membawa antrean mejanya untuk kolom antrean tablet/desktop (DESIGN bab 9)', function () {
+    $dibuka = Kunjungan::factory()->diMeja(Meja::Pengukuran)->create(['masuk_meja_pada' => now()->subMinutes(10), 'nomor_antrean' => 1]);
+    $lain = Kunjungan::factory()->diMeja(Meja::Pengukuran)->create(['masuk_meja_pada' => now()->subMinutes(5), 'nomor_antrean' => 2]);
+    Kunjungan::factory()->diMeja(Meja::Pendataan)->create(['nomor_antrean' => 3]);
+    kader();
+    $this->post(route('kunjungan.buka', $dibuka));
+
+    $this->get(route('kunjungan.layar', $dibuka))->assertOk()->assertInertia(fn ($page) => $page
+        ->component('kunjungan/pengukuran')
+        ->where('kunjunganAktif', $dibuka->id)
+        ->where('antreanMeja.nomor', 2)
+        ->has('antreanMeja.antrean', 2)
+        ->where('antreanMeja.antrean.0.id', $dibuka->id)
+        ->where('antreanMeja.antrean.0.terkunci', false)
+        ->where('antreanMeja.antrean.1.id', $lain->id));
 });

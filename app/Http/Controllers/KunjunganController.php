@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Antrean\LayananAntrean;
+use App\Antrean\PanelAntrean;
 use App\Antrean\TampilanKunjungan;
 use App\Enums\Meja;
 use App\Models\Kunjungan;
@@ -27,12 +28,19 @@ class KunjunganController extends Controller
 
         $kunjungan->load(['anak', 'pengukuran', 'pendataan']);
 
+        // Kolom antrean di samping layar anak pada tablet/desktop (DESIGN bab 9).
+        $panel = [
+            'antreanMeja' => PanelAntrean::props($kunjungan->meja_saat_ini, $request->user()),
+            'kunjunganAktif' => $kunjungan->id,
+        ];
+
         return match ($kunjungan->meja_saat_ini) {
-            Meja::Pengukuran => Inertia::render('kunjungan/pengukuran', PengukuranController::props($kunjungan)),
-            Meja::Pendataan => Inertia::render('kunjungan/pendataan', PendataanController::props($kunjungan)),
+            Meja::Pengukuran => Inertia::render('kunjungan/pengukuran', [...PengukuranController::props($kunjungan), ...$panel]),
+            Meja::Pendataan => Inertia::render('kunjungan/pendataan', [...PendataanController::props($kunjungan), ...$panel]),
             default => Inertia::render('kunjungan/layar-sementara', [
                 'anak' => TampilanKunjungan::header($kunjungan),
                 'tahap' => $kunjungan->meja_saat_ini->tahap(),
+                ...$panel,
             ]),
         };
     }
