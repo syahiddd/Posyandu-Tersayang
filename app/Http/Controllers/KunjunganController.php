@@ -37,6 +37,13 @@ class KunjunganController extends Controller
         return match ($kunjungan->meja_saat_ini) {
             Meja::Pengukuran => Inertia::render('kunjungan/pengukuran', [...PengukuranController::props($kunjungan), ...$panel]),
             Meja::Pendataan => Inertia::render('kunjungan/pendataan', [...PendataanController::props($kunjungan), ...$panel]),
+           Meja::Pelayanan => Inertia::render('kunjungan/pelayanan', [
+               'anak' => TampilanKunjungan::header($kunjungan),
+               'pengukuran' => $kunjungan->pengukuran,
+               'pendataan' => $kunjungan->pendataan,
+               'tahap' => $kunjungan->meja_saat_ini->tahap(),
+               ...$panel,
+           ]),
             default => Inertia::render('kunjungan/layar-sementara', [
                 'anak' => TampilanKunjungan::header($kunjungan),
                 'tahap' => $kunjungan->meja_saat_ini->tahap(),
