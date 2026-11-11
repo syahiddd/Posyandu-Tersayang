@@ -28,6 +28,12 @@ final class Tanggal
         return self::format($tanggal, 'l, j F Y');
     }
 
+    /** Contoh: "November 2026" untuk judul rekap bulanan. */
+    public static function bulan(CarbonInterface|string $tanggal): string
+    {
+        return self::format($tanggal, 'F Y');
+    }
+
     private static function format(CarbonInterface|string $tanggal, string $pola): string
     {
         $tanggal = is_string($tanggal) ? CarbonImmutable::parse($tanggal) : $tanggal;

@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Posyandu;
 use App\Models\User;
+use App\Rekap\RekapBulanan;
+use App\Support\Tanggal;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -13,7 +16,8 @@ use Inertia\Response;
 /**
  * S19 Data Posyandu (PRD 4.11): profil posyandu yang diubah Ketua Kader
  * (FR-59) dan daftar kader dengan nomor HP serta meja yang biasa dipegang
- * (FR-60). Rekap SKDN dan status gizi (FR-61 sampai FR-63) menyusul.
+ * (FR-60), serta rekap SKDN dan layanan bulanan (FR-61, FR-62). Jumlah per
+ * status gizi dan risiko stunting menunggu tabel standar WHO.
  */
 class DataPosyanduController extends Controller
 {
@@ -25,9 +29,18 @@ class DataPosyanduController extends Controller
     public function index(Request $request): Response
     {
         $posyandu = $this->posyandu();
+        $bulan = $this->bulan($request->query('bulan'));
+        $bulanIni = CarbonImmutable::today()->startOfMonth();
 
         return Inertia::render('data-posyandu/profil', [
             'profil' => $posyandu->only(self::KOLOM),
+            'rekap' => [
+                'bulan' => $bulan->format('Y-m'),
+                'label' => Tanggal::bulan($bulan),
+                'sebelumnya' => $bulan->subMonthNoOverflow()->format('Y-m'),
+                'berikutnya' => $bulan->lessThan($bulanIni) ? $bulan->addMonthNoOverflow()->format('Y-m') : null,
+                ...(new RekapBulanan($bulan))->hitung(),
+            ],
             'bolehUbah' => $request->user()?->can('update', $posyandu) ?? false,
             'kader' => User::query()
                 ->where('is_active', true)
@@ -80,6 +93,23 @@ class DataPosyanduController extends Controller
         Inertia::flash('toast', ['pesan' => 'Profil posyandu disimpan']);
 
         return redirect()->route('data-posyandu');
+    }
+
+    /**
+     * Bulan rekap dari query "YYYY-MM"; bawaan dan batas atasnya bulan
+     * berjalan (DESIGN 6.5: SKDN bulan berjalan).
+     */
+    private function bulan(mixed $nilai): CarbonImmutable
+    {
+        $bulanIni = CarbonImmutable::today()->startOfMonth();
+
+        if (! is_string($nilai) || preg_match('/^(\d{4})-(0[1-9]|1[0-2])$/', $nilai, $cocok) !== 1) {
+            return $bulanIni;
+        }
+
+        $bulan = CarbonImmutable::create((int) $cocok[1], (int) $cocok[2], 1);
+
+        return $bulan === null || $bulan->greaterThan($bulanIni) || $bulan->year < 2000 ? $bulanIni : $bulan;
     }
 
     /** Satu instalasi melayani satu posyandu (PRD 12.1). */

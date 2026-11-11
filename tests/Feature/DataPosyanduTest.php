@@ -1,12 +1,21 @@
 <?php
 
+use App\Enums\JenisLayanan;
 use App\Enums\Meja;
+use App\Enums\StatusNT;
+use App\Enums\SumberData;
+use App\Models\Anak;
+use App\Models\Layanan;
+use App\Models\Pengukuran;
 use App\Models\Posyandu;
 use App\Models\User;
 use App\Support\MejaAktif;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Carbon;
 
 /*
-| S19 Data Posyandu (PRD 4.11): profil FR-59 dan daftar kader FR-60.
+| S19 Data Posyandu (PRD 4.11): profil FR-59, daftar kader FR-60, rekap
+| SKDN FR-61, dan layanan per bulan FR-62.
 */
 
 beforeEach(function () {
@@ -92,3 +101,97 @@ test('profil dibuat bila belum ada saat Ketua menyimpan', function () {
 
     expect(Posyandu::query()->sole()->nama)->toBe('Posyandu Mawar');
 });
+
+/** Anak terdaftar sejak awal tahun agar masuk S bulan-bulan sebelumnya. */
+function balita_skdn(array $atribut = []): Anak
+{
+    return Anak::factory()->create(['created_at' => '2026-01-02 08:00', ...$atribut]);
+}
+
+function timbang(Anak $anak, string $tanggal, ?StatusNT $status, SumberData $sumber = SumberData::Posyandu): Pengukuran
+{
+    return Pengukuran::factory()->for($anak)->create([
+        'tanggal_ukur' => $tanggal,
+        'status_nt' => $status,
+        'sumber' => $sumber,
+    ]);
+}
+
+function beri(Anak $anak, JenisLayanan $jenis, string $detail, string $tanggal, SumberData $sumber = SumberData::Posyandu): Layanan
+{
+    return Layanan::factory()->for($anak)->create([
+        'jenis' => $jenis,
+        'detail' => $detail,
+        'tanggal' => $tanggal,
+        'sumber' => $sumber,
+    ]);
+}
+
+test('rekap SKDN bulanan dan jumlah layanan (FR-61, FR-62)', function () {
+    Carbon::setTestNow(CarbonImmutable::parse('2026-11-11 09:00'));
+    masuk_posyandu(User::factory()->create());
+
+    // Naik pada penimbangan terakhir bulan itu; punya Buku KIA.
+    $naik = balita_skdn(['tanggal_lahir' => '2025-01-01', 'punya_buku_kia' => true]);
+    timbang($naik, '2026-10-01', StatusNT::TidakNaik);
+    timbang($naik, '2026-10-20', StatusNT::Naik);
+    // Tidak naik; tidak punya Buku KIA.
+    $tidakNaik = balita_skdn(['tanggal_lahir' => '2025-02-01', 'punya_buku_kia' => false]);
+    timbang($tidakNaik, '2026-10-05', StatusNT::TidakNaik);
+    // Tidak ditimbang bulan lalu: masuk D, tidak masuk N.
+    $baru = balita_skdn(['tanggal_lahir' => '2021-11-01', 'punya_buku_kia' => true]);
+    timbang($baru, '2026-10-05', StatusNT::TidakDitimbangBulanLalu);
+    // Hanya riwayat Buku KIA: masuk S, tidak masuk D; isian K belum diisi.
+    $bukuKia = balita_skdn(['tanggal_lahir' => '2025-03-01', 'punya_buku_kia' => null]);
+    timbang($bukuKia, '2026-10-05', StatusNT::Naik, SumberData::BukuKia);
+    // Bukan S: umur 60 bulan pada akhir bulan, terhapus, terdaftar sesudah bulan itu.
+    timbang(balita_skdn(['tanggal_lahir' => '2021-10-31', 'punya_buku_kia' => true]), '2026-10-05', StatusNT::Naik);
+    $terhapus = balita_skdn(['tanggal_lahir' => '2025-01-01', 'punya_buku_kia' => true]);
+    timbang($terhapus, '2026-10-05', StatusNT::Naik);
+    beri($terhapus, JenisLayanan::Imunisasi, 'BCG', '2026-10-05');
+    $terhapus->delete();
+    Anak::factory()->create(['created_at' => '2026-11-02 08:00', 'tanggal_lahir' => '2025-01-01']);
+
+    beri($naik, JenisLayanan::Imunisasi, 'MR 1', '2026-10-20');
+    beri($tidakNaik, JenisLayanan::Imunisasi, 'PCV 3', '2026-10-05');
+    beri($tidakNaik, JenisLayanan::Imunisasi, 'BCG', '2026-10-05', SumberData::BukuKia);
+    beri($naik, JenisLayanan::VitaminA, 'Kapsul biru', '2026-10-20');
+    beri($tidakNaik, JenisLayanan::VitaminA, 'Kapsul merah', '2026-10-05');
+    beri($tidakNaik, JenisLayanan::ObatCacing, 'Obat cacing', '2026-10-05');
+    beri($tidakNaik, JenisLayanan::ObatCacing, 'Obat cacing', '2026-11-05');
+
+    $this->get(route('data-posyandu', ['bulan' => '2026-10']))->assertOk()->assertInertia(fn ($page) => $page
+        ->where('rekap', [
+            'bulan' => '2026-10',
+            'label' => 'Oktober 2026',
+            'sebelumnya' => '2026-09',
+            'berikutnya' => '2026-11',
+            's' => 4,
+            'k' => 2,
+            'd' => 3,
+            'n' => 1,
+            'persenDS' => '75,0',
+            'persenND' => '33,3',
+            'imunisasi' => 2,
+            'vitaminABiru' => 1,
+            'vitaminAMerah' => 1,
+            'obatCacing' => 1,
+        ]));
+
+    Carbon::setTestNow();
+});
+
+test('rekap bawaan bulan berjalan; bulan tidak sah atau mendatang diabaikan; pembagi 0 tanpa persen', function (?string $bulan) {
+    Carbon::setTestNow(CarbonImmutable::parse('2026-11-11 09:00'));
+    masuk_posyandu(User::factory()->create());
+
+    $this->get(route('data-posyandu', ['bulan' => $bulan]))->assertInertia(fn ($page) => $page
+        ->where('rekap.bulan', '2026-11')
+        ->where('rekap.label', 'November 2026')
+        ->where('rekap.berikutnya', null)
+        ->where('rekap.s', 0)
+        ->where('rekap.persenDS', null)
+        ->where('rekap.persenND', null));
+
+    Carbon::setTestNow();
+})->with([null, '2026-12', '2026-13', 'November', '1999-12']);

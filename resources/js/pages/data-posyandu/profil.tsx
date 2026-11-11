@@ -1,6 +1,8 @@
 import { Head } from '@inertiajs/react';
+import { Banner } from '@/components/dasar/banner';
 import { Kartu } from '@/components/dasar/kartu';
 import { TombolTautan } from '@/components/dasar/tombol';
+import { dataPosyandu } from '@/routes';
 import { ubah } from '@/routes/data-posyandu';
 
 export type ProfilPosyandu = {
@@ -13,8 +15,27 @@ export type ProfilPosyandu = {
     jadwal_kegiatan: string | null;
 };
 
+/** Rekap satu bulan (FR-61, FR-62); persen sudah berkoma dari server. */
+type RekapBulanan = {
+    bulan: string;
+    label: string;
+    sebelumnya: string;
+    berikutnya: string | null;
+    s: number;
+    k: number;
+    d: number;
+    n: number;
+    persenDS: string | null;
+    persenND: string | null;
+    imunisasi: number;
+    vitaminABiru: number;
+    vitaminAMerah: number;
+    obatCacing: number;
+};
+
 type Props = {
     profil: ProfilPosyandu;
+    rekap: RekapBulanan;
     bolehUbah: boolean;
     kader: {
         id: number;
@@ -34,12 +55,48 @@ const BARIS_PROFIL: { kunci: keyof ProfilPosyandu; label: string }[] = [
     { kunci: 'jadwal_kegiatan', label: 'Jadwal kegiatan' },
 ];
 
+/** Satu baris nilai: label kiri, angka kanan. */
+function BarisAngka({
+    label,
+    nilai,
+    tebal = false,
+}: {
+    label: string;
+    nilai: string | number;
+    tebal?: boolean;
+}) {
+    return (
+        <div className="flex items-baseline justify-between gap-4 py-3">
+            <dt className="text-kecil text-ink-700">{label}</dt>
+            <dd
+                className={
+                    tebal
+                        ? 'text-angka text-ink-900 tabular-nums'
+                        : 'text-teks font-bold text-ink-900 tabular-nums'
+                }
+            >
+                {nilai}
+            </dd>
+        </div>
+    );
+}
+
+function persen(nilai: string | null): string {
+    return nilai === null ? '—' : nilai + '%';
+}
+
 /**
- * S19 Data Posyandu (DESIGN 6.5): kartu profil (FR-59) dan daftar kader
- * dengan nomor HP dan meja yang biasa dipegang (FR-60). Profil diubah oleh
- * Ketua Kader.
+ * S19 Data Posyandu (DESIGN 6.5): kartu profil (FR-59); rekap SKDN bulan
+ * berjalan dengan persentase D/S dan N/D (FR-61); jumlah layanan per bulan
+ * dan tempat jumlah per status gizi (FR-62); daftar kader dengan nomor HP
+ * dan meja yang biasa dipegang (FR-60). Profil diubah oleh Ketua Kader.
  */
-export default function DataPosyandu({ profil, bolehUbah, kader }: Props) {
+export default function DataPosyandu({
+    profil,
+    rekap,
+    bolehUbah,
+    kader,
+}: Props) {
     return (
         <>
             <Head title="Data Posyandu" />
@@ -74,6 +131,104 @@ export default function DataPosyandu({ profil, bolehUbah, kader }: Props) {
                         </TombolTautan>
                     )}
                 </Kartu>
+
+                <section
+                    aria-labelledby="judul-rekap"
+                    className="flex flex-col gap-3"
+                >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h2
+                            id="judul-rekap"
+                            className="text-judul-2 text-ink-900"
+                        >
+                            Rekap {rekap.label}
+                        </h2>
+                        <nav
+                            aria-label="Pilih bulan rekap"
+                            className="flex flex-wrap gap-2"
+                        >
+                            <TombolTautan
+                                href={dataPosyandu({
+                                    query: { bulan: rekap.sebelumnya },
+                                })}
+                                varian="sekunder"
+                                preserveScroll
+                            >
+                                ‹ Bulan sebelumnya
+                            </TombolTautan>
+                            {rekap.berikutnya !== null && (
+                                <TombolTautan
+                                    href={dataPosyandu({
+                                        query: { bulan: rekap.berikutnya },
+                                    })}
+                                    varian="sekunder"
+                                    preserveScroll
+                                >
+                                    Bulan berikutnya ›
+                                </TombolTautan>
+                            )}
+                        </nav>
+                    </div>
+
+                    <Kartu labelSeksi="SKDN">
+                        <dl className="divide-y divide-ink-200">
+                            <BarisAngka
+                                label="S · Balita sasaran (0–59 bulan)"
+                                nilai={rekap.s}
+                            />
+                            <BarisAngka
+                                label="K · Balita punya Buku KIA"
+                                nilai={rekap.k}
+                            />
+                            <BarisAngka
+                                label="D · Balita ditimbang"
+                                nilai={rekap.d}
+                            />
+                            <BarisAngka
+                                label="N · Berat badan naik"
+                                nilai={rekap.n}
+                            />
+                            <BarisAngka
+                                label="D/S · Partisipasi penimbangan"
+                                nilai={persen(rekap.persenDS)}
+                                tebal
+                            />
+                            <BarisAngka
+                                label="N/D · Naik dari yang ditimbang"
+                                nilai={persen(rekap.persenND)}
+                                tebal
+                            />
+                        </dl>
+                    </Kartu>
+
+                    <Kartu labelSeksi="Layanan bulan ini">
+                        <dl className="divide-y divide-ink-200">
+                            <BarisAngka
+                                label="Imunisasi (dosis)"
+                                nilai={rekap.imunisasi}
+                            />
+                            <BarisAngka
+                                label="Vitamin A kapsul biru"
+                                nilai={rekap.vitaminABiru}
+                            />
+                            <BarisAngka
+                                label="Vitamin A kapsul merah"
+                                nilai={rekap.vitaminAMerah}
+                            />
+                            <BarisAngka
+                                label="Obat cacing"
+                                nilai={rekap.obatCacing}
+                            />
+                        </dl>
+                    </Kartu>
+
+                    <Kartu labelSeksi="Status gizi dan risiko stunting">
+                        <Banner varian="info" judul="Belum dapat dihitung">
+                            Jumlah anak per status gizi dan risiko stunting
+                            tampil setelah tabel standar WHO dipasang.
+                        </Banner>
+                    </Kartu>
+                </section>
 
                 <Kartu labelSeksi={`Kader (${kader.length})`}>
                     <ul className="divide-y divide-ink-200">
