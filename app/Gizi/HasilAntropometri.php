@@ -3,8 +3,6 @@
 namespace App\Gizi;
 
 use App\Enums\CaraUkur;
-use App\Enums\JenisKelamin;
-use App\Enums\StatusNT;
 use App\Models\Anak;
 use App\Models\Pengukuran;
 use App\Support\Umur;

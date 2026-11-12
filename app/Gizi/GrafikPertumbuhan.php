@@ -5,6 +5,7 @@ namespace App\Gizi;
 use App\Enums\StatusNT;
 use App\Models\Anak;
 use App\Models\Pengukuran;
+use App\Support\Umur;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -24,7 +25,7 @@ final class GrafikPertumbuhan
             ->all();
 
         $terbaru = $riwayat === [] ? null : $riwayat[array_key_last($riwayat)];
-        $umurBulan = $terbaru['umurBulan'] ?? \App\Support\Umur::bulanPenuh($anak->tanggal_lahir);
+        $umurBulan = $terbaru['umurBulan'] ?? Umur::bulanPenuh($anak->tanggal_lahir);
         $rentangAwal = $umurBulan < 24 ? 0 : 24;
         $rentangAkhir = $umurBulan < 24 ? 24 : 60;
         $jenisKelamin = $anak->jenis_kelamin->value;
@@ -132,7 +133,7 @@ final class GrafikPertumbuhan
                     : ($indeks === 'pb_tb_u' ? $terbaru['pbTbAcuan']
                         : ($indeks === 'bb_pb_tb' ? $terbaru['bb']
                             : ($indeks === 'imt_u' ? $terbaru['imt']
-                                : ($indeks === 'lk_u' ? $terbaru['lk'] : $terbaru['lila']))),
+                                : ($indeks === 'lk_u' ? $terbaru['lk'] : $terbaru['lila'])))),
                 'satuan' => in_array($indeks, ['bb_u', 'bb_pb_tb'], true) ? 'kg'
                     : ($indeks === 'imt_u' ? 'kg/m²' : ($indeks === 'lila' ? 'cm' : 'cm')),
                 'zScore' => $z[$indeks] ?? null,
@@ -337,7 +338,7 @@ final class GrafikPertumbuhan
                 [-3, -2, -1, 0, 1, 2, 3],
                 $cara,
             ),
-            'titik' => array_values(array_filter(array_map(function (array $ukur) use ($pakaiPanjang) {
+            'titik' => array_values(array_filter(array_map(function (array $ukur) {
                 $x = $ukur['pbTbAcuan'];
 
                 return $x === null || $ukur['bb'] === null ? null : [
