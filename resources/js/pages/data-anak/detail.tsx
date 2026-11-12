@@ -1,7 +1,8 @@
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Banner } from '@/components/dasar/banner';
+import { ChipStatus } from '@/components/dasar/chip-status';
+import type { VarianChip } from '@/components/dasar/chip-status';
 import { Dialog } from '@/components/dasar/dialog';
 import { HeaderAnak } from '@/components/dasar/header-anak';
 import { IsianTeks } from '@/components/dasar/isian-teks';
@@ -9,6 +10,8 @@ import { KakiTombol } from '@/components/dasar/kaki-tombol';
 import { Kartu } from '@/components/dasar/kartu';
 import { propsPanel, Tab } from '@/components/dasar/tab';
 import { Tombol, TombolTautan } from '@/components/dasar/tombol';
+import { KartuGrafik } from '@/components/kartu-grafik';
+import type { PropsGrafik } from '@/components/kartu-grafik';
 import { formatDesimal } from '@/lib/desimal';
 import { formatUmurTahunBulan } from '@/lib/umur';
 import { dataAnak, riwayatBukuKia } from '@/routes';
@@ -23,6 +26,20 @@ import type {
 type Props = {
     anak: DetailAnak;
     pengukuran: RiwayatPengukuran[];
+    pertumbuhan: {
+        grafik: PropsGrafik;
+        stunting: {
+            hasil:
+                | 'normal'
+                | 'berisiko_stunting'
+                | 'stunting'
+                | 'diprediksi_berisiko'
+                | 'belum_dinilai';
+            judul: string;
+            alasan: string | null;
+            tindakan: string;
+        };
+    } | null;
     kunjungan: RiwayatKunjungan[];
     layanan: RiwayatLayanan[];
     perubahanTerakhir: { oleh: string; pada: string } | null;
@@ -32,6 +49,21 @@ type Props = {
 type IdTab = 'ringkasan' | 'grafik' | 'riwayat';
 
 const KOSONG = '—';
+
+const VARIAN_STUNTING: Record<
+    | 'normal'
+    | 'berisiko_stunting'
+    | 'stunting'
+    | 'diprediksi_berisiko'
+    | 'belum_dinilai',
+    VarianChip
+> = {
+    normal: 'normal',
+    berisiko_stunting: 'waspada',
+    diprediksi_berisiko: 'waspada',
+    stunting: 'bahaya',
+    belum_dinilai: 'info',
+};
 
 function Baris({ label, nilai }: { label: string; nilai: ReactNode }) {
     return (
@@ -66,6 +98,7 @@ function TandaBukuKia() {
 export default function DetailDataAnak({
     anak,
     pengukuran,
+    pertumbuhan,
     kunjungan,
     layanan,
     perubahanTerakhir,
@@ -246,14 +279,48 @@ export default function DetailDataAnak({
                             {...propsPanel('grafik')}
                             className="flex flex-col gap-4"
                         >
-                            <Banner
-                                varian="info"
-                                judul="Grafik pertumbuhan belum tersedia"
-                            >
-                                Grafik, z-score, dan status gizi tampil setelah
-                                tabel standar WHO dimuat ke aplikasi. Sementara
-                                ini hasil ukur ditampilkan sebagai tabel.
-                            </Banner>
+                            {pertumbuhan && (
+                                <>
+                                    <Kartu labelSeksi="Deteksi risiko stunting">
+                                        <div className="flex flex-col gap-2 py-1">
+                                            <div>
+                                                <ChipStatus
+                                                    varian={
+                                                        VARIAN_STUNTING[
+                                                            pertumbuhan.stunting
+                                                                .hasil
+                                                        ]
+                                                    }
+                                                >
+                                                    {pertumbuhan.stunting.judul}
+                                                </ChipStatus>
+                                            </div>
+                                            {pertumbuhan.stunting.alasan && (
+                                                <p className="text-teks text-ink-900">
+                                                    {
+                                                        pertumbuhan.stunting
+                                                            .alasan
+                                                    }
+                                                    .
+                                                </p>
+                                            )}
+                                            <p className="text-teks text-ink-900">
+                                                <span className="font-bold">
+                                                    Tindakan:
+                                                </span>{' '}
+                                                {pertumbuhan.stunting.tindakan}.
+                                            </p>
+                                            <p className="text-keterangan text-ink-600">
+                                                Dari pengukuran terakhir. Hasil
+                                                skrining, bukan diagnosis.
+                                                Konfirmasi oleh tenaga
+                                                kesehatan.
+                                            </p>
+                                        </div>
+                                    </Kartu>
+                                    <KartuGrafik grafik={pertumbuhan.grafik} />
+                                </>
+                            )}
                             <Kartu labelSeksi="Hasil ukur">
                                 {pengukuran.length === 0 ? (
                                     <p className="py-2 text-teks text-ink-700">

@@ -5,6 +5,9 @@ namespace App\Anak;
 use App\Enums\JenisLayanan;
 use App\Enums\StatusAntrean;
 use App\Enums\SumberData;
+use App\Gizi\DeteksiStunting;
+use App\Gizi\GrafikPertumbuhan;
+use App\Gizi\HasilAntropometri;
 use App\Models\Anak;
 use App\Models\Kunjungan;
 use App\Models\Layanan;
@@ -121,6 +124,38 @@ final class TampilanDetailAnak
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * Grafik pertumbuhan dan deteksi stunting dari seluruh pengukuran
+     * (FR-51, FR-66, PRD 5.8). Null bila anak belum pernah diukur.
+     *
+     * @return array{grafik: array<string, mixed>, stunting: array{hasil: string, judul: string, alasan: string|null, tindakan: string}}|null
+     *                                                                                                                                        hasil 'belum_dinilai' bila pengukuran terakhir perlu ukur ulang (PRD 5.6).
+     */
+    public static function pertumbuhan(Anak $anak): ?array
+    {
+        $riwayat = HasilAntropometri::daftarRiwayat(
+            $anak,
+            $anak->pengukuran()->orderBy('tanggal_ukur')->orderBy('id')->get(),
+        );
+
+        if ($riwayat === []) {
+            return null;
+        }
+
+        $stunting = DeteksiStunting::nilai($riwayat);
+        $terakhir = $riwayat[count($riwayat) - 1];
+
+        return [
+            'grafik' => [
+                'jenisKelamin' => $anak->jenis_kelamin->value,
+                'tabAwal' => 'kms',
+                'pakaiPanjang' => $terakhir['umurBulan'] < 24,
+                'daftar' => GrafikPertumbuhan::daftar($anak, $riwayat),
+            ],
+            'stunting' => [...$stunting, 'hasil' => $stunting['hasil']->value ?? 'belum_dinilai'],
+        ];
     }
 
     /**

@@ -444,3 +444,26 @@ test('unduh CSV mengikuti cari dan penyaring aktif; kosong ditolak dengan pesan'
         ->assertStatus(422)
         ->assertJson(['pesan' => 'Tidak ada data untuk penyaring ini.']);
 });
+
+test('detail anak menampilkan grafik pertumbuhan dan deteksi stunting (FR-51, FR-66, PRD 5.8)', function () {
+    $anak = Anak::factory()->create(['jenis_kelamin' => 'P', 'tanggal_lahir' => today()->subMonths(30)->toDateString()]);
+    Pengukuran::factory()->dariBukuKia()->for($anak)->create([
+        'tanggal_ukur' => today()->subMonths(2)->toDateString(), 'bb' => 12.0, 'pb_tb' => 80.0, 'cara_ukur' => 'berdiri',
+    ]);
+    Pengukuran::factory()->for($anak)->create([
+        'tanggal_ukur' => today()->toDateString(), 'bb' => 12.4, 'pb_tb' => 81.0, 'cara_ukur' => 'berdiri',
+    ]);
+
+    $this->get(route('data-anak.detail', $anak))->assertInertia(fn ($page) => $page
+        ->where('pertumbuhan.stunting.hasil', 'stunting')
+        ->where('pertumbuhan.grafik.jenisKelamin', 'P')
+        ->where('pertumbuhan.grafik.pakaiPanjang', false)
+        ->has('pertumbuhan.grafik.daftar.pb_tb_u.titik', 2)
+        ->where('pertumbuhan.grafik.daftar.pb_tb_u.titik.0.dariBukuKia', true));
+});
+
+test('detail anak tanpa pengukuran tidak memuat grafik', function () {
+    $anak = Anak::factory()->create();
+
+    $this->get(route('data-anak.detail', $anak))->assertInertia(fn ($page) => $page->where('pertumbuhan', null));
+});

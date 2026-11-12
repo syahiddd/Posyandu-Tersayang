@@ -107,6 +107,7 @@ class DataAnakController extends Controller
             'bolehHapus' => $request->user()?->can('delete', $anak) ?? false,
             'anak' => TampilanDetailAnak::identitas($anak),
             'pengukuran' => TampilanDetailAnak::pengukuran($anak),
+            'pertumbuhan' => TampilanDetailAnak::pertumbuhan($anak),
             'kunjungan' => TampilanDetailAnak::kunjungan($anak),
             'layanan' => TampilanDetailAnak::layanan($anak),
             'perubahanTerakhir' => TampilanDetailAnak::perubahanTerakhir($anak),
