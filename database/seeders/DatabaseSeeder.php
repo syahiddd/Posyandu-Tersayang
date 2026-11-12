@@ -107,5 +107,12 @@ class DatabaseSeeder extends Seeder
 
             Pengukuran::factory()->for($anak[$urutan])->for($kunjungan)->create();
         }
+
+        // WithoutModelEvents mematikan hitung otomatis; isi IMT dan z-score
+        // agar data contoh sama dengan data dari meja (PRD 5.6).
+        Pengukuran::query()->each(function (Pengukuran $ukur) {
+            $ukur->hitungAntropometri();
+            $ukur->saveQuietly();
+        });
     }
 }

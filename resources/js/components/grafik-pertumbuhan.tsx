@@ -101,8 +101,10 @@ export function GrafikPertumbuhan({
     const [tabel, setTabel] = useState(false);
     const titik = titikDalamRentang(data);
     const titikHariIni = titik.find((satu) => satu.hariIni) ?? null;
+    // Tanpa kunjungan hari ini (Detail Anak), sorot pengukuran terakhir.
+    const titikAwal = titikHariIni ?? titik.at(-1) ?? null;
     const [dipilih, setDipilih] = useState<number | null>(
-        titikHariIni?.id ?? null,
+        titikAwal?.id ?? null,
     );
     const idTabel = useId();
 
@@ -123,8 +125,8 @@ export function GrafikPertumbuhan({
 
     // Grafik lain (tab baru): kembali menyorot titik hari ini.
     useEffect(() => {
-        setDipilih(titikHariIni?.id ?? null);
-    }, [indeks, titikHariIni?.id]);
+        setDipilih(titikAwal?.id ?? null);
+    }, [indeks, titikAwal?.id]);
 
     // DESIGN bab 9: tinggi 230 px di ponsel, 300 px mulai tablet.
     const tinggi = lebar < 600 ? 230 : 300;
@@ -189,11 +191,11 @@ export function GrafikPertumbuhan({
                         height={tinggi}
                         role="img"
                         aria-label={`${data.judul}. ${
-                            titikHariIni
+                            titikAwal
                                 ? (() => {
                                       const teks = teksTitik(
                                           data,
-                                          titikHariIni,
+                                          titikAwal,
                                           indeks,
                                       );
 

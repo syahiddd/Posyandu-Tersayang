@@ -33,7 +33,7 @@ final class AnalisisKunjungan
     /** @var RiwayatUkur|null Pengukuran hari ini. */
     public readonly ?array $hariIni;
 
-    /** @var array{hasil: HasilDeteksiStunting, judul: string, alasan: string|null, tindakan: string} */
+    /** @var array{hasil: HasilDeteksiStunting|null, judul: string, alasan: string|null, tindakan: string} */
     public readonly array $stunting;
 
     public function __construct(public readonly Kunjungan $kunjungan)
@@ -47,12 +47,7 @@ final class AnalisisKunjungan
             ->orderBy('id')
             ->get();
 
-        $this->riwayat = array_values($this->pengukuran
-            ->map(fn (Pengukuran $ukur) => HasilAntropometri::riwayat($anak, $ukur, $ukur->id === $ukurHariIni?->id))
-            // Pengukuran hari ini menjadi titik terakhir walau ada entri
-            // Buku KIA bertanggal sama.
-            ->sortBy(fn (array $ukur) => [$ukur['tanggal'], $ukur['hariIni'] ? 1 : 0])
-            ->all());
+        $this->riwayat = HasilAntropometri::daftarRiwayat($anak, $this->pengukuran, $ukurHariIni?->id);
 
         $this->hariIni = collect($this->riwayat)->firstWhere('hariIni', true);
 

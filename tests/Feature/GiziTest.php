@@ -114,3 +114,19 @@ test('materi penyuluhan direkomendasikan sesuai kondisi anak (PRD Tabel 32)', fu
         ->and(MateriPenyuluhan::rekomendasi(30, ['imt_u' => ['kode' => 'obesitas']], 'N', HasilDeteksiStunting::Normal, false, ['demam'], ['belum_sesuai_umur']))
         ->toBe(['pola_makan_seimbang', 'perawatan_anak_sakit', 'stimulasi_motorik']);
 });
+
+test('pengukuran tidak wajar tidak dinilai stunting dan tidak dipakai untuk tren (PRD 5.6)', function () {
+    $tidakWajar = riwayat_z([0.1, -6.5]);
+    $tidakWajar[1]['perluUkurUlang'] = true;
+
+    $hasil = DeteksiStunting::nilai($tidakWajar);
+
+    expect($hasil['hasil'])->toBeNull()
+        ->and($hasil['judul'])->toBe('Belum dapat dinilai');
+
+    // Titik lama yang tidak wajar diabaikan: tidak ada "turun dua kali".
+    $riwayat = riwayat_z([-1.1, -7.0, -1.3]);
+    $riwayat[1]['perluUkurUlang'] = true;
+
+    expect(DeteksiStunting::nilai($riwayat)['hasil'])->toBe(HasilDeteksiStunting::Normal);
+});

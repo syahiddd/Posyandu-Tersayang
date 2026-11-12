@@ -7,6 +7,7 @@ use App\Models\Anak;
 use App\Models\Pengukuran;
 use App\Support\Umur;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Collection;
 
 /**
  * Kalkulasi skrining antropometri dari nilai LMS WHO.
@@ -100,7 +101,23 @@ final class HasilAntropometri
     }
 
     /**
-     * Siapkan nilai riwayat untuk grafik dan ringkasan Meja 5.
+     * Riwayat antropometri anak, urut tanggal naik. Pengukuran hari ini
+     * (bila ada) menjadi titik terakhir walau ada entri Buku KIA bertanggal
+     * sama, karena deteksi stunting menilai titik terakhir (PRD 5.8).
+     *
+     * @param  Collection<int, Pengukuran>  $pengukuran
+     * @return list<RiwayatUkur>
+     */
+    public static function daftarRiwayat(Anak $anak, Collection $pengukuran, ?int $idHariIni = null): array
+    {
+        return array_values($pengukuran
+            ->map(fn (Pengukuran $ukur) => self::riwayat($anak, $ukur, $ukur->id === $idHariIni))
+            ->sortBy(fn (array $ukur) => [$ukur['tanggal'], $ukur['hariIni'] ? 1 : 0, $ukur['id']])
+            ->all());
+    }
+
+    /**
+     * Nilai satu pengukuran untuk grafik, Meja 5, dan detail anak.
      *
      * @return RiwayatUkur
      */
@@ -135,6 +152,24 @@ final class HasilAntropometri
             'hariIni' => $hariIni,
             'perluUkurUlang' => $hasil['perluUkurUlang'],
         ];
+    }
+
+    /**
+     * Semua kategori satu indeks, urut dari z terendah (PRD Tabel 25).
+     * Diturunkan dari kategori() agar rekap memakai batas yang sama.
+     *
+     * @return list<Kategori>
+     */
+    public static function daftarKategori(string $indeks): array
+    {
+        $contohZ = match ($indeks) {
+            'bb_u' => [-3.5, -2.5, 0.0, 1.5],
+            'pb_tb_u' => [-3.5, -2.5, 0.0, 3.5],
+            'lk_u' => [-2.5, 0.0, 2.5],
+            default => [-3.5, -2.5, 0.0, 1.5, 2.5, 3.5],
+        };
+
+        return array_values(array_filter(array_map(fn (float $z) => self::kategori($indeks, $z), $contohZ)));
     }
 
     /** @return array{kode: string, label: string, varian: string, tingkat: int}|null */

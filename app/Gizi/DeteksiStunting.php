@@ -14,7 +14,11 @@ use Carbon\CarbonImmutable;
  * Masukan adalah riwayat dari HasilAntropometri::riwayat(), urut tanggal
  * naik; elemen terakhir adalah pengukuran yang dinilai.
  *
- * @phpstan-type Riwayat array{tanggal: string, umurBulan: int, zscore: array<string, float|null>, statusNt: string|null}
+ * Pengukuran bertanda "perlu ukur ulang" (z-score di luar batas wajar, PRD
+ * 5.6) tidak dipakai. Bila pengukuran yang dinilai sendiri tidak wajar,
+ * hasilnya null: belum dapat dinilai sampai anak diukur ulang.
+ *
+ * @phpstan-type Riwayat array{tanggal: string, umurBulan: int, zscore: array<string, float|null>, statusNt: string|null, perluUkurUlang?: bool}
  */
 final class DeteksiStunting
 {
@@ -28,13 +32,24 @@ final class DeteksiStunting
 
     /**
      * @param  list<Riwayat>  $riwayat
-     * @return array{hasil: HasilDeteksiStunting, judul: string, alasan: string|null, tindakan: string}
+     * @return array{hasil: HasilDeteksiStunting|null, judul: string, alasan: string|null, tindakan: string}
      */
     public static function nilai(array $riwayat): array
     {
         if ($riwayat === []) {
             return self::hasil(HasilDeteksiStunting::Normal, null);
         }
+
+        if ($riwayat[count($riwayat) - 1]['perluUkurUlang'] ?? false) {
+            return [
+                'hasil' => null,
+                'judul' => 'Belum dapat dinilai',
+                'alasan' => 'Pengukuran terakhir di luar batas wajar standar WHO',
+                'tindakan' => 'Ukur ulang anak, lalu nilai kembali',
+            ];
+        }
+
+        $riwayat = array_values(array_filter($riwayat, fn (array $ukur) => ! ($ukur['perluUkurUlang'] ?? false)));
 
         $terbaru = $riwayat[count($riwayat) - 1];
         $zPanjang = $terbaru['zscore']['pb_tb_u'] ?? null;

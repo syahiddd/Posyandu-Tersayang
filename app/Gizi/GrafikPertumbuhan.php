@@ -3,178 +3,79 @@
 namespace App\Gizi;
 
 use App\Models\Anak;
-use App\Models\Pengukuran;
 use App\Support\Umur;
-use Illuminate\Support\Collection;
 
 /**
- * Data grafik digital mengikuti rentang dan label Buku KIA 2024 halaman PDF 67-78.
+ * Data grafik pertumbuhan digital (PRD 5.1 sampai 5.3, 5.7; DESIGN 7.1).
+ * Rentang sumbu mengikuti PRD Tabel 23 dan 24, yaitu grafik Buku KIA 2024
+ * halaman buku 131 sampai 153 (PDF 67 sampai 78).
  *
  * @phpstan-import-type RiwayatUkur from HasilAntropometri
+ *
+ * @phpstan-type Titik array{id: int, tanggal: string, umurBulan: int, zScore: float|null, kategori: string, dariBukuKia: bool, hariIni: bool, x: float|int, y: float}
+ * @phpstan-type Grafik array{judul: string, indeks: string, sumbuX: string, sumbuY: string, dariX: int, sampaiX: int, minimumY: int, maksimumY: int, intervalX: int, intervalY: int, garis: list<array{z: int, terlihat: bool, titik: list<array{x: float, y: float}>}>, titik: list<Titik>}
  */
 final class GrafikPertumbuhan
 {
-    /**
-     * @param  Collection<int, Pengukuran>  $pengukuran
-     * @return array<string, mixed>
-     */
-    public static function props(Anak $anak, Collection $pengukuran, ?int $ukurHariIni = null): array
-    {
-        $riwayat = array_values($pengukuran
-            ->sortBy(fn (Pengukuran $ukur) => [$ukur->tanggal_ukur->toDateString(), $ukur->id])
-            ->map(fn (Pengukuran $ukur) => HasilAntropometri::riwayat($anak, $ukur, $ukurHariIni === $ukur->id))
-            ->all());
+    /** Garis z yang dihitung; zona warna memakai semua garis ini. */
+    private const SEMUA_GARIS = [-3, -2, -1, 0, 1, 2, 3];
 
-        $terbaru = $riwayat === [] ? null : $riwayat[array_key_last($riwayat)];
-        $umurBulan = $terbaru['umurBulan'] ?? Umur::bulanPenuh($anak->tanggal_lahir);
-        $rentangAwal = $umurBulan < 24 ? 0 : 24;
-        $rentangAkhir = $umurBulan < 24 ? 24 : 60;
-        $jenisKelamin = $anak->jenis_kelamin->value;
-        $status = self::status($terbaru);
-        $statusStunting = DeteksiStunting::nilai($riwayat);
+    /** BB/U dan PB/U atau TB/U hanya menampilkan −3, −2, 0, +2, +3 (PRD 5.1). */
+    private const GARIS_TANPA_SATU = [-3, -2, 0, 2, 3];
+
+    /**
+     * Enam grafik untuk tab KMS, BB/U, PB/U atau TB/U, BB/PB atau BB/TB,
+     * IMT/U, dan LK. Kelompok umur ditentukan pengukuran terakhir: 0–23
+     * bulan grafik 0–2 tahun, 24–60 bulan grafik 2–5 tahun (PRD 5.6).
+     *
+     * @param  list<RiwayatUkur>  $riwayat  Urut tanggal naik.
+     * @return array{kms: Grafik, bb_u: Grafik, pb_tb_u: Grafik, bb_pb_tb: Grafik, imt_u: Grafik, lk_u: Grafik}
+     */
+    public static function daftar(Anak $anak, array $riwayat): array
+    {
+        $terakhir = $riwayat === [] ? null : $riwayat[count($riwayat) - 1];
+        $umurBulan = $terakhir['umurBulan'] ?? Umur::bulanPenuh($anak->tanggal_lahir);
+        $balita = $umurBulan < 24;
+        $jk = $anak->jenis_kelamin->value;
+        $perempuan = $jk === 'P';
+        [$dari, $sampai] = $balita ? [0, 24] : [24, 60];
 
         return [
-            'riwayat' => $riwayat,
-            'statusGizi' => $status,
-            'deteksiStunting' => [...$statusStunting, 'hasil' => $statusStunting['hasil']->value],
-            'tabAwal' => self::tabPalingPerluPerhatian($status),
-            'grafik' => [
-                'kms' => self::grafikBerat(
-                    $jenisKelamin,
-                    'KMS',
-                    $rentangAwal,
-                    $rentangAkhir,
-                    $umurBulan < 24 ? 1 : ($jenisKelamin === 'P' ? 8 : 8),
-                    $jenisKelamin === 'P' && $rentangAwal === 24 ? 30 : 28,
-                    $riwayat,
-                    'bb_u',
-                    kms: true,
-                ),
-                'bb_u' => self::grafikBerat(
-                    $jenisKelamin,
-                    'Berat badan menurut umur',
-                    $rentangAwal,
-                    $rentangAkhir,
-                    $rentangAwal === 0 ? 2 : ($jenisKelamin === 'P' ? 7 : 8),
-                    $rentangAwal === 0 ? 17 : ($jenisKelamin === 'P' ? 30 : 28),
-                    $riwayat,
-                    'bb_u',
-                ),
-                'pb_tb_u' => self::grafikUmur(
-                    $jenisKelamin,
-                    $umurBulan < 24 ? 'Panjang badan menurut umur' : 'Tinggi badan menurut umur',
-                    'pb_tb_u',
-                    $rentangAwal,
-                    $rentangAkhir,
-                    $rentangAwal === 0 ? 45 : 80,
-                    $rentangAwal === 0 ? 95 : 125,
-                    'cm',
-                    $riwayat,
-                    // PB/U dan TB/U hanya −3, −2, 0, +2, +3 (PRD 5.1, DESIGN 7.1).
-                    garisTerlihat: [-3, -2, 0, 2, 3],
-                ),
-                'bb_pb_tb' => self::grafikBeratMenurutPanjang(
-                    $jenisKelamin,
-                    $umurBulan < 24,
-                    $riwayat,
-                ),
-                'imt_u' => self::grafikUmur(
-                    $jenisKelamin,
-                    'Indeks massa tubuh menurut umur',
-                    'imt_u',
-                    $rentangAwal,
-                    $rentangAkhir,
-                    $rentangAwal === 0 ? 10 : 12,
-                    $rentangAwal === 0 ? 22 : 21,
-                    'kg/m²',
-                    $riwayat,
-                ),
-                'lk_u' => self::grafikUmur(
-                    $jenisKelamin,
-                    'Lingkar kepala menurut umur',
-                    'lk_u',
-                    0,
-                    60,
-                    30,
-                    54,
-                    'cm',
-                    $riwayat,
-                ),
-            ],
+            // KMS memuat tujuh garis; garis merah (−2) dan oranye (+1) dipakai
+            // aturan rujukan (PRD 5.5). BB 1–18 kg (0–2 th), 8–28/30 kg (2–5 th).
+            'kms' => self::grafikUmur(
+                $jk, 'KMS', 'bb_u', $dari, $sampai,
+                $balita ? 1 : 8, $balita ? 18 : ($perempuan ? 30 : 28),
+                'kg', $riwayat, self::SEMUA_GARIS,
+            ),
+            'bb_u' => self::grafikUmur(
+                $jk, 'Berat badan menurut umur', 'bb_u', $dari, $sampai,
+                $balita ? 2 : ($perempuan ? 7 : 8), $balita ? 17 : ($perempuan ? 30 : 28),
+                'kg', $riwayat, self::GARIS_TANPA_SATU,
+            ),
+            'pb_tb_u' => self::grafikUmur(
+                $jk, $balita ? 'Panjang badan menurut umur' : 'Tinggi badan menurut umur', 'pb_tb_u', $dari, $sampai,
+                $balita ? 45 : 80, $balita ? 95 : 125,
+                'cm', $riwayat, self::GARIS_TANPA_SATU,
+            ),
+            'bb_pb_tb' => self::grafikBeratMenurutPanjang($jk, $balita, $riwayat),
+            'imt_u' => self::grafikUmur(
+                $jk, 'Indeks massa tubuh menurut umur', 'imt_u', $dari, $sampai,
+                $balita ? 10 : 12, $balita ? 22 : 21,
+                'kg/m²', $riwayat, self::SEMUA_GARIS,
+            ),
+            'lk_u' => self::grafikUmur(
+                $jk, 'Lingkar kepala menurut umur', 'lk_u', 0, 60,
+                30, 54,
+                'cm', $riwayat, self::SEMUA_GARIS,
+            ),
         ];
-    }
-
-    /**
-     * @param  RiwayatUkur|null  $terbaru
-     * @return array<string, array<string, mixed>>
-     */
-    private static function status(?array $terbaru): array
-    {
-        if ($terbaru === null) {
-            return [];
-        }
-
-        $z = $terbaru['zscore'];
-        $kategori = $terbaru['kategori'];
-        $label = [
-            'bb_u' => 'Berat badan menurut umur (BB/U)',
-            'pb_tb_u' => $terbaru['umurBulan'] < 24 ? 'Panjang badan menurut umur (PB/U)' : 'Tinggi badan menurut umur (TB/U)',
-            'bb_pb_tb' => $terbaru['umurBulan'] < 24 ? 'Berat badan menurut panjang badan (BB/PB)' : 'Berat badan menurut tinggi badan (BB/TB)',
-            'imt_u' => 'IMT menurut umur (IMT/U)',
-            'lk_u' => 'Lingkar kepala menurut umur (LK/U)',
-            'lila' => 'Lingkar lengan atas (LiLA)',
-        ];
-        $hasil = [];
-
-        foreach ($label as $indeks => $nama) {
-            $kategoriSatu = $kategori[$indeks] ?? null;
-
-            if ($kategoriSatu === null) {
-                continue;
-            }
-
-            $hasil[$indeks] = [
-                'indeks' => $indeks,
-                'label' => $nama,
-                'nilai' => $indeks === 'bb_u' ? $terbaru['bb']
-                    : ($indeks === 'pb_tb_u' ? $terbaru['pbTbAcuan']
-                        : ($indeks === 'bb_pb_tb' ? $terbaru['bb']
-                            : ($indeks === 'imt_u' ? $terbaru['imt']
-                                : ($indeks === 'lk_u' ? $terbaru['lk'] : $terbaru['lila'])))),
-                'satuan' => in_array($indeks, ['bb_u', 'bb_pb_tb'], true) ? 'kg'
-                    : ($indeks === 'imt_u' ? 'kg/m²' : ($indeks === 'lila' ? 'cm' : 'cm')),
-                'zScore' => $z[$indeks] ?? null,
-                ...$kategoriSatu,
-            ];
-        }
-
-        return $hasil;
-    }
-
-    /** @param array<string, mixed> $status */
-    private static function tabPalingPerluPerhatian(array $status): string
-    {
-        $urutan = ['bb_u', 'pb_tb_u', 'bb_pb_tb', 'imt_u', 'lk_u'];
-        $terpilih = 'kms';
-        $tingkatTertinggi = 0;
-
-        foreach ($urutan as $indeks) {
-            $tingkat = $status[$indeks]['tingkat'] ?? 0;
-
-            if ($tingkat > $tingkatTertinggi) {
-                $tingkatTertinggi = $tingkat;
-                $terpilih = $indeks;
-            }
-        }
-
-        return $terpilih;
     }
 
     /**
      * @param  list<RiwayatUkur>  $riwayat
-     * @param  list<int>  $garis
      * @param  list<int>  $garisTerlihat
-     * @return array<string, mixed>
+     * @return Grafik
      */
     private static function grafikUmur(
         string $jenisKelamin,
@@ -182,12 +83,11 @@ final class GrafikPertumbuhan
         string $indeks,
         int $dari,
         int $sampai,
-        float $minimumY,
-        float $maksimumY,
+        int $minimumY,
+        int $maksimumY,
         string $satuanY,
         array $riwayat,
-        array $garis = [-3, -2, -1, 0, 1, 2, 3],
-        array $garisTerlihat = [-3, -2, -1, 0, 1, 2, 3],
+        array $garisTerlihat,
     ): array {
         return [
             'judul' => $judul,
@@ -200,58 +100,33 @@ final class GrafikPertumbuhan
             'maksimumY' => $maksimumY,
             'intervalX' => $sampai - $dari > 24 ? 6 : 4,
             'intervalY' => self::intervalY($minimumY, $maksimumY),
-            'garis' => StandarWho::garis($jenisKelamin, $indeks, $dari, $sampai, $garis, garisTerlihat: $garisTerlihat),
-            'titik' => self::titikUmur($riwayat, $indeks),
+            'garis' => StandarWho::garis($jenisKelamin, $indeks, $dari, $sampai, self::SEMUA_GARIS, garisTerlihat: $garisTerlihat),
+            'titik' => self::titik(
+                $riwayat,
+                $indeks,
+                fn (array $ukur) => $ukur['umurBulan'],
+                fn (array $ukur) => match ($indeks) {
+                    'bb_u' => $ukur['bb'],
+                    'pb_tb_u' => $ukur['pbTbAcuan'],
+                    'imt_u' => $ukur['imt'],
+                    'lk_u' => $ukur['lk'],
+                    default => null,
+                },
+            ),
         ];
     }
 
     /**
+     * BB/PB 0–2 tahun (PB 45–110 cm, BB 2–24 kg) atau BB/TB 2–5 tahun
+     * (TB 65–120 cm, BB 6–30 kg laki-laki, 6–32 kg perempuan).
+     *
      * @param  list<RiwayatUkur>  $riwayat
-     * @return array<string, mixed>
-     */
-    private static function grafikBerat(
-        string $jenisKelamin,
-        string $judul,
-        int $dari,
-        int $sampai,
-        float $minimumY,
-        float $maksimumY,
-        array $riwayat,
-        string $indeks,
-        bool $kms = false,
-    ): array {
-        $grafik = self::grafikUmur(
-            $jenisKelamin,
-            $judul,
-            $indeks,
-            $dari,
-            $sampai,
-            $minimumY,
-            $maksimumY,
-            'kg',
-            $riwayat,
-            [-3, -2, -1, 0, 1, 2, 3],
-            // KMS memuat tujuh garis; garis merah (−2) dan oranye (+1) dipakai
-            // aturan rujukan (PRD 5.5). BB/U hanya −3, −2, 0, +2, +3 (PRD 5.1).
-            $kms ? [-3, -2, -1, 0, 1, 2, 3] : [-3, -2, 0, 2, 3],
-        );
-
-        $grafik['intervalY'] = $minimumY < 4 ? 2 : 4;
-
-        return $grafik;
-    }
-
-    /**
-     * @param  list<RiwayatUkur>  $riwayat
-     * @return array<string, mixed>
+     * @return Grafik
      */
     private static function grafikBeratMenurutPanjang(string $jenisKelamin, bool $pakaiPanjang, array $riwayat): array
     {
-        $cara = $pakaiPanjang ? 'pb' : 'tb';
         $minimumX = $pakaiPanjang ? 45 : 65;
         $maksimumX = $pakaiPanjang ? 110 : 120;
-        $minimumY = $pakaiPanjang ? 2 : 6;
-        $maksimumY = $pakaiPanjang ? 24 : ($jenisKelamin === 'P' ? 32 : 30);
 
         return [
             'judul' => $pakaiPanjang ? 'Berat badan menurut panjang badan' : 'Berat badan menurut tinggi badan',
@@ -260,71 +135,59 @@ final class GrafikPertumbuhan
             'sumbuY' => 'kg',
             'dariX' => $minimumX,
             'sampaiX' => $maksimumX,
-            'minimumY' => $minimumY,
-            'maksimumY' => $maksimumY,
+            'minimumY' => $pakaiPanjang ? 2 : 6,
+            'maksimumY' => $pakaiPanjang ? 24 : ($jenisKelamin === 'P' ? 32 : 30),
             'intervalX' => 10,
             'intervalY' => 4,
-            'garis' => StandarWho::garis(
-                $jenisKelamin,
+            'garis' => StandarWho::garis($jenisKelamin, 'bb_pb_tb', $minimumX, $maksimumX, self::SEMUA_GARIS, $pakaiPanjang ? 'pb' : 'tb'),
+            'titik' => self::titik(
+                $riwayat,
                 'bb_pb_tb',
-                $minimumX,
-                $maksimumX,
-                [-3, -2, -1, 0, 1, 2, 3],
-                $cara,
+                fn (array $ukur) => $ukur['pbTbAcuan'],
+                fn (array $ukur) => $ukur['bb'],
             ),
-            'titik' => array_values(array_filter(array_map(function (array $ukur) {
-                $x = $ukur['pbTbAcuan'];
-
-                return $x === null || $ukur['bb'] === null ? null : [
-                    ...self::metadataTitik($ukur, 'bb_pb_tb'),
-                    'x' => $x,
-                    'y' => $ukur['bb'],
-                ];
-            }, $riwayat), fn ($titik) => $titik !== null)),
         ];
     }
 
     /**
+     * Titik anak yang punya nilai untuk indeks ini.
+     *
      * @param  list<RiwayatUkur>  $riwayat
-     * @return list<array<string, mixed>>
+     * @param  callable(RiwayatUkur): (int|float|null)  $x
+     * @param  callable(RiwayatUkur): (float|null)  $y
+     * @return list<Titik>
      */
-    private static function titikUmur(array $riwayat, string $indeks): array
+    private static function titik(array $riwayat, string $indeks, callable $x, callable $y): array
     {
-        return array_values(array_filter(array_map(function (array $ukur) use ($indeks) {
-            $nilai = match ($indeks) {
-                'bb_u' => $ukur['bb'],
-                'pb_tb_u' => $ukur['pbTbAcuan'],
-                'imt_u' => $ukur['imt'],
-                'lk_u' => $ukur['lk'],
-                default => null,
-            };
+        $hasil = [];
 
-            return $nilai === null ? null : [
-                ...self::metadataTitik($ukur, $indeks),
-                'x' => $ukur['umurBulan'],
-                'y' => $nilai,
+        foreach ($riwayat as $ukur) {
+            $nilaiX = $x($ukur);
+            $nilaiY = $y($ukur);
+
+            if ($nilaiX === null || $nilaiY === null) {
+                continue;
+            }
+
+            $kategori = $ukur['kategori'][$indeks] ?? null;
+
+            $hasil[] = [
+                'id' => $ukur['id'],
+                'tanggal' => $ukur['tanggal'],
+                'umurBulan' => $ukur['umurBulan'],
+                'zScore' => $ukur['zscore'][$indeks] ?? null,
+                'kategori' => $kategori['label'] ?? 'Belum dapat dinilai',
+                'dariBukuKia' => $ukur['dariBukuKia'],
+                'hariIni' => $ukur['hariIni'],
+                'x' => $nilaiX,
+                'y' => $nilaiY,
             ];
-        }, $riwayat), fn ($titik) => $titik !== null));
+        }
+
+        return $hasil;
     }
 
-    /**
-     * @param  RiwayatUkur  $ukur
-     * @return array<string, mixed>
-     */
-    private static function metadataTitik(array $ukur, string $indeks): array
-    {
-        return [
-            'id' => $ukur['id'],
-            'tanggal' => $ukur['tanggal'],
-            'umurBulan' => $ukur['umurBulan'],
-            'zScore' => $ukur['zscore'][$indeks] ?? null,
-            'kategori' => $ukur['kategori'][$indeks]['label'] ?? 'Belum dapat dinilai',
-            'dariBukuKia' => $ukur['dariBukuKia'],
-            'hariIni' => $ukur['hariIni'],
-        ];
-    }
-
-    private static function intervalY(float $minimum, float $maksimum): int
+    private static function intervalY(int $minimum, int $maksimum): int
     {
         $rentang = $maksimum - $minimum;
 

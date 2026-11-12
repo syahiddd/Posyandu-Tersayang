@@ -10,13 +10,12 @@ import { KakiTombol } from '@/components/dasar/kaki-tombol';
 import { Kartu } from '@/components/dasar/kartu';
 import { KotakCentangLayanan } from '@/components/dasar/kotak-centang-layanan';
 import { SheetBawah } from '@/components/dasar/sheet-bawah';
-import { Tab } from '@/components/dasar/tab';
 import { Tombol } from '@/components/dasar/tombol';
 import { DetailDuaKolom } from '@/components/detail-dua-kolom';
-import { GrafikPertumbuhan } from '@/components/grafik-pertumbuhan';
+import { KartuGrafik } from '@/components/kartu-grafik';
+import type { PropsGrafik } from '@/components/kartu-grafik';
 import { useDaftarLayarAnak } from '@/hooks/use-layar-anak';
 import { formatSatuDesimal, formatZ } from '@/lib/grafik';
-import type { DataGrafik, IndeksGrafik } from '@/lib/grafik';
 import { teksKbm } from '@/lib/perbandingan';
 import { formatUmurBulan } from '@/lib/umur';
 import { lepas, selesai, tunda } from '@/routes/kunjungan';
@@ -68,7 +67,8 @@ type Props = {
             | 'normal'
             | 'berisiko_stunting'
             | 'stunting'
-            | 'diprediksi_berisiko';
+            | 'diprediksi_berisiko'
+            | 'belum_dinilai';
         judul: string;
         alasan: string | null;
         tindakan: string;
@@ -78,13 +78,7 @@ type Props = {
         judul: string;
         isi: string;
     } | null;
-    grafik: {
-        jenisKelamin: 'L' | 'P';
-        tabAwal: IndeksGrafik;
-        pakaiPanjang: boolean;
-        jumlahTitik: number;
-        daftar: Record<IndeksGrafik, DataGrafik>;
-    } | null;
+    grafik: PropsGrafik | null;
     layanan: RiwayatLayanan[];
     imunisasiTertunda: { kode: string; nama: string; alasan: string }[];
     isiPiringku: {
@@ -113,6 +107,7 @@ const VARIAN_STUNTING: Record<Props['stunting']['hasil'], VarianChip> = {
     berisiko_stunting: 'waspada',
     diprediksi_berisiko: 'waspada',
     stunting: 'bahaya',
+    belum_dinilai: 'info',
 };
 
 function tambahSekaliSaja(daftar: string[], nilai: string): string[] {
@@ -151,7 +146,6 @@ export default function Penyuluhan(props: Props) {
         materi: nilaiAwal?.materi ?? materi.rekomendasi,
         catatan_tindak_lanjut: nilaiAwal?.catatan_tindak_lanjut ?? '',
     });
-    const [tab, setTab] = useState<IndeksGrafik>(grafik?.tabAwal ?? 'kms');
     const [materiBaru, setMateriBaru] = useState('');
     const [tampilkanPiringku, setTampilkanPiringku] = useState(
         isiPiringku.otomatis,
@@ -264,15 +258,6 @@ export default function Penyuluhan(props: Props) {
         ([kunci]) =>
             kunci.startsWith('materi') || kunci.startsWith('pengamatan'),
     )?.[1];
-
-    const tabGrafik: { id: IndeksGrafik; label: string }[] = [
-        { id: 'kms', label: 'KMS' },
-        { id: 'bb_u', label: 'BB/U' },
-        { id: 'pb_tb_u', label: grafik?.pakaiPanjang ? 'PB/U' : 'TB/U' },
-        { id: 'bb_pb_tb', label: grafik?.pakaiPanjang ? 'BB/PB' : 'BB/TB' },
-        { id: 'imt_u', label: 'IMT/U' },
-        { id: 'lk_u', label: 'LK' },
-    ];
 
     return (
         <>
@@ -411,34 +396,7 @@ export default function Penyuluhan(props: Props) {
                                 )}
 
                                 {grafik && !perluUkurUlang && (
-                                    <Kartu
-                                        aria-label="Grafik pertumbuhan"
-                                        className="flex flex-col gap-3"
-                                    >
-                                        <Tab
-                                            label="Jenis grafik"
-                                            item={tabGrafik}
-                                            aktif={tab}
-                                            onUbah={setTab}
-                                            className="-mx-4"
-                                        />
-                                        <div
-                                            id={`panel-${tab}`}
-                                            role="tabpanel"
-                                            aria-labelledby={`tab-${tab}`}
-                                        >
-                                            <p className="mb-2 text-kecil font-bold text-ink-900">
-                                                {grafik.daftar[tab].judul}
-                                            </p>
-                                            <GrafikPertumbuhan
-                                                data={grafik.daftar[tab]}
-                                                indeks={tab}
-                                                jenisKelamin={
-                                                    grafik.jenisKelamin
-                                                }
-                                            />
-                                        </div>
-                                    </Kartu>
+                                    <KartuGrafik grafik={grafik} />
                                 )}
 
                                 <Kartu labelSeksi="Status penimbangan (KMS)">

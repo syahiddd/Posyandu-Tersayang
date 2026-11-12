@@ -58,7 +58,7 @@ test('anak di antrean Meja 5 dapat dibuka', function () {
     $k = buka_di_meja5();
 
     expect($k->status)->toBe(StatusAntrean::SedangDilayani);
-    $this->get(route('meja', 5))->assertInertia(fn ($page) => $page->where('antreanMeja.tersedia', true));
+    $this->get(route('meja', 5))->assertOk()->assertInertia(fn ($page) => $page->has('antreanMeja.antrean', 1));
 });
 
 test('layar Meja 5 menampilkan ringkasan, status gizi, dan grafik (FR-37 sampai FR-39)', function () {
@@ -212,4 +212,45 @@ test('kader yang tidak memegang anak tidak dapat menyelesaikan', function () {
 
     $this->post(route('kunjungan.selesai', $k), isian_meja5())->assertSessionHasErrors('kunjungan');
     expect($k->fresh()->status)->toBe(StatusAntrean::SedangDilayani);
+});
+
+test('rentang sumbu grafik mengikuti Buku KIA (PRD Tabel 23 dan 24)', function (int $umur, string $jk, array $harapan) {
+    $k = buka_di_meja5($umur, $jk);
+
+    $this->get(route('kunjungan.layar', $k))->assertInertia(function ($page) use ($harapan) {
+        foreach ($harapan as $indeks => [$dariX, $sampaiX, $minY, $maksY]) {
+            $page->where("grafik.daftar.{$indeks}.dariX", $dariX)
+                ->where("grafik.daftar.{$indeks}.sampaiX", $sampaiX)
+                ->where("grafik.daftar.{$indeks}.minimumY", $minY)
+                ->where("grafik.daftar.{$indeks}.maksimumY", $maksY);
+        }
+    });
+})->with([
+    'laki-laki 0–2 tahun' => [10, 'L', [
+        'kms' => [0, 24, 1, 18], 'bb_u' => [0, 24, 2, 17], 'pb_tb_u' => [0, 24, 45, 95],
+        'bb_pb_tb' => [45, 110, 2, 24], 'imt_u' => [0, 24, 10, 22], 'lk_u' => [0, 60, 30, 54],
+    ]],
+    'perempuan 2–5 tahun' => [40, 'P', [
+        'kms' => [24, 60, 8, 30], 'bb_u' => [24, 60, 7, 30], 'pb_tb_u' => [24, 60, 80, 125],
+        'bb_pb_tb' => [65, 120, 6, 32], 'imt_u' => [24, 60, 12, 21], 'lk_u' => [0, 60, 30, 54],
+    ]],
+    'laki-laki 2–5 tahun' => [40, 'L', [
+        'kms' => [24, 60, 8, 28], 'bb_u' => [24, 60, 8, 28], 'bb_pb_tb' => [65, 120, 6, 30],
+    ]],
+]);
+
+test('hasil ukur tidak wajar: banner perlu ukur ulang dan stunting belum dinilai (PRD 5.6, DESIGN Tabel 33)', function () {
+    $k = buka_di_meja5(30, 'P');
+    $k->pengukuran->update(['pb_tb' => 60.0]);
+
+    $this->get(route('kunjungan.layar', $k))->assertInertia(fn ($page) => $page
+        ->where('perluUkurUlang', true)
+        ->where('statusGizi', [])
+        ->where('banner.judul', 'Perlu ukur ulang')
+        ->where('stunting.hasil', 'belum_dinilai'));
+
+    $this->post(route('kunjungan.selesai', $k), isian_meja5(['catatan_tindak_lanjut' => 'Ukur ulang bulan depan']))
+        ->assertSessionHasNoErrors();
+
+    expect($k->fresh()->penyuluhan->hasil_deteksi_stunting)->toBeNull();
 });

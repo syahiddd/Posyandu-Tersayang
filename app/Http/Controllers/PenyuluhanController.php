@@ -9,7 +9,6 @@ use App\Antrean\Urungan;
 use App\Enums\HasilDeteksiStunting;
 use App\Enums\Meja;
 use App\Gizi\GrafikPertumbuhan;
-use App\Gizi\HasilAntropometri;
 use App\Http\Requests\SelesaiPenyuluhanRequest;
 use App\Models\Kunjungan;
 use App\Models\Penyuluhan;
@@ -44,7 +43,6 @@ class PenyuluhanController extends Controller
         $rujukan = $analisis->alasanRujukanKms();
         $tertunda = $analisis->imunisasiTertunda();
         $umur = (int) ($hariIni['umurBulan'] ?? TampilanKunjungan::header($kunjungan)['umurBulan']);
-        $grafik = GrafikPertumbuhan::props($anak, $analisis->pengukuran, $kunjungan->pengukuran?->id);
 
         return [
             'anak' => TampilanKunjungan::header($kunjungan),
@@ -60,14 +58,13 @@ class PenyuluhanController extends Controller
             'statusGizi' => $statusGizi,
             'penimbangan' => $penimbangan,
             'rujukanKms' => $rujukan,
-            'stunting' => [...$analisis->stunting, 'hasil' => $analisis->stunting['hasil']->value],
+            'stunting' => [...$analisis->stunting, 'hasil' => $analisis->stunting['hasil']->value ?? 'belum_dinilai'],
             'banner' => self::banner($analisis, $statusGizi, $rujukan),
             'grafik' => $hariIni === null ? null : [
                 'jenisKelamin' => $anak->jenis_kelamin->value,
                 'tabAwal' => self::tabAwal($statusGizi),
                 'pakaiPanjang' => $umur < 24,
-                'jumlahTitik' => count($grafik['riwayat']),
-                'daftar' => $grafik['grafik'],
+                'daftar' => GrafikPertumbuhan::daftar($anak, $analisis->riwayat),
             ],
             'layanan' => TampilanDetailAnak::layanan($anak),
             'imunisasiTertunda' => array_map(fn (array $satu) => [
@@ -87,7 +84,7 @@ class PenyuluhanController extends Controller
                     $umur,
                     $hariIni['kategori'] ?? [],
                     $penimbangan['status'] ?? null,
-                    $analisis->stunting['hasil'],
+                    $analisis->stunting['hasil'] ?? HasilDeteksiStunting::Normal,
                     $tertunda !== [],
                 ),
                 'pemicuPengamatan' => MateriPenyuluhan::MATERI_PENGAMATAN,
@@ -123,7 +120,7 @@ class PenyuluhanController extends Controller
             $alasan[] = 'Status T';
         }
 
-        if ($analisis->stunting['hasil'] !== HasilDeteksiStunting::Normal) {
+        if ($analisis->stunting['hasil'] !== null && $analisis->stunting['hasil'] !== HasilDeteksiStunting::Normal) {
             $alasan[] = $analisis->stunting['judul'];
         }
 
@@ -172,7 +169,7 @@ class PenyuluhanController extends Controller
             ];
         }
 
-        if ($stunting['hasil'] !== HasilDeteksiStunting::Normal) {
+        if ($stunting['hasil'] !== null && $stunting['hasil'] !== HasilDeteksiStunting::Normal) {
             return [
                 'varian' => 'peringatan',
                 'judul' => $stunting['judul'],
@@ -262,22 +259,6 @@ class PenyuluhanController extends Controller
                         : null,
                 ],
             );
-
-            // IMT dan z-score ikut disimpan di pengukuran (PRD 7.1).
-            $ukur = $kunjungan->pengukuran;
-
-            if ($ukur !== null) {
-                $hasil = HasilAntropometri::hitung(
-                    $kunjungan->anak,
-                    $ukur->bb === null ? null : (float) $ukur->bb,
-                    $ukur->pb_tb === null ? null : (float) $ukur->pb_tb,
-                    $ukur->cara_ukur,
-                    $ukur->lila === null ? null : (float) $ukur->lila,
-                    $ukur->lk === null ? null : (float) $ukur->lk,
-                    $ukur->tanggal_ukur,
-                );
-                $ukur->update($hasil['kolom']);
-            }
 
             $this->antrean->selesaikan($kunjungan, $request->user());
         });
