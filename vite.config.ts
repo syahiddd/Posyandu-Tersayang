@@ -63,6 +63,8 @@ export default defineConfig({
             '.github/**',
             // Dokumen acuan tidak boleh diubah, termasuk oleh formatter.
             'docs/**',
+            // Tabel standar WHO hasil ekstraksi; data acuan, bukan kode.
+            'resources/data/**',
             'composer.json',
             'resources/views/mail/*',
         ],
