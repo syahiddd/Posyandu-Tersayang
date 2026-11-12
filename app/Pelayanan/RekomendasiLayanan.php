@@ -17,8 +17,10 @@ use Illuminate\Support\Collection;
  * FR-30, FR-33, FR-34). Jadwal dan batas umur dibaca dari
  * config/imunisasi.php (Buku KIA 2024 halaman 123 sampai 125).
  *
- * Layanan yang tercatat pada kunjungan ini sendiri tidak dihitung sebagai
- * riwayat, sehingga layar dapat dibuka ulang setelah Batal atau Tunda.
+ * Untuk Meja 4, layanan yang tercatat pada kunjungan ini sendiri tidak
+ * dihitung sebagai riwayat, sehingga layar dapat dibuka ulang setelah Batal
+ * atau Tunda. Meja 5 menyertakannya untuk imunisasi yang masih harus
+ * dikejar setelah layanan hari ini (FR-41).
  *
  * @phpstan-type Vaksin array{nama: string, umur_bulan: int, kelompok: string, umur_maks: int, khusus_endemis?: bool}
  * @phpstan-type AcuanVitaminObat array{jenis: string, nama: string, umur_min: int, umur_maks: int|null}
@@ -34,16 +36,16 @@ final class RekomendasiLayanan
     /** @var Collection<int, Layanan> Riwayat layanan anak di luar kunjungan ini, terbaru di atas. */
     private Collection $riwayat;
 
-    public function __construct(private Kunjungan $kunjungan)
+    public function __construct(private Kunjungan $kunjungan, bool $sertakanKunjunganIni = false)
     {
         $this->anak = $kunjungan->anak;
         $this->tanggal = $kunjungan->tanggal->toImmutable();
         $this->umur = Umur::bulanPenuh($this->anak->tanggal_lahir, $kunjungan->tanggal);
 
         $this->riwayat = $this->anak->layanan()
-            ->where(fn (Builder $query) => $query
+            ->when(! $sertakanKunjunganIni, fn (Builder $query) => $query->where(fn (Builder $q) => $q
                 ->whereNull('kunjungan_id')
-                ->orWhere('kunjungan_id', '!=', $kunjungan->id))
+                ->orWhere('kunjungan_id', '!=', $kunjungan->id)))
             ->orderByDesc('tanggal')
             ->orderByDesc('id')
             ->get();
@@ -97,6 +99,23 @@ final class RekomendasiLayanan
         }
 
         return $daftar;
+    }
+
+    /**
+     * Imunisasi yang masih harus dikejar (FR-41): dosis jatuh tempo yang
+     * belum tercatat, tanpa JE yang khusus daerah endemis.
+     *
+     * @return list<array{kode: string, nama: string, alasan: string, terlambat: bool, tercentang: bool}>
+     */
+    public function imunisasiTertunda(): array
+    {
+        /** @var array<string, Vaksin> $vaksin */
+        $vaksin = config('imunisasi.vaksin');
+
+        return array_values(array_filter(
+            $this->imunisasi(),
+            fn (array $satu) => ! ($vaksin[$satu['kode']]['khusus_endemis'] ?? false),
+        ));
     }
 
     /**

@@ -16,18 +16,27 @@ export function DetailDuaKolom({
     kiri,
     kanan,
     className,
+    kiriLebar = false,
 }: {
     kiri: ReactNode;
     kanan: ReactNode;
     /** Jarak antarisian, misalnya gap-4 atau gap-5. */
     className?: string;
+    /**
+     * Kolom kiri 3/5 lebar: Meja 5 memberi ruang lebih untuk grafik
+     * (DESIGN bab 9, grafik 480–640 px di desktop).
+     */
+    kiriLebar?: boolean;
 }) {
     const kolom = 'contents @min-[640px]:flex @min-[640px]:flex-col';
 
     return (
         <div
             className={clsx(
-                'flex flex-1 flex-col @min-[640px]:grid @min-[640px]:grid-cols-2 @min-[640px]:content-start @min-[640px]:items-start @min-[640px]:gap-x-6',
+                'flex flex-1 flex-col @min-[640px]:grid @min-[640px]:content-start @min-[640px]:items-start @min-[640px]:gap-x-6',
+                kiriLebar
+                    ? '@min-[640px]:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]'
+                    : '@min-[640px]:grid-cols-2',
                 className,
             )}
         >
