@@ -220,11 +220,11 @@ test('kunjungan hari sebelumnya tidak dapat dibuka (PRD 3.3)', function () {
     $this->post(route('kunjungan.buka', $kemarin))->assertSessionHasErrors(['kunjungan' => 'Kunjungan ini bukan kunjungan hari ini.']);
 });
 
-test('Meja 4 dan 5 menampilkan antrean tetapi belum bisa dibuka', function () {
-    $kunjungan = Kunjungan::factory()->diMeja(Meja::Pelayanan)->create();
-    kader(4);
+test('Meja 5 menampilkan antrean tetapi belum bisa dibuka', function () {
+    $kunjungan = Kunjungan::factory()->diMeja(Meja::Penyuluhan)->create();
+    kader(5);
 
-    $this->get(route('meja', 4))->assertInertia(fn ($page) => $page->where('antreanMeja.tersedia', false)->has('antreanMeja.antrean', 1));
+    $this->get(route('meja', 5))->assertInertia(fn ($page) => $page->where('antreanMeja.tersedia', false)->has('antreanMeja.antrean', 1));
     $this->post(route('kunjungan.buka', $kunjungan))->assertSessionHasErrors('kunjungan');
 });
 

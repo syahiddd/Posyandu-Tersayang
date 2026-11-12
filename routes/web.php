@@ -10,6 +10,7 @@ use App\Http\Controllers\GantiSandiController;
 use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\Meja1Controller;
 use App\Http\Controllers\MejaController;
+use App\Http\Controllers\PelayananController;
 use App\Http\Controllers\PendataanController;
 use App\Http\Controllers\PengukuranController;
 use App\Http\Controllers\PilihMejaController;
@@ -66,6 +67,9 @@ Route::middleware('auth')->group(function () {
         // Meja 3 Pendataan (PRD 4.5, FR-24 sampai FR-29); nilai ukur tidak dapat diubah di sini.
         Route::post('kunjungan/{kunjungan}/pendataan', [PendataanController::class, 'simpan'])->name('kunjungan.pendataan');
         Route::post('kunjungan/{kunjungan}/kembalikan', [PendataanController::class, 'kembalikan'])->name('kunjungan.kembalikan');
+
+        // Meja 4 Pelayanan (PRD 4.6, FR-30 sampai FR-36).
+        Route::post('kunjungan/{kunjungan}/pelayanan', [PelayananController::class, 'simpan'])->name('kunjungan.pelayanan');
 
         // S20: menu Lainnya (DESIGN Tabel 11).
         Route::inertia('lainnya', 'lainnya')->name('lainnya');
