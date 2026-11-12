@@ -209,10 +209,9 @@ class PenyuluhanController extends Controller
      */
     private static function opsi(string $kunci): array
     {
-        return collect((array) config($kunci))
+        return array_values(collect((array) config($kunci))
             ->map(fn (string $label, string $kode) => ['kode' => $kode, 'label' => $label])
-            ->values()
-            ->all();
+            ->all());
     }
 
     /**

@@ -8,12 +8,12 @@ Stack: Laravel 13, Inertia 3 + React 19 + TypeScript, Tailwind 4, Vite+ (`vp`), 
 
 ## Prasyarat
 
-| Perangkat | Versi                     | Catatan                                                                                                                                  |
-| --------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| PHP       | 8.3 ke atas              | Ekstensi `pdo_mysql`, `mbstring`, `openssl`, `fileinfo`, `xml`, `tokenizer`, `curl`.                                  |
-| Composer  | 2.x                       |                                                                                                                                          |
-| Node.js   | 22 ke atas                | npm ikut terpasang.                                                                                                                      |
-| MySQL     | 8.x                       |                                                                                                                                          |
+| Perangkat | Versi       | Catatan                                                                              |
+| --------- | ----------- | ------------------------------------------------------------------------------------ |
+| PHP       | 8.3 ke atas | Ekstensi `pdo_mysql`, `mbstring`, `openssl`, `fileinfo`, `xml`, `tokenizer`, `curl`. |
+| Composer  | 2.x         |                                                                                      |
+| Node.js   | 22 ke atas  | npm ikut terpasang.                                                                  |
+| MySQL     | 8.x         |                                                                                      |
 
 Di Windows, jalankan perintah dari Terminal Laragon atau pastikan PHP Laragon, Composer, dan Node.js tersedia di `PATH`. PHP harus tetap tersedia saat `npm run build` atau `npm run dev`, karena plugin Wayfinder memanggil `php artisan`.
 

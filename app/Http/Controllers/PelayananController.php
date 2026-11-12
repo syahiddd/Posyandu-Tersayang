@@ -72,7 +72,7 @@ class PelayananController extends Controller
                 ->map(fn (Layanan $layanan) => ['kode' => $layanan->detail, 'batch' => $layanan->nomor_batch ?? ''])
                 ->values()
                 ->all(),
-            'vitamin_a' => $tersimpan->firstWhere('jenis', JenisLayanan::VitaminA)?->detail ?? '',
+            'vitamin_a' => $tersimpan->firstWhere('jenis', JenisLayanan::VitaminA)->detail ?? '',
             'obat_cacing' => $tersimpan->contains('jenis', JenisLayanan::ObatCacing),
             'catatan_pelayanan' => $kunjungan->catatan_pelayanan ?? '',
             'catatan_penyuluhan' => $kunjungan->catatan_penyuluhan ?? '',

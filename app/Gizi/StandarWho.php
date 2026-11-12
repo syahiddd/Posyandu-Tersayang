@@ -58,6 +58,7 @@ final class StandarWho
      * Susun garis acuan untuk SVG. Posisi grafik dinyatakan dalam bulan atau cm.
      *
      * @param  list<int>  $garis
+     * @param  list<int>|null  $garisTerlihat
      * @return list<array{z: int, terlihat: bool, titik: list<array{x: float, y: float}>}>
      */
     public static function garis(
@@ -152,7 +153,10 @@ final class StandarWho
         return self::lmsDariTabel(self::tabel($jenisKelamin, $indeks, $cara), $posisi);
     }
 
-    /** @return array{0: float, 1: float, 2: float}|null */
+    /**
+     * @param  array{xAxis: string, rows: array<int, array{0: float, 1: float, 2: float, 3: float}>}  $tabel
+     * @return array{0: float, 1: float, 2: float}|null
+     */
     private static function lmsDariTabel(array $tabel, float $posisi): ?array
     {
         $baris = $tabel['rows'];

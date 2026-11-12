@@ -7,7 +7,11 @@ use App\Models\Pengukuran;
 use App\Support\Umur;
 use Illuminate\Support\Collection;
 
-/** Data grafik digital mengikuti rentang dan label Buku KIA 2024 halaman PDF 67-78. */
+/**
+ * Data grafik digital mengikuti rentang dan label Buku KIA 2024 halaman PDF 67-78.
+ *
+ * @phpstan-import-type RiwayatUkur from HasilAntropometri
+ */
 final class GrafikPertumbuhan
 {
     /**
@@ -16,11 +20,10 @@ final class GrafikPertumbuhan
      */
     public static function props(Anak $anak, Collection $pengukuran, ?int $ukurHariIni = null): array
     {
-        $riwayat = $pengukuran
+        $riwayat = array_values($pengukuran
             ->sortBy(fn (Pengukuran $ukur) => [$ukur->tanggal_ukur->toDateString(), $ukur->id])
-            ->values()
             ->map(fn (Pengukuran $ukur) => HasilAntropometri::riwayat($anak, $ukur, $ukurHariIni === $ukur->id))
-            ->all();
+            ->all());
 
         $terbaru = $riwayat === [] ? null : $riwayat[array_key_last($riwayat)];
         $umurBulan = $terbaru['umurBulan'] ?? Umur::bulanPenuh($anak->tanggal_lahir);
@@ -101,7 +104,10 @@ final class GrafikPertumbuhan
         ];
     }
 
-    /** @param array<string, mixed>|null $terbaru @return array<string, array<string, mixed>> */
+    /**
+     * @param  RiwayatUkur|null  $terbaru
+     * @return array<string, array<string, mixed>>
+     */
     private static function status(?array $terbaru): array
     {
         if ($terbaru === null) {
@@ -164,7 +170,12 @@ final class GrafikPertumbuhan
         return $terpilih;
     }
 
-    /** @param list<array<string, mixed>> $riwayat @param list<int> $garis @param list<int> $garisTerlihat */
+    /**
+     * @param  list<RiwayatUkur>  $riwayat
+     * @param  list<int>  $garis
+     * @param  list<int>  $garisTerlihat
+     * @return array<string, mixed>
+     */
     private static function grafikUmur(
         string $jenisKelamin,
         string $judul,
@@ -194,7 +205,10 @@ final class GrafikPertumbuhan
         ];
     }
 
-    /** @param list<array<string, mixed>> $riwayat */
+    /**
+     * @param  list<RiwayatUkur>  $riwayat
+     * @return array<string, mixed>
+     */
     private static function grafikBerat(
         string $jenisKelamin,
         string $judul,
@@ -227,7 +241,10 @@ final class GrafikPertumbuhan
         return $grafik;
     }
 
-    /** @param list<array<string, mixed>> $riwayat */
+    /**
+     * @param  list<RiwayatUkur>  $riwayat
+     * @return array<string, mixed>
+     */
     private static function grafikBeratMenurutPanjang(string $jenisKelamin, bool $pakaiPanjang, array $riwayat): array
     {
         $cara = $pakaiPanjang ? 'pb' : 'tb';
@@ -267,7 +284,10 @@ final class GrafikPertumbuhan
         ];
     }
 
-    /** @param list<array<string, mixed>> $riwayat @return list<array<string, mixed>> */
+    /**
+     * @param  list<RiwayatUkur>  $riwayat
+     * @return list<array<string, mixed>>
+     */
     private static function titikUmur(array $riwayat, string $indeks): array
     {
         return array_values(array_filter(array_map(function (array $ukur) use ($indeks) {
@@ -287,7 +307,10 @@ final class GrafikPertumbuhan
         }, $riwayat), fn ($titik) => $titik !== null));
     }
 
-    /** @param array<string, mixed> $ukur @return array<string, mixed> */
+    /**
+     * @param  RiwayatUkur  $ukur
+     * @return array<string, mixed>
+     */
     private static function metadataTitik(array $ukur, string $indeks): array
     {
         return [

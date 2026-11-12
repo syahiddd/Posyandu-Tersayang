@@ -16,6 +16,8 @@ use Illuminate\Support\Collection;
  * Hasil kunjungan yang dibaca Meja 5 (PRD 4.7, bab 5): status gizi per
  * indeks, status N/T dan rujukan KMS, deteksi stunting, dan imunisasi yang
  * masih harus dikejar. Dihitung dari pengukuran sampai tanggal kunjungan.
+ *
+ * @phpstan-import-type RiwayatUkur from HasilAntropometri
  */
 final class AnalisisKunjungan
 {
@@ -25,10 +27,10 @@ final class AnalisisKunjungan
     /** @var Collection<int, Pengukuran> */
     public readonly Collection $pengukuran;
 
-    /** @var list<array<string, mixed>> Riwayat antropometri, urut tanggal naik. */
+    /** @var list<RiwayatUkur> Riwayat antropometri, urut tanggal naik. */
     public readonly array $riwayat;
 
-    /** @var array<string, mixed>|null Pengukuran hari ini. */
+    /** @var RiwayatUkur|null Pengukuran hari ini. */
     public readonly ?array $hariIni;
 
     /** @var array{hasil: HasilDeteksiStunting, judul: string, alasan: string|null, tindakan: string} */
@@ -45,13 +47,12 @@ final class AnalisisKunjungan
             ->orderBy('id')
             ->get();
 
-        $this->riwayat = $this->pengukuran
+        $this->riwayat = array_values($this->pengukuran
             ->map(fn (Pengukuran $ukur) => HasilAntropometri::riwayat($anak, $ukur, $ukur->id === $ukurHariIni?->id))
             // Pengukuran hari ini menjadi titik terakhir walau ada entri
             // Buku KIA bertanggal sama.
             ->sortBy(fn (array $ukur) => [$ukur['tanggal'], $ukur['hariIni'] ? 1 : 0])
-            ->values()
-            ->all();
+            ->all());
 
         $this->hariIni = collect($this->riwayat)->firstWhere('hariIni', true);
 

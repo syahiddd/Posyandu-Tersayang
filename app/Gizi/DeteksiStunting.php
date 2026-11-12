@@ -36,9 +36,9 @@ final class DeteksiStunting
             return self::hasil(HasilDeteksiStunting::Normal, null);
         }
 
-        $terbaru = $riwayat[array_key_last($riwayat)];
+        $terbaru = $riwayat[count($riwayat) - 1];
         $zPanjang = $terbaru['zscore']['pb_tb_u'] ?? null;
-        $label = ($terbaru['umurBulan'] ?? 0) < 24 ? 'PB/U' : 'TB/U';
+        $label = $terbaru['umurBulan'] < 24 ? 'PB/U' : 'TB/U';
 
         if ($zPanjang !== null && $zPanjang < -2) {
             return self::hasil(
@@ -74,7 +74,7 @@ final class DeteksiStunting
      */
     private static function alasanBerisiko(array $riwayat, string $label): ?string
     {
-        $terbaru = $riwayat[array_key_last($riwayat)];
+        $terbaru = $riwayat[count($riwayat) - 1];
         $zPanjang = $terbaru['zscore']['pb_tb_u'] ?? null;
 
         $skor = array_values(array_filter(
@@ -121,7 +121,7 @@ final class DeteksiStunting
             return null;
         }
 
-        $terbaru = CarbonImmutable::parse($riwayat[array_key_last($riwayat)]['tanggal']);
+        $terbaru = CarbonImmutable::parse($riwayat[count($riwayat) - 1]['tanggal']);
         $batas = $terbaru->subMonthsNoOverflow(self::BULAN_TREN);
 
         $titik = [];
