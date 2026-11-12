@@ -1,6 +1,7 @@
 import {
     createContext,
     useContext,
+    useLayoutEffect,
     useMemo,
     useState,
     useSyncExternalStore,
@@ -15,6 +16,24 @@ import type { AntreanToast, DataToast } from '@/lib/antrean-toast';
  * (jarak bawah lewat variabel CSS --offset-toast dari tata letak) sehingga
  * tidak menutupi tombol utama. role="status" (bab 10.4).
  */
+
+/**
+ * Jarak bawah notifikasi dari halaman yang sedang tampil. Wilayah toast
+ * dipasang di luar halaman (app.tsx), sehingga variabel CSS dari halaman
+ * tidak turun ke sini; nilainya dibaca dari elemen terdalam yang
+ * menetapkannya (halaman lebih dalam daripada tata letak).
+ */
+function offsetToast(): string {
+    const sumber = document.querySelectorAll<HTMLElement>(
+        '[class*="--offset-toast"]',
+    );
+    const terdalam = sumber[sumber.length - 1];
+    const nilai = terdalam
+        ? getComputedStyle(terdalam).getPropertyValue('--offset-toast').trim()
+        : '';
+
+    return nilai === '' ? '16px' : nilai;
+}
 const KonteksToast = createContext<AntreanToast | null>(null);
 
 export function PenyediaToast({ children }: { children: ReactNode }) {
@@ -55,12 +74,21 @@ function WilayahToast({ antrean }: { antrean: AntreanToast }) {
         antrean.daftar,
         antrean.daftar,
     );
+    const [offset, setOffset] = useState('16px');
+
+    // Dibaca ulang setiap notifikasi berubah: halaman bisa sudah berganti.
+    useLayoutEffect(() => {
+        if (daftar.length > 0) {
+            setOffset(offsetToast());
+        }
+    }, [daftar]);
 
     return (
         <div
             role="status"
             aria-live="polite"
-            className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex flex-col items-center gap-2 px-4 pb-[var(--offset-toast,16px)]"
+            style={{ paddingBottom: offset }}
+            className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex flex-col items-center gap-2 px-4"
         >
             {daftar.map((toast) => (
                 <ItemToast key={toast.id} toast={toast} antrean={antrean} />
