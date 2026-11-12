@@ -17,8 +17,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 /**
  * S18 Rekapitulasi Imunisasi (PRD 4.10, DESIGN 6.5): penyaring periode,
  * jenis vaksin, dan dusun; tile cakupan per vaksin; tabel anak × vaksin
- * (FR-55, FR-56) dan unduh CSV (FR-58). Penandaan imunisasi terlambat
- * (FR-57) menunggu tabel Pelayanan Imunisasi Buku KIA.
+ * (FR-55, FR-56), tanda imunisasi terlambat menurut tabel Pelayanan
+ * Imunisasi Buku KIA (FR-57), dan unduh CSV (FR-58).
  */
 class RekapImunisasiController extends Controller
 {
@@ -50,7 +50,9 @@ class RekapImunisasiController extends Controller
                     'tanggal' => Tanggal::singkat($sel['tanggal']),
                     'dariBukuKia' => $sel['dariBukuKia'],
                 ])->values(),
+                'terlambat' => $satu['terlambat'],
             ]),
+            'jumlahTerlambat' => collect($baris)->filter(fn (array $satu) => $satu['terlambat'] !== [])->count(),
             'jumlahPerDosis' => array_values($rekap?->jumlahPerDosis($baris) ?? []),
             'cakupan' => collect($rekap?->jumlahPerKelompok($baris) ?? [])
                 ->map(fn (int $jumlah, string $kode) => [
@@ -84,12 +86,17 @@ class RekapImunisasiController extends Controller
             BerkasCsv::tanggal($satu['anak']->tanggal_lahir),
             $satu['anak']->dusun,
             ...array_values(array_map(fn (?array $sel) => BerkasCsv::tanggal($sel['tanggal'] ?? null), $satu['sel'])),
+            implode(', ', $satu['terlambat']),
         ], $baris);
-        $isi[] = ['Jumlah anak', '', '', '', '', ...array_values($rekap->jumlahPerDosis($baris))];
+        $isi[] = [
+            'Jumlah anak', '', '', '', '', ...array_values($rekap->jumlahPerDosis($baris)),
+            count(array_filter($baris, fn (array $satu) => $satu['terlambat'] !== [])),
+        ];
 
         return BerkasCsv::unduh('rekap-imunisasi', [
             'Nama', 'NIK', 'Jenis Kelamin', 'Tanggal Lahir', 'Dusun',
             ...array_keys($kolom),
+            'Imunisasi terlambat',
         ], $isi);
     }
 

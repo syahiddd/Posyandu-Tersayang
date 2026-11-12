@@ -13,16 +13,23 @@ type Props = {
     tanggal: string;
     ringkasan: { terdaftar: number; sudahDitimbang: number; selesai: number };
     antrean: AntreanMeja[];
+    /** Anak yang perlu tindak lanjut gizi bulan ini (DESIGN Tabel 24). */
+    perluTindakLanjut: number;
 };
 
 /**
  * S03 Beranda (FR-06, FR-07, FR-08; DESIGN 6.1 Tabel 24). Semua angka
  * dihitung dari kunjungan hari ini di database.
  */
-export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
+export default function Beranda({
+    tanggal,
+    ringkasan,
+    antrean,
+    perluTindakLanjut,
+}: Props) {
     const { mejaAktif, namaPosyandu, name } = usePage().props;
     // Angka diperbarui otomatis tanpa memuat ulang halaman (FR-09).
-    useAntreanRealtime(['ringkasan', 'antrean']);
+    useAntreanRealtime(['ringkasan', 'antrean', 'perluTindakLanjut']);
     const antreanSaya = antrean.find((item) => item.nomor === mejaAktif?.nomor);
 
     return (
@@ -75,30 +82,55 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
                         </ul>
                     </Kartu>
 
-                    <Kartu labelSeksi="Menu lain">
-                        <ul className="divide-y divide-ink-200">
-                            {[
-                                { label: 'Data Anak', href: dataAnak().url },
-                                {
-                                    label: 'Rekapitulasi Imunisasi',
-                                    href: rekapImunisasi().url,
-                                },
-                                {
-                                    label: 'Data Posyandu',
-                                    href: dataPosyandu().url,
-                                },
-                            ].map((menu) => (
-                                <li key={menu.label}>
-                                    <Link
-                                        href={menu.href}
-                                        className="flex min-h-target-min items-center py-2 text-teks font-bold text-ink-900 underline underline-offset-4"
-                                    >
-                                        {menu.label}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </Kartu>
+                    <div className="flex flex-col gap-5">
+                        <Kartu labelSeksi="Perhatian">
+                            <p className="text-teks text-ink-900">
+                                <span className="text-angka tabular-nums">
+                                    {perluTindakLanjut}
+                                </span>{' '}
+                                anak perlu tindak lanjut gizi bulan ini
+                            </p>
+                            <p className="pt-1 text-keterangan text-ink-600">
+                                Status gizi di luar normal, berat badan tidak
+                                naik (T), atau berisiko stunting pada
+                                penimbangan terakhir.
+                            </p>
+                            <Link
+                                href={dataPosyandu().url}
+                                className="inline-flex min-h-target-min items-center text-teks font-bold text-ink-900 underline underline-offset-4"
+                            >
+                                Lihat rekap status gizi
+                            </Link>
+                        </Kartu>
+
+                        <Kartu labelSeksi="Menu lain">
+                            <ul className="divide-y divide-ink-200">
+                                {[
+                                    {
+                                        label: 'Data Anak',
+                                        href: dataAnak().url,
+                                    },
+                                    {
+                                        label: 'Rekapitulasi Imunisasi',
+                                        href: rekapImunisasi().url,
+                                    },
+                                    {
+                                        label: 'Data Posyandu',
+                                        href: dataPosyandu().url,
+                                    },
+                                ].map((menu) => (
+                                    <li key={menu.label}>
+                                        <Link
+                                            href={menu.href}
+                                            className="flex min-h-target-min items-center py-2 text-teks font-bold text-ink-900 underline underline-offset-4"
+                                        >
+                                            {menu.label}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </Kartu>
+                    </div>
                 </div>
 
                 {mejaAktif && (

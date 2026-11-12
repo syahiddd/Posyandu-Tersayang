@@ -2,7 +2,9 @@
 
 use App\Enums\Meja;
 use App\Enums\StatusAntrean;
+use App\Models\Anak;
 use App\Models\Kunjungan;
+use App\Models\Pengukuran;
 use App\Models\Posyandu;
 use App\Models\User;
 use App\Support\MejaAktif;
@@ -160,4 +162,17 @@ test('keluar menghapus sesi dan meja yang dipilih (FR-05)', function () {
 
     $this->assertGuest();
     $this->get(route('beranda'))->assertRedirect(route('login'));
+});
+
+test('Beranda menghitung anak yang perlu tindak lanjut gizi bulan ini (DESIGN Tabel 24)', function () {
+    $anak = Anak::factory()->create([
+        'jenis_kelamin' => 'P', 'tanggal_lahir' => today()->subMonths(30)->toDateString(),
+    ]);
+    // TB jauh di bawah −2 SD: stunting, perlu tindak lanjut.
+    Pengukuran::factory()->for($anak)->create([
+        'tanggal_ukur' => today()->toDateString(), 'bb' => 12.4, 'pb_tb' => 80.0, 'cara_ukur' => 'berdiri', 'status_nt' => 'N',
+    ]);
+    $this->actingAs(User::factory()->create())->withSession([MejaAktif::KUNCI_SESI => 1]);
+
+    $this->get(route('beranda'))->assertInertia(fn ($page) => $page->where('perluTindakLanjut', 1));
 });

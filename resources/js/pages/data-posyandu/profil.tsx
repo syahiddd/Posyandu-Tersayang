@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react';
-import { Banner } from '@/components/dasar/banner';
+import { ChipStatus } from '@/components/dasar/chip-status';
+import type { VarianChip } from '@/components/dasar/chip-status';
 import { Kartu } from '@/components/dasar/kartu';
 import { TombolTautan } from '@/components/dasar/tombol';
 import { TombolUnduhCsv } from '@/components/tombol-unduh-csv';
@@ -32,6 +33,12 @@ type RekapBulanan = {
     vitaminABiru: number;
     vitaminAMerah: number;
     obatCacing: number;
+    statusGizi: {
+        indeks: string;
+        label: string;
+        kategori: { label: string; varian: VarianChip; jumlah: number }[];
+    }[];
+    stunting: { stunting: number; berisiko: number; diprediksi: number };
 };
 
 type Props = {
@@ -234,12 +241,49 @@ export default function DataPosyandu({
                         </dl>
                     </Kartu>
 
-                    <Kartu labelSeksi="Status gizi dan risiko stunting">
-                        <Banner varian="info" judul="Belum dapat dihitung">
-                            Jumlah anak per status gizi dan risiko stunting
-                            tampil setelah tabel standar WHO dipasang.
-                        </Banner>
+                    <Kartu labelSeksi="Risiko stunting (skrining)">
+                        <dl className="divide-y divide-ink-200">
+                            <BarisAngka
+                                label="Stunting (pendek atau sangat pendek)"
+                                nilai={rekap.stunting.stunting}
+                            />
+                            <BarisAngka
+                                label="Berisiko stunting"
+                                nilai={rekap.stunting.berisiko}
+                            />
+                            <BarisAngka
+                                label="Diprediksi berisiko bila tren berlanjut"
+                                nilai={rekap.stunting.diprediksi}
+                            />
+                        </dl>
+                        <p className="pt-2 text-keterangan text-ink-600">
+                            Dari penimbangan terakhir anak yang ditimbang (D).
+                            Hasil skrining, perlu konfirmasi tenaga kesehatan.
+                        </p>
                     </Kartu>
+
+                    {rekap.statusGizi.map((indeks) => (
+                        <Kartu
+                            key={indeks.indeks}
+                            labelSeksi={`Status gizi ${indeks.label}`}
+                        >
+                            <ul className="divide-y divide-ink-200">
+                                {indeks.kategori.map((kategori) => (
+                                    <li
+                                        key={kategori.label}
+                                        className="flex items-center justify-between gap-3 py-2"
+                                    >
+                                        <ChipStatus varian={kategori.varian}>
+                                            {kategori.label}
+                                        </ChipStatus>
+                                        <span className="text-judul-2 text-ink-900 tabular-nums">
+                                            {kategori.jumlah}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </Kartu>
+                    ))}
                 </section>
 
                 <Kartu labelSeksi={`Kader (${kader.length})`}>

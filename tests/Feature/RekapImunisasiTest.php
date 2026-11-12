@@ -169,10 +169,10 @@ test('unduh CSV rekap sesuai PRD 7.3: BOM, titik koma, DD/MM/YYYY, NIK teks, bar
 
     expect($isi)->toStartWith("\xEF\xBB\xBF")
         ->and(explode("\r\n", substr($isi, 3)))->toBe([
-            'Nama;NIK;"Jenis Kelamin";"Tanggal Lahir";Dusun;"PCV 1";"PCV 2";"PCV 3"',
-            'Nayla;"=""1871010101010042""";Perempuan;10/01/2026;Melati;10/03/2026;10/04/2026;',
-            'Raka;;Laki-laki;01/02/2026;Melati;;;',
-            '"Jumlah anak";;;;;1;1;0',
+            'Nama;NIK;"Jenis Kelamin";"Tanggal Lahir";Dusun;"PCV 1";"PCV 2";"PCV 3";"Imunisasi terlambat"',
+            'Nayla;"=""1871010101010042""";Perempuan;10/01/2026;Melati;10/03/2026;10/04/2026;;"BCG, OPV 1, DPT-HB-Hib 1, IPV 1, MR 1"',
+            'Raka;;Laki-laki;01/02/2026;Melati;;;;"BCG, OPV 1, DPT-HB-Hib 1, PCV 1, IPV 1"',
+            '"Jumlah anak";;;;;1;1;0;2',
             '',
         ]);
 });
@@ -186,4 +186,24 @@ test('unduh CSV rekap kosong atau periode salah ditolak dengan pesan', function 
 
     $this->get(route('rekap-imunisasi.unduh', ['dari' => '2026-05-01', 'sampai' => '2026-04-01']))->assertStatus(422);
     $this->get(route('rekap-imunisasi.unduh'))->assertOk();
+});
+
+test('anak dengan imunisasi terlambat ditandai pada akhir periode (FR-57)', function () {
+    // 5 bulan pada 11 Nov 2026: dosis 2 dan 4 bulan lewat jadwal, satu per rangkaian.
+    $terlambat = Anak::factory()->create(['nama' => 'Ayu', 'tanggal_lahir' => '2026-06-01']);
+    imunisasi($terlambat, 'HB0', '2026-06-01');
+    imunisasi($terlambat, 'BCG', '2026-07-01');
+    imunisasi($terlambat, 'OPV 1', '2026-07-01');
+    // 1 bulan: BCG dan OPV 1 masih tepat waktu, belum terlambat.
+    Anak::factory()->create(['nama' => 'Bima', 'tanggal_lahir' => '2026-10-05']);
+
+    rekap()->assertInertia(fn ($page) => $page
+        ->where('jumlahTerlambat', 1)
+        ->where('baris.0.nama', 'Ayu')
+        ->where('baris.0.terlambat', ['DPT-HB-Hib 1', 'OPV 2', 'PCV 1', 'RV 1', 'IPV 1'])
+        ->where('baris.1.terlambat', []));
+
+    $csv = $this->get(route('rekap-imunisasi.unduh'))->streamedContent();
+    expect($csv)->toContain('"Imunisasi terlambat"')
+        ->and($csv)->toContain('"DPT-HB-Hib 1, OPV 2, PCV 1, RV 1, IPV 1"');
 });

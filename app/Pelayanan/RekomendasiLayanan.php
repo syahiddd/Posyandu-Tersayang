@@ -61,44 +61,81 @@ final class RekomendasiLayanan
      */
     public function imunisasi(): array
     {
-        /** @var array<string, Vaksin> $vaksin */
-        $vaksin = config('imunisasi.vaksin');
-
         $sudah = $this->riwayat
             ->where('jenis', JenisLayanan::Imunisasi)
-            ->pluck('detail')
-            ->flip();
+            ->map(fn (Layanan $layanan) => $layanan->detail)
+            ->values()
+            ->all();
+
+        return array_map(fn (array $satu) => [
+            'kode' => $satu['kode'],
+            'nama' => $satu['nama'],
+            'alasan' => $satu['terlambat']
+                ? "Imunisasi kejar · jadwal umur {$satu['umurBulan']} bulan"
+                : "Umur {$this->umur} bulan",
+            'terlambat' => $satu['terlambat'],
+            'tercentang' => ! $satu['khususEndemis'],
+        ], self::jatuhTempo($this->umur, array_values($sudah)));
+    }
+
+    /**
+     * Aturan jadwal bersama Meja 4, Meja 5, dan Rekap Imunisasi (PRD 6.1):
+     * tiap rangkaian vaksin menawarkan dosis pertama yang belum tercatat,
+     * bila umur sudah mencapai jadwalnya dan belum melewati batas umur tabel
+     * Pelayanan Imunisasi Buku KIA. Terlambat = umur melewati jadwal.
+     *
+     * @param  list<string>  $sudahTercatat  Kode dosis yang sudah tercatat.
+     * @return list<array{kode: string, nama: string, umurBulan: int, terlambat: bool, khususEndemis: bool}>
+     */
+    public static function jatuhTempo(int $umur, array $sudahTercatat): array
+    {
+        /** @var array<string, Vaksin> $vaksin */
+        $vaksin = config('imunisasi.vaksin');
+        $sudah = array_flip($sudahTercatat);
 
         $daftar = [];
         $kelompokSelesai = [];
 
         foreach ($vaksin as $kode => $satu) {
-            if ($sudah->has($kode) || isset($kelompokSelesai[$satu['kelompok']])) {
+            if (isset($sudah[$kode]) || isset($kelompokSelesai[$satu['kelompok']])) {
                 continue;
             }
 
             // Dosis pertama yang belum tercatat menentukan rangkaian ini.
             $kelompokSelesai[$satu['kelompok']] = true;
 
-            if ($this->umur < $satu['umur_bulan'] || $this->umur > $satu['umur_maks']) {
+            if ($umur < $satu['umur_bulan'] || $umur > $satu['umur_maks']) {
                 continue;
             }
-
-            $terlambat = $this->umur > $satu['umur_bulan'];
-            $endemis = $satu['khusus_endemis'] ?? false;
 
             $daftar[] = [
                 'kode' => $kode,
                 'nama' => $satu['nama'],
-                'alasan' => $terlambat
-                    ? "Imunisasi kejar · jadwal umur {$satu['umur_bulan']} bulan"
-                    : "Umur {$this->umur} bulan",
-                'terlambat' => $terlambat,
-                'tercentang' => ! $endemis,
+                'umurBulan' => $satu['umur_bulan'],
+                'terlambat' => $umur > $satu['umur_bulan'],
+                'khususEndemis' => $satu['khusus_endemis'] ?? false,
             ];
         }
 
         return $daftar;
+    }
+
+    /**
+     * Imunisasi terlambat yang masih dapat dikejar (FR-57), tanpa JE yang
+     * khusus daerah endemis.
+     *
+     * @param  list<string>  $sudahTercatat
+     * @return list<string> Kode dosis.
+     */
+    public static function terlambat(int $umur, array $sudahTercatat): array
+    {
+        return array_values(array_map(
+            fn (array $satu) => $satu['kode'],
+            array_filter(
+                self::jatuhTempo($umur, $sudahTercatat),
+                fn (array $satu) => $satu['terlambat'] && ! $satu['khususEndemis'],
+            ),
+        ));
     }
 
     /**

@@ -161,7 +161,8 @@ test('rekap SKDN bulanan dan jumlah layanan (FR-61, FR-62)', function () {
     beri($tidakNaik, JenisLayanan::ObatCacing, 'Obat cacing', '2026-11-05');
 
     $this->get(route('data-posyandu', ['bulan' => '2026-10']))->assertOk()->assertInertia(fn ($page) => $page
-        ->where('rekap', [
+        // Status gizi dan stunting diuji tersendiri; nilai ukur factory acak.
+        ->where('rekap', fn ($rekap) => collect($rekap)->except(['statusGizi', 'stunting', 'perluTindakLanjut'])->all() == [
             'bulan' => '2026-10',
             'label' => 'Oktober 2026',
             'sebelumnya' => '2026-09',
@@ -213,14 +214,17 @@ test('unduh CSV rekap Data Posyandu per bulan sesuai PRD 7.3 (FR-63)', function 
 
     $isi = $respons->streamedContent();
 
+    $baris = explode("\r\n", substr($isi, 3));
+
+    // SKDN dan layanan di kolom awal; status gizi dan stunting menyusul (FR-62).
     expect($isi)->toStartWith("\xEF\xBB\xBF")
-        ->and(explode("\r\n", substr($isi, 3)))->toBe([
-            'Bulan;S;K;D;N;"D/S (%)";"N/D (%)";"Imunisasi (dosis)";"Vitamin A biru";"Vitamin A merah";"Obat cacing"',
-            '"Januari 2026";2;1;1;0;50,0;0,0;0;0;0;0',
-            '"Februari 2026";2;1;2;1;100,0;50,0;0;0;1;0',
-            '"Maret 2026";2;1;0;0;0,0;;0;0;0;0',
-            '',
-        ]);
+        ->and($baris)->toHaveCount(5)
+        ->and($baris[0])->toStartWith('Bulan;S;K;D;N;"D/S (%)";"N/D (%)";"Imunisasi (dosis)";"Vitamin A biru";"Vitamin A merah";"Obat cacing";Stunting;"Berisiko stunting";"Diprediksi berisiko stunting";"BB/U: Berat badan sangat kurang"')
+        ->and($baris[1])->toStartWith('"Januari 2026";2;1;1;0;50,0;0,0;0;0;0;0;')
+        ->and($baris[2])->toStartWith('"Februari 2026";2;1;2;1;100,0;50,0;0;0;1;0;')
+        ->and($baris[3])->toStartWith('"Maret 2026";2;1;0;0;0,0;;0;0;0;0;0;0;0;')
+        ->and($baris[4])->toBe('')
+        ->and(count(str_getcsv($baris[0], ';')))->toBe(count(str_getcsv($baris[1], ';')));
 
     // Tahun lalu berisi dua belas bulan; tahun mendatang atau tidak sah memakai tahun berjalan.
     $baris = fn (array $query) => count(explode("\r\n", trim($this->get(route('data-posyandu.unduh', $query))->streamedContent()))) - 1;
@@ -229,4 +233,49 @@ test('unduh CSV rekap Data Posyandu per bulan sesuai PRD 7.3 (FR-63)', function 
         ->and($baris(['tahun' => 'abc']))->toBe(3);
 
     Carbon::setTestNow();
+});
+
+test('rekap menghitung status gizi dan risiko stunting dari penimbangan terakhir (FR-62)', function () {
+    Carbon::setTestNow(CarbonImmutable::parse('2026-03-20 09:00'));
+    masuk_posyandu(User::factory()->create());
+
+    // Anak perempuan 29 bulan: TB/U z −2,36 (pendek), BB/U normal.
+    $pendek = balita_skdn(['jenis_kelamin' => 'P', 'tanggal_lahir' => '2023-09-20']);
+    Pengukuran::factory()->for($pendek)->create([
+        'tanggal_ukur' => '2026-03-05', 'sumber' => SumberData::Posyandu,
+        'bb' => 12.7, 'pb_tb' => 82.0, 'cara_ukur' => 'berdiri', 'lila' => null, 'lk' => null,
+    ]);
+    // Anak laki-laki 30 bulan dengan ukuran median: normal semua.
+    $normal = balita_skdn(['jenis_kelamin' => 'L', 'tanggal_lahir' => '2023-09-20']);
+    Pengukuran::factory()->for($normal)->create([
+        'tanggal_ukur' => '2026-03-05', 'sumber' => SumberData::Posyandu,
+        'bb' => 13.3, 'pb_tb' => 91.9, 'cara_ukur' => 'berdiri', 'lila' => null, 'lk' => null,
+    ]);
+
+    $this->get(route('data-posyandu'))->assertInertia(fn ($page) => $page
+        ->where('rekap.d', 2)
+        ->where('rekap.stunting', ['stunting' => 1, 'berisiko' => 0, 'diprediksi' => 0])
+        ->where('rekap.statusGizi.1.label', 'PB/U atau TB/U')
+        ->where('rekap.statusGizi.1.kategori', fn ($kategori) => collect($kategori)->pluck('jumlah', 'label')->all() === [
+            'Sangat pendek' => 0, 'Pendek' => 1, 'Normal' => 1, 'Tinggi' => 0,
+        ])
+        ->where('rekap.statusGizi.0.kategori.2.label', 'Berat badan normal')
+        ->where('rekap.statusGizi.0.kategori.2.jumlah', 2));
+
+    Carbon::setTestNow();
+});
+
+test('z-score dan IMT dihitung otomatis saat pengukuran disimpan (PRD 5.6, 7.1)', function () {
+    $anak = Anak::factory()->create(['jenis_kelamin' => 'L', 'tanggal_lahir' => today()->subMonths(30)->toDateString()]);
+    $ukur = Pengukuran::factory()->for($anak)->create([
+        'tanggal_ukur' => today()->toDateString(), 'bb' => 13.3, 'pb_tb' => 91.9, 'cara_ukur' => 'berdiri',
+    ]);
+
+    expect($ukur->imt)->toBe('15.7')
+        ->and(abs((float) $ukur->zscore_bb_u))->toBeLessThan(0.3)
+        ->and(abs((float) $ukur->zscore_pb_tb_u))->toBeLessThan(0.3);
+
+    $ukur->update(['pb_tb' => 80.0]);
+
+    expect((float) $ukur->fresh()->zscore_pb_tb_u)->toBeLessThan(-3.0);
 });

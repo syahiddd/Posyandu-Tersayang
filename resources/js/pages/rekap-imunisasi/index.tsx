@@ -34,7 +34,10 @@ type Props = {
         umurBulan: number;
         dusun: string;
         sel: Sel[];
+        /** Kode dosis terlambat pada akhir periode (FR-57). */
+        terlambat: string[];
     }[];
+    jumlahTerlambat: number;
     jumlahPerDosis: number[];
     cakupan: { kode: string; nama: string; jumlah: number }[];
 };
@@ -66,6 +69,7 @@ export default function RekapImunisasi({
     baris,
     jumlahPerDosis,
     cakupan,
+    jumlahTerlambat,
 }: Props) {
     const [dari, setDari] = useState(penyaring.dari);
     const [sampai, setSampai] = useState(penyaring.sampai);
@@ -188,6 +192,10 @@ export default function RekapImunisasi({
                                         angka={baris.length}
                                         label="Balita dalam rekap"
                                     />
+                                    <TileAngka
+                                        angka={jumlahTerlambat}
+                                        label="Imunisasi terlambat"
+                                    />
                                     {cakupan.map((satu) => (
                                         <TileAngka
                                             key={satu.kode}
@@ -290,6 +298,12 @@ function TabelRekap({
                                     <span className="text-keterangan font-normal text-ink-700">
                                         {anak.umurBulan} bln · {anak.dusun}
                                     </span>
+                                    {anak.terlambat.length > 0 && (
+                                        <span className="text-keterangan font-bold text-status-waspada-teks">
+                                            Terlambat:{' '}
+                                            {anak.terlambat.join(', ')}
+                                        </span>
+                                    )}
                                 </Link>
                             </th>
                             {anak.sel.map((sel, indeks) => (

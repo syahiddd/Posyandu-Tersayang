@@ -6,6 +6,8 @@ use App\Enums\JenisLayanan;
 use App\Enums\SumberData;
 use App\Models\Anak;
 use App\Models\Layanan;
+use App\Pelayanan\RekomendasiLayanan;
+use App\Support\Umur;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -13,10 +15,11 @@ use Illuminate\Database\Eloquent\Builder;
  * Rekapitulasi imunisasi per anak (FR-55, FR-56): baris = semua balita pada
  * akhir periode (sesuai saringan dusun), kolom = dosis vaksin Tabel 29 (atau
  * dosis satu kelompok vaksin), sel = tanggal pemberian dalam periode.
- * Riwayat dari Buku KIA ikut dihitung dan ditandai (FR-66).
+ * Riwayat dari Buku KIA ikut dihitung dan ditandai (FR-66). Setiap anak
+ * ditandai imunisasi terlambatnya pada akhir periode (FR-57).
  *
  * @phpstan-type Sel array{tanggal: CarbonImmutable, dariBukuKia: bool}
- * @phpstan-type Baris array{anak: Anak, sel: array<string, Sel|null>}
+ * @phpstan-type Baris array{anak: Anak, sel: array<string, Sel|null>, terlambat: list<string>}
  */
 final class RekapImunisasi
 {
@@ -88,6 +91,14 @@ final class RekapImunisasi
                 ];
             });
 
+        // Semua dosis yang tercatat sampai akhir periode, untuk FR-57.
+        $sampaiAkhir = Layanan::query()
+            ->where('jenis', JenisLayanan::Imunisasi)
+            ->whereIn('anak_id', $anak->modelKeys())
+            ->whereDate('tanggal', '<=', $this->sampai->toDateString())
+            ->get(['anak_id', 'detail'])
+            ->groupBy('anak_id');
+
         $baris = [];
 
         foreach ($anak as $satu) {
@@ -97,7 +108,14 @@ final class RekapImunisasi
                 $sel[$dosis] = $tercatat[$satu->id][$dosis] ?? null;
             }
 
-            $baris[] = ['anak' => $satu, 'sel' => $sel];
+            $baris[] = [
+                'anak' => $satu,
+                'sel' => $sel,
+                'terlambat' => RekomendasiLayanan::terlambat(
+                    Umur::bulanPenuh($satu->tanggal_lahir, $this->sampai),
+                    array_values(($sampaiAkhir[$satu->id] ?? collect())->map(fn (Layanan $layanan) => $layanan->detail)->all()),
+                ),
+            ];
         }
 
         return $baris;

@@ -19,8 +19,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * S19 Data Posyandu (PRD 4.11): profil posyandu yang diubah Ketua Kader
  * (FR-59) dan daftar kader dengan nomor HP serta meja yang biasa dipegang
  * (FR-60), serta rekap SKDN dan layanan bulanan (FR-61, FR-62) beserta
- * unduh CSV (FR-63). Jumlah per status gizi dan risiko stunting menunggu
- * tabel standar WHO.
+ * unduh CSV (FR-63), termasuk jumlah anak per status gizi dan hasil
+ * deteksi stunting.
  */
 class DataPosyanduController extends Controller
 {
@@ -113,6 +113,7 @@ class DataPosyanduController extends Controller
             : $bulanIni->year;
 
         $baris = [];
+        $kolomGizi = [];
 
         for ($bulan = CarbonImmutable::create($tahun, 1, 1); $bulan <= $bulanIni && $bulan->year === $tahun; $bulan = $bulan->addMonthNoOverflow()) {
             $rekap = (new RekapBulanan($bulan))->hitung();
@@ -128,12 +129,24 @@ class DataPosyanduController extends Controller
                 $rekap['vitaminABiru'],
                 $rekap['vitaminAMerah'],
                 $rekap['obatCacing'],
+                $rekap['stunting']['stunting'],
+                $rekap['stunting']['berisiko'],
+                $rekap['stunting']['diprediksi'],
             ];
+
+            foreach ($rekap['statusGizi'] as $indeks) {
+                foreach ($indeks['kategori'] as $kategori) {
+                    $kolomGizi["{$indeks['label']}: {$kategori['label']}"] = true;
+                    $baris[array_key_last($baris)][] = $kategori['jumlah'];
+                }
+            }
         }
 
         return BerkasCsv::unduh('data-posyandu', [
             'Bulan', 'S', 'K', 'D', 'N', 'D/S (%)', 'N/D (%)',
             'Imunisasi (dosis)', 'Vitamin A biru', 'Vitamin A merah', 'Obat cacing',
+            'Stunting', 'Berisiko stunting', 'Diprediksi berisiko stunting',
+            ...array_keys($kolomGizi),
         ], $baris);
     }
 
