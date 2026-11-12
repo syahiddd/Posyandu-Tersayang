@@ -19,11 +19,12 @@ use Inertia\Response;
  */
 class AntreanController extends Controller
 {
-    /** Meja yang layarnya sudah dikerjakan; Meja 5 menyusul. */
+    /** Meja yang memiliki layar kerja per anak (Meja 2 sampai 5). */
     public const MEJA_TERSEDIA = [
         Meja::Pengukuran,
         Meja::Pendataan,
         Meja::Pelayanan,
+        Meja::Penyuluhan,
     ];
 
     public function __construct(private LayananAntrean $antrean) {}

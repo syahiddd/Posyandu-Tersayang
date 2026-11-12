@@ -2,11 +2,9 @@
 
 namespace App\Gizi;
 
-use App\Enums\StatusNT;
 use App\Models\Anak;
 use App\Models\Pengukuran;
 use App\Support\Umur;
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
 /** Data grafik digital mengikuti rentang dan label Buku KIA 2024 halaman PDF 67-78. */
@@ -30,12 +28,12 @@ final class GrafikPertumbuhan
         $rentangAkhir = $umurBulan < 24 ? 24 : 60;
         $jenisKelamin = $anak->jenis_kelamin->value;
         $status = self::status($terbaru);
-        $statusStunting = self::deteksiStunting($riwayat);
+        $statusStunting = DeteksiStunting::nilai($riwayat);
 
         return [
             'riwayat' => $riwayat,
             'statusGizi' => $status,
-            'deteksiStunting' => $statusStunting,
+            'deteksiStunting' => [...$statusStunting, 'hasil' => $statusStunting['hasil']->value],
             'tabAwal' => self::tabPalingPerluPerhatian($status),
             'grafik' => [
                 'kms' => self::grafikBerat(
@@ -47,6 +45,7 @@ final class GrafikPertumbuhan
                     $jenisKelamin === 'P' && $rentangAwal === 24 ? 30 : 28,
                     $riwayat,
                     'bb_u',
+                    kms: true,
                 ),
                 'bb_u' => self::grafikBerat(
                     $jenisKelamin,
@@ -68,6 +67,8 @@ final class GrafikPertumbuhan
                     $rentangAwal === 0 ? 95 : 125,
                     'cm',
                     $riwayat,
+                    // PB/U dan TB/U hanya −3, −2, 0, +2, +3 (PRD 5.1, DESIGN 7.1).
+                    garisTerlihat: [-3, -2, 0, 2, 3],
                 ),
                 'bb_pb_tb' => self::grafikBeratMenurutPanjang(
                     $jenisKelamin,
@@ -163,93 +164,6 @@ final class GrafikPertumbuhan
         return $terpilih;
     }
 
-    /** @param list<array<string, mixed>> $riwayat @return array<string, mixed> */
-    private static function deteksiStunting(array $riwayat): array
-    {
-        if ($riwayat === []) {
-            return ['hasil' => 'normal', 'label' => 'Belum ada hasil skrining', 'perluKonfirmasi' => false, 'pesan' => null];
-        }
-
-        $valid = array_values(array_filter($riwayat, fn (array $ukur) => $ukur['zscore']['pb_tb_u'] !== null));
-        $terbaru = $riwayat[array_key_last($riwayat)];
-        $zTerkini = $terbaru['zscore']['pb_tb_u'];
-
-        if ($zTerkini !== null && $zTerkini < -2) {
-            return [
-                'hasil' => 'stunting',
-                'label' => 'Perlu konfirmasi pertumbuhan ke tenaga kesehatan',
-                'perluKonfirmasi' => true,
-                'pesan' => 'Hasil skrining PB/U atau TB/U berada di bawah -2 SD. Minta tenaga kesehatan mengonfirmasi hasil ukur dan tindak lanjut.',
-            ];
-        }
-
-        $duaTerbaru = array_slice($riwayat, -2);
-        $duaSkor = array_slice($valid, -2);
-        $duaTidakNaik = count($duaTerbaru) === 2
-            && $duaTerbaru[0]['statusNt'] === StatusNT::TidakNaik->value
-            && $duaTerbaru[1]['statusNt'] === StatusNT::TidakNaik->value;
-        $turunDuaKali = count($duaSkor) === 2
-            && $duaSkor[0]['zscore']['pb_tb_u'] >= -2
-            && $duaSkor[0]['zscore']['pb_tb_u'] < -1
-            && $duaSkor[1]['zscore']['pb_tb_u'] < $duaSkor[0]['zscore']['pb_tb_u'];
-        $bbKurang = ($terbaru['zscore']['bb_u'] ?? 0) < -2;
-
-        if ($duaTidakNaik || $turunDuaKali || $bbKurang) {
-            return [
-                'hasil' => 'berisiko_stunting',
-                'label' => 'Perlu pemantauan dan penyuluhan gizi',
-                'perluKonfirmasi' => true,
-                'pesan' => 'Hasil ini merupakan skrining. Diskusikan pemantauan bulanan dengan tenaga kesehatan.',
-            ];
-        }
-
-        $batasEnamBulan = CarbonImmutable::parse($terbaru['tanggal'])->subMonths(6)->toDateString();
-        $tigaSkor = array_values(array_filter(
-            $valid,
-            fn (array $ukur) => $ukur['tanggal'] >= $batasEnamBulan && $ukur['tanggal'] <= $terbaru['tanggal'],
-        ));
-
-        if (count($tigaSkor) >= 3) {
-            $perkiraan = self::perkiraanTigaBulan($tigaSkor);
-
-            if ($perkiraan !== null && $perkiraan < -2) {
-                return [
-                    'hasil' => 'diprediksi_berisiko',
-                    'label' => 'Tren perlu dipantau lebih dekat',
-                    'perluKonfirmasi' => true,
-                    'pesan' => 'Perkiraan mengikuti tren pengukuran, bukan diagnosis. Diskusikan dengan tenaga kesehatan.',
-                ];
-            }
-        }
-
-        return ['hasil' => 'normal', 'label' => 'Lanjutkan pemantauan rutin', 'perluKonfirmasi' => false, 'pesan' => null];
-    }
-
-    /** @param list<array<string, mixed>> $riwayat */
-    private static function perkiraanTigaBulan(array $riwayat): ?float
-    {
-        $x = array_map(fn (array $ukur) => $ukur['umurBulan'], $riwayat);
-        $y = array_map(fn (array $ukur) => $ukur['zscore']['pb_tb_u'], $riwayat);
-        $rataX = array_sum($x) / count($x);
-        $rataY = array_sum($y) / count($y);
-        $atas = 0.0;
-        $bawah = 0.0;
-
-        foreach ($x as $k => $nilaiX) {
-            $atas += ($nilaiX - $rataX) * ($y[$k] - $rataY);
-            $bawah += ($nilaiX - $rataX) ** 2;
-        }
-
-        if ($bawah === 0.0) {
-            return null;
-        }
-
-        $kemiringan = $atas / $bawah;
-        $bulanTarget = $x[array_key_last($x)] + 3;
-
-        return $rataY + ($kemiringan * ($bulanTarget - $rataX));
-    }
-
     /** @param list<array<string, mixed>> $riwayat @param list<int> $garis @param list<int> $garisTerlihat */
     private static function grafikUmur(
         string $jenisKelamin,
@@ -290,6 +204,7 @@ final class GrafikPertumbuhan
         float $maksimumY,
         array $riwayat,
         string $indeks,
+        bool $kms = false,
     ): array {
         $grafik = self::grafikUmur(
             $jenisKelamin,
@@ -302,7 +217,9 @@ final class GrafikPertumbuhan
             'kg',
             $riwayat,
             [-3, -2, -1, 0, 1, 2, 3],
-            [-3, -2, 0, 2, 3],
+            // KMS memuat tujuh garis; garis merah (−2) dan oranye (+1) dipakai
+            // aturan rujukan (PRD 5.5). BB/U hanya −3, −2, 0, +2, +3 (PRD 5.1).
+            $kms ? [-3, -2, -1, 0, 1, 2, 3] : [-3, -2, 0, 2, 3],
         );
 
         $grafik['intervalY'] = $minimumY < 4 ? 2 : 4;

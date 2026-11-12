@@ -13,6 +13,7 @@ use App\Http\Controllers\MejaController;
 use App\Http\Controllers\PelayananController;
 use App\Http\Controllers\PendataanController;
 use App\Http\Controllers\PengukuranController;
+use App\Http\Controllers\PenyuluhanController;
 use App\Http\Controllers\PilihMejaController;
 use App\Http\Controllers\RekapImunisasiController;
 use App\Http\Controllers\RiwayatBukuKiaController;
@@ -70,6 +71,9 @@ Route::middleware('auth')->group(function () {
 
         // Meja 4 Pelayanan (PRD 4.6, FR-30 sampai FR-36).
         Route::post('kunjungan/{kunjungan}/pelayanan', [PelayananController::class, 'simpan'])->name('kunjungan.pelayanan');
+
+        // Meja 5 Penyuluhan (PRD 4.7, FR-37 sampai FR-46).
+        Route::post('kunjungan/{kunjungan}/selesai', [PenyuluhanController::class, 'selesai'])->name('kunjungan.selesai');
 
         // S20: menu Lainnya (DESIGN Tabel 11).
         Route::inertia('lainnya', 'lainnya')->name('lainnya');
