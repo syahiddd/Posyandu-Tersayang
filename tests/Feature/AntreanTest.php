@@ -78,7 +78,6 @@ test('layar antrean menampilkan anak menunggu urut waktu masuk dan daftar ditund
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('meja/antrean')
-            ->where('antreanMeja.tersedia', true)
             ->has('antreanMeja.antrean', 2)
             ->where('antreanMeja.antrean.0.id', $pertama->id)
             ->where('antreanMeja.antrean.1.id', $kedua->id)

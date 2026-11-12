@@ -15,7 +15,6 @@ import type { KartuAntrean } from '@/types';
 export type AntreanMeja = {
     nomor: number;
     tahap: string;
-    tersedia: boolean;
     antrean: KartuAntrean[];
     ditunda: KartuAntrean[];
 };
@@ -38,7 +37,7 @@ export function PanelAntrean({
     /** Di samping layar anak: memindahkan kader ke anak lain (bab 9). */
     onPilih?: (anak: KartuAntrean) => void;
 }) {
-    const { nomor, tahap, tersedia, antrean, ditunda } = antreanMeja;
+    const { nomor, tahap, antrean, ditunda } = antreanMeja;
     const { errors } = usePage().props;
     const sekarang = useSekarang();
     const [sheetTerbuka, setSheetTerbuka] = useState(false);
@@ -97,12 +96,6 @@ export function PanelAntrean({
                 {!diLayarAnak && errors.kunjungan && (
                     <Banner varian="bahaya">{errors.kunjungan}</Banner>
                 )}
-                {!tersedia && (
-                    <Banner varian="info" judul="Belum tersedia">
-                        Layanan Meja {nomor} dikerjakan pada fase berikutnya.
-                        Antrean tetap ditampilkan.
-                    </Banner>
-                )}
 
                 {antrean.length > 0 && tombolDitunda && (
                     <div>{tombolDitunda}</div>
@@ -129,8 +122,7 @@ export function PanelAntrean({
                     <ul className="flex flex-col gap-3">
                         {antrean.map((anak) => {
                             const aktif = anak.id === kunjunganAktif;
-                            const bisaDibuka =
-                                tersedia && !anak.terkunci && !aktif;
+                            const bisaDibuka = !anak.terkunci && !aktif;
 
                             return (
                                 <li key={anak.id}>

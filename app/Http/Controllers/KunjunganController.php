@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Antrean\LayananAntrean;
 use App\Antrean\PanelAntrean;
-use App\Antrean\TampilanKunjungan;
 use App\Enums\Meja;
 use App\Models\Kunjungan;
 use Illuminate\Http\RedirectResponse;
@@ -39,11 +38,8 @@ class KunjunganController extends Controller
             Meja::Pendataan => Inertia::render('kunjungan/pendataan', [...PendataanController::props($kunjungan), ...$panel]),
             Meja::Pelayanan => Inertia::render('kunjungan/pelayanan', [...PelayananController::props($kunjungan), ...$panel]),
             Meja::Penyuluhan => Inertia::render('kunjungan/penyuluhan', [...PenyuluhanController::props($kunjungan), ...$panel]),
-            default => Inertia::render('kunjungan/layar-sementara', [
-                'anak' => TampilanKunjungan::header($kunjungan),
-                'tahap' => $kunjungan->meja_saat_ini->tahap(),
-                ...$panel,
-            ]),
+            // Meja 1 tidak punya layar per anak; kunjungan dibuka langsung di Meja 2.
+            Meja::Pendaftaran => redirect()->route('meja', Meja::Pendaftaran->value),
         };
     }
 }

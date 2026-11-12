@@ -19,14 +19,6 @@ use Inertia\Response;
  */
 class AntreanController extends Controller
 {
-    /** Meja yang memiliki layar kerja per anak (Meja 2 sampai 5). */
-    public const MEJA_TERSEDIA = [
-        Meja::Pengukuran,
-        Meja::Pendataan,
-        Meja::Pelayanan,
-        Meja::Penyuluhan,
-    ];
-
     public function __construct(private LayananAntrean $antrean) {}
 
     public function index(Request $request, Meja $meja): Response
@@ -38,10 +30,6 @@ class AntreanController extends Controller
 
     public function buka(Request $request, Kunjungan $kunjungan): RedirectResponse
     {
-        if (! in_array($kunjungan->meja_saat_ini, self::MEJA_TERSEDIA, true)) {
-            throw ValidationException::withMessages(['kunjungan' => 'Layar meja ini dikerjakan pada fase berikutnya.']);
-        }
-
         $this->antrean->buka($kunjungan, $request->user());
 
         return redirect()->route('kunjungan.layar', $kunjungan);

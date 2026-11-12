@@ -4,7 +4,6 @@ namespace App\Antrean;
 
 use App\Enums\Meja;
 use App\Enums\StatusAntrean;
-use App\Http\Controllers\AntreanController;
 use App\Models\Kunjungan;
 use App\Models\User;
 
@@ -17,7 +16,7 @@ use App\Models\User;
 final class PanelAntrean
 {
     /**
-     * @return array{nomor: int, tahap: string, tersedia: bool, antrean: array<int, array<string, mixed>>, ditunda: array<int, array<string, mixed>>}
+     * @return array{nomor: int, tahap: string, antrean: array<int, array<string, mixed>>, ditunda: array<int, array<string, mixed>>}
      */
     public static function props(Meja $meja, User $user): array
     {
@@ -32,7 +31,6 @@ final class PanelAntrean
         return [
             'nomor' => $meja->value,
             'tahap' => $meja->tahap(),
-            'tersedia' => in_array($meja, AntreanController::MEJA_TERSEDIA, true),
             'antrean' => $kunjungan
                 ->whereIn('status', [StatusAntrean::Menunggu, StatusAntrean::SedangDilayani])
                 ->sortBy([['masuk_meja_pada', 'asc'], ['nomor_antrean', 'asc']])

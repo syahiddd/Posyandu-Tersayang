@@ -10,7 +10,7 @@ type Props = { antreanMeja: AntreanMeja };
  * (DESIGN bab 9).
  */
 export default function Antrean({ antreanMeja }: Props) {
-    const { nomor, tersedia, antrean } = antreanMeja;
+    const { nomor, antrean } = antreanMeja;
 
     return (
         <>
@@ -22,9 +22,8 @@ export default function Antrean({ antreanMeja }: Props) {
                         : 'Pilih anak dari antrean untuk mulai'}
                 </p>
                 <p className="max-w-sm text-teks text-ink-700">
-                    {tersedia
-                        ? 'Data anak tampil di sini. Antrean di kiri diperbarui otomatis.'
-                        : `Layanan Meja ${nomor} dikerjakan pada fase berikutnya.`}
+                    Data anak tampil di sini. Antrean di kiri diperbarui
+                    otomatis.
                 </p>
             </div>
         </>
