@@ -1,6 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import { clsx } from 'clsx';
-import { useRef, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { PanelAntrean } from '@/components/antrean/panel-antrean';
 import type { AntreanMeja } from '@/components/antrean/panel-antrean';
@@ -96,7 +96,12 @@ export default function TataLetakMeja({ children }: { children: ReactNode }) {
                         'min-w-0 flex-col',
                     )}
                 >
-                    {children}
+                    {/* Kunci per kunjungan: pindah anak dari kolom antrean
+                        memasang ulang halaman sehingga isian anak sebelumnya
+                        tidak terbawa ke anak berikutnya (FR-47, FR-48). */}
+                    <Fragment key={kunjunganAktif ?? 'antrean'}>
+                        {children}
+                    </Fragment>
                 </div>
             </div>
 
