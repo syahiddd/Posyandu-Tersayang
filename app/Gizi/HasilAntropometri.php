@@ -8,7 +8,13 @@ use App\Models\Pengukuran;
 use App\Support\Umur;
 use Carbon\CarbonInterface;
 
-/** Kalkulasi skrining antropometri dari nilai LMS WHO. */
+/**
+ * Kalkulasi skrining antropometri dari nilai LMS WHO.
+ *
+ * @phpstan-type Kategori array{kode: string, label: string, varian: string, tingkat: int}
+ * @phpstan-type ZScore array{bb_u: ?float, pb_tb_u: ?float, bb_pb_tb: ?float, imt_u: ?float, lk_u: ?float}
+ * @phpstan-type RiwayatUkur array{id: int, tanggal: string, umurBulan: int, umurHari: int, bb: ?float, pbTb: ?float, pbTbAcuan: ?float, caraUkur: ?string, lila: ?float, lk: ?float, imt: ?float, zscore: ZScore, kategori: array<string, Kategori|null>, statusNt: ?string, dariBukuKia: bool, hariIni: bool, perluUkurUlang: bool}
+ */
 final class HasilAntropometri
 {
     /**
@@ -96,7 +102,7 @@ final class HasilAntropometri
     /**
      * Siapkan nilai riwayat untuk grafik dan ringkasan Meja 5.
      *
-     * @return array<string, mixed>
+     * @return RiwayatUkur
      */
     public static function riwayat(Anak $anak, Pengukuran $ukur, bool $hariIni = false): array
     {

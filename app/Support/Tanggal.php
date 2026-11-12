@@ -34,6 +34,12 @@ final class Tanggal
         return self::format($tanggal, 'F Y');
     }
 
+    /** Contoh: 2 → "Februari" (nama bulan bahasa Indonesia). */
+    public static function namaBulan(int $bulan): string
+    {
+        return self::format(CarbonImmutable::create(2000, $bulan, 1), 'F');
+    }
+
     private static function format(CarbonInterface|string $tanggal, string $pola): string
     {
         $tanggal = is_string($tanggal) ? CarbonImmutable::parse($tanggal) : $tanggal;

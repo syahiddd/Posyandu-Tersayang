@@ -136,7 +136,7 @@ final class RekomendasiLayanan
         /** @var list<int> $bulanPemberian */
         $bulanPemberian = config('imunisasi.bulan_vitamin_a');
         $namaBulan = collect($bulanPemberian)
-            ->map(fn (int $bulan) => $this->tanggal->setDay(1)->setMonth($bulan)->locale('id')->translatedFormat('F'))
+            ->map(fn (int $bulan) => Tanggal::namaBulan($bulan))
             ->join(' dan ');
 
         $terakhirBulanIni = $this->riwayat
@@ -208,15 +208,14 @@ final class RekomendasiLayanan
      */
     public function riwayatImunisasi(): array
     {
-        return $this->riwayat
+        return array_values($this->riwayat
             ->where('jenis', JenisLayanan::Imunisasi)
             ->groupBy(fn (Layanan $layanan) => $layanan->tanggal->toDateString())
             ->map(fn (Collection $kelompok) => [
                 'tanggal' => Tanggal::singkat($kelompok->first()->tanggal),
-                'vaksin' => $kelompok->pluck('detail')->sort()->join(', '),
+                'vaksin' => $kelompok->map(fn (Layanan $layanan) => $layanan->detail)->sort()->join(', '),
             ])
-            ->values()
-            ->all();
+            ->all());
     }
 
     /**
