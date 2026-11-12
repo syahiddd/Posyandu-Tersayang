@@ -205,6 +205,34 @@ final class LayananAntrean
     }
 
     /**
+     * Meja 5 selesai: kunjungan berstatus Selesai dan menambah angka
+     * Selesai Dilayani di Beranda (FR-46).
+     */
+    public function selesaikan(Kunjungan $kunjungan, User $user): Kunjungan
+    {
+        $this->pastikanDipegang($kunjungan, $user);
+
+        if ($kunjungan->meja_saat_ini !== Meja::Penyuluhan) {
+            throw ValidationException::withMessages(['kunjungan' => 'Anak ini tidak sedang di Meja 5.']);
+        }
+
+        $draf = $kunjungan->draf ?? [];
+        unset($draf[(string) Meja::Penyuluhan->value]);
+
+        $kunjungan->update([
+            'selesai_meja_5_pada' => now(),
+            'status' => StatusAntrean::Selesai,
+            'dibuka_oleh' => null,
+            'dibuka_pada' => null,
+            'draf' => $draf === [] ? null : $draf,
+        ]);
+
+        SiarAntrean::kabari(Meja::Penyuluhan->value);
+
+        return $kunjungan;
+    }
+
+    /**
      * Meja 3 mengembalikan anak ke antrean Meja 2 karena data keliru
      * (FR-28); anak ditandai "Perlu ukur ulang".
      */
