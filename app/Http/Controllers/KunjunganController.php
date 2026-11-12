@@ -13,7 +13,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Layar kerja satu anak di meja yang sedang ia tempati (S09, S10).
+ * Layar kerja satu anak di meja yang sedang ia tempati (S09, S10, S11).
  */
 class KunjunganController extends Controller
 {
@@ -37,13 +37,7 @@ class KunjunganController extends Controller
         return match ($kunjungan->meja_saat_ini) {
             Meja::Pengukuran => Inertia::render('kunjungan/pengukuran', [...PengukuranController::props($kunjungan), ...$panel]),
             Meja::Pendataan => Inertia::render('kunjungan/pendataan', [...PendataanController::props($kunjungan), ...$panel]),
-           Meja::Pelayanan => Inertia::render('kunjungan/pelayanan', [
-               'anak' => TampilanKunjungan::header($kunjungan),
-               'pengukuran' => $kunjungan->pengukuran,
-               'pendataan' => $kunjungan->pendataan,
-               'tahap' => $kunjungan->meja_saat_ini->tahap(),
-               ...$panel,
-           ]),
+            Meja::Pelayanan => Inertia::render('kunjungan/pelayanan', [...PelayananController::props($kunjungan), ...$panel]),
             default => Inertia::render('kunjungan/layar-sementara', [
                 'anak' => TampilanKunjungan::header($kunjungan),
                 'tahap' => $kunjungan->meja_saat_ini->tahap(),

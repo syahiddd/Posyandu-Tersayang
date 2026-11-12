@@ -19,7 +19,7 @@ use Inertia\Response;
  */
 class AntreanController extends Controller
 {
-    /** Meja yang memiliki layar kerja aktif. */
+    /** Meja yang layarnya sudah dikerjakan; Meja 5 menyusul. */
     public const MEJA_TERSEDIA = [
         Meja::Pengukuran,
         Meja::Pendataan,
