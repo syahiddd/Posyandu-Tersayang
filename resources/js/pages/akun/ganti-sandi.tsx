@@ -56,7 +56,7 @@ export default function GantiSandi() {
                     >
                         ‹ Kembali
                     </TombolTautan>
-                    <h1 className="text-judul-1 text-ink-900">
+                    <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
                         Ganti kata sandi
                     </h1>
                 </header>

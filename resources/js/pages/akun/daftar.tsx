@@ -52,7 +52,7 @@ export default function DaftarAkun({
             <Head title="Pengaturan Akun" />
             <div className="flex flex-1 flex-col gap-5 desktop:max-w-2xl">
                 <header>
-                    <h1 className="text-judul-1 text-ink-900">
+                    <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
                         Pengaturan Akun
                     </h1>
                     <p className="text-teks text-ink-700">{akun.length} akun</p>
@@ -93,9 +93,7 @@ export default function DaftarAkun({
                                             {satu.diriSendiri && ' · Anda'}
                                         </p>
                                     </div>
-                                    <ChipStatus
-                                        varian={satu.aktif ? 'info' : 'bahaya'}
-                                    >
+                                    <ChipStatus varian="info">
                                         {satu.aktif ? 'Aktif' : 'Nonaktif'}
                                     </ChipStatus>
                                 </div>

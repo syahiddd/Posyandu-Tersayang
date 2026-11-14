@@ -30,7 +30,7 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
             <Head title="Beranda" />
             <div className="flex flex-1 flex-col gap-5 desktop:max-w-4xl">
                 <header>
-                    <h1 className="text-judul-1 text-ink-900">
+                    <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
                         {namaPosyandu ?? name}
                     </h1>
                     <p className="text-teks text-ink-700">
@@ -80,7 +80,7 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
                             {[
                                 { label: 'Data Anak', href: dataAnak().url },
                                 {
-                                    label: 'Rekapitulasi Imunisasi',
+                                    label: 'Rekap Imunisasi',
                                     href: rekapImunisasi().url,
                                 },
                                 {

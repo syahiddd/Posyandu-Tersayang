@@ -84,7 +84,7 @@ export function PanelAntrean({
                             className={
                                 diLayarAnak
                                     ? 'text-judul-2 text-ink-900'
-                                    : 'text-judul-1 text-ink-900'
+                                    : 'text-judul-2 text-ink-900 desktop:text-judul-1'
                             }
                         >
                             Antrean Meja {nomor}
@@ -114,7 +114,7 @@ export function PanelAntrean({
                             aria-hidden="true"
                             className="flex size-14 items-center justify-center rounded-pill bg-ink-100 text-ink-900"
                         >
-                            <Check className="size-7" />
+                            <Check className="size-6" />
                         </span>
                         <p className="text-judul-2 text-ink-900">
                             Antrean kosong

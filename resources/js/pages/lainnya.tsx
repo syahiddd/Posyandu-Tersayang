@@ -24,7 +24,9 @@ export default function Lainnya() {
             <Head title="Lainnya" />
             <div className="flex flex-col gap-5 desktop:max-w-2xl">
                 <header>
-                    <h1 className="text-judul-1 text-ink-900">Lainnya</h1>
+                    <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
+                        Lainnya
+                    </h1>
                     {auth.user && (
                         <p className="text-teks text-ink-700">
                             Masuk sebagai {auth.user.name}
@@ -40,7 +42,7 @@ export default function Lainnya() {
                                 href={rekapImunisasi()}
                                 className={kelasBaris}
                             >
-                                Rekapitulasi Imunisasi
+                                Rekap Imunisasi
                             </Link>
                         </li>
                         <li>

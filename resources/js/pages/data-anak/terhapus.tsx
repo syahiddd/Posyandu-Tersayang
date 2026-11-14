@@ -42,7 +42,7 @@ export default function DataAnakTerhapus({ anak }: { anak: AnakTerhapus[] }) {
                     >
                         ‹ Kembali
                     </TombolTautan>
-                    <h1 className="text-judul-1 text-ink-900">
+                    <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
                         Data anak terhapus
                     </h1>
                     <p className="text-teks text-ink-700">

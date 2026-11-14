@@ -23,7 +23,7 @@ export function perubahan(
     return { arah: selisih > 0 ? 'naik' : 'turun', selisih: Math.abs(selisih) };
 }
 
-/** Teks tampilan, misalnya "▲ +0,2 kg dari 8 Okt" (DESIGN Gambar 5). */
+/** Teks tampilan, misalnya "▲ +0,2 kg dari 8 Okt", "▼ −0,3 kg dari 8 Okt" (DESIGN Gambar 5). */
 export function teksPerubahan(
     hasil: Perubahan,
     satuan: string,
@@ -33,7 +33,7 @@ export function teksPerubahan(
         return `Tetap sejak ${tanggal}`;
     }
 
-    const tanda = hasil.arah === 'naik' ? '▲ +' : '▼ -';
+    const tanda = hasil.arah === 'naik' ? '▲ +' : '▼ −';
 
     return `${tanda}${formatDesimal(hasil.selisih)} ${satuan} dari ${tanggal}`;
 }

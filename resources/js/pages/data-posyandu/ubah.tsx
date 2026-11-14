@@ -57,7 +57,7 @@ export default function UbahProfilPosyandu({ profil }: { profil: DataProfil }) {
                     >
                         ‹ Kembali
                     </TombolTautan>
-                    <h1 className="text-judul-1 text-ink-900">
+                    <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
                         Ubah profil posyandu
                     </h1>
                 </header>

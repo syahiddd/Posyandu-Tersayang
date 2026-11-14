@@ -104,7 +104,9 @@ export default function DataPosyandu({
             <Head title="Data Posyandu" />
             <div className="flex flex-col gap-4 desktop:max-w-3xl">
                 <header className="flex flex-wrap items-center justify-between gap-3">
-                    <h1 className="text-judul-1 text-ink-900">Data Posyandu</h1>
+                    <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
+                        Data Posyandu
+                    </h1>
                     <div className="flex flex-col items-start gap-1">
                         <TombolUnduhCsv
                             url={unduh.url({
