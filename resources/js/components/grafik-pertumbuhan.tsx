@@ -184,206 +184,209 @@ export function GrafikPertumbuhan({
                 style={{ height: tinggi }}
             >
                 {lebar > 0 ? (
-                    <svg
-                        width={lebar}
-                        height={tinggi}
-                        role="img"
-                        aria-label={`${data.judul}. ${
-                            titikHariIni
-                                ? (() => {
-                                      const teks = teksTitik(
-                                          data,
-                                          titikHariIni,
-                                          indeks,
-                                      );
+                    <svg width={lebar} height={tinggi} className="block">
+                        <g
+                            role="img"
+                            aria-label={`${data.judul}. ${
+                                titikHariIni
+                                    ? (() => {
+                                          const teks = teksTitik(
+                                              data,
+                                              titikHariIni,
+                                              indeks,
+                                          );
 
-                                      return `${teks.baris1}, ${teks.baris2}, ${teks.baris3}.`;
-                                  })()
-                                : 'Belum ada titik pengukuran pada rentang grafik ini.'
-                        } Rincian ada di Lihat sebagai tabel.`}
-                        className="block"
-                    >
-                        <defs>
-                            <clipPath id={idKlip}>
-                                <rect
-                                    x={TEPI.kiri}
-                                    y={TEPI.atas}
-                                    width={lebarPlot}
-                                    height={tinggiPlot}
-                                />
-                            </clipPath>
-                        </defs>
+                                          return `${teks.baris1}, ${teks.baris2}, ${teks.baris3}.`;
+                                      })()
+                                    : 'Belum ada titik pengukuran pada rentang grafik ini.'
+                            } Rincian ada di Lihat sebagai tabel.`}
+                        >
+                            <defs>
+                                <clipPath id={idKlip}>
+                                    <rect
+                                        x={TEPI.kiri}
+                                        y={TEPI.atas}
+                                        width={lebarPlot}
+                                        height={tinggiPlot}
+                                    />
+                                </clipPath>
+                            </defs>
 
-                        {/* Latar sesuai jenis kelamin (PRD 5.7). */}
-                        <rect
-                            x={TEPI.kiri}
-                            y={TEPI.atas}
-                            width={lebarPlot}
-                            height={tinggiPlot}
-                            fill={
-                                jenisKelamin === 'L'
-                                    ? 'var(--color-boy-50)'
-                                    : 'var(--color-girl-50)'
-                            }
-                        />
+                            {/* Latar sesuai jenis kelamin (PRD 5.7). */}
+                            <rect
+                                x={TEPI.kiri}
+                                y={TEPI.atas}
+                                width={lebarPlot}
+                                height={tinggiPlot}
+                                fill={
+                                    jenisKelamin === 'L'
+                                        ? 'var(--color-boy-50)'
+                                        : 'var(--color-girl-50)'
+                                }
+                            />
 
-                        <g clipPath={`url(#${idKlip})`}>
-                            {zona.map((satu) => (
-                                <polygon
-                                    key={`${satu.bawah}-${satu.atas}`}
-                                    points={polygonZona(satu.bawah, satu.atas)}
-                                    fill={WARNA_ZONA[satu.warna]}
-                                    fillOpacity={0.55}
-                                />
-                            ))}
+                            <g clipPath={`url(#${idKlip})`}>
+                                {zona.map((satu) => (
+                                    <polygon
+                                        key={`${satu.bawah}-${satu.atas}`}
+                                        points={polygonZona(
+                                            satu.bawah,
+                                            satu.atas,
+                                        )}
+                                        fill={WARNA_ZONA[satu.warna]}
+                                        fillOpacity={0.55}
+                                    />
+                                ))}
 
+                                {ticksX.map((x) => (
+                                    <line
+                                        key={`gx-${x}`}
+                                        x1={skalaX(x)}
+                                        x2={skalaX(x)}
+                                        y1={TEPI.atas}
+                                        y2={TEPI.atas + tinggiPlot}
+                                        stroke="var(--color-ink-200)"
+                                        strokeWidth={1}
+                                    />
+                                ))}
+                                {ticksY.map((y) => (
+                                    <line
+                                        key={`gy-${y}`}
+                                        x1={TEPI.kiri}
+                                        x2={TEPI.kiri + lebarPlot}
+                                        y1={skalaY(y)}
+                                        y2={skalaY(y)}
+                                        stroke="var(--color-ink-200)"
+                                        strokeWidth={1}
+                                    />
+                                ))}
+
+                                {garisTerlihat.map((satu) => (
+                                    <polyline
+                                        key={`z-${satu.z}`}
+                                        points={satu.titik
+                                            .map(
+                                                (t) =>
+                                                    `${skalaX(t.x)},${skalaY(t.y)}`,
+                                            )
+                                            .join(' ')}
+                                        fill="none"
+                                        stroke={warnaGaris(satu.z)}
+                                        strokeWidth={tebalGaris(satu.z)}
+                                    />
+                                ))}
+
+                                {titik.length > 1 && (
+                                    <polyline
+                                        points={titik
+                                            .map(
+                                                (t) =>
+                                                    `${skalaX(t.x)},${skalaY(t.y)}`,
+                                            )
+                                            .join(' ')}
+                                        fill="none"
+                                        stroke={warnaAnak}
+                                        strokeWidth={2}
+                                    />
+                                )}
+                            </g>
+
+                            <rect
+                                x={TEPI.kiri}
+                                y={TEPI.atas}
+                                width={lebarPlot}
+                                height={tinggiPlot}
+                                fill="none"
+                                stroke="var(--color-ink-400)"
+                                strokeWidth={1}
+                            />
+
+                            {/* Sumbu: label minimal 12 px, satuan di atas sumbu Y. */}
                             {ticksX.map((x) => (
-                                <line
-                                    key={`gx-${x}`}
-                                    x1={skalaX(x)}
-                                    x2={skalaX(x)}
-                                    y1={TEPI.atas}
-                                    y2={TEPI.atas + tinggiPlot}
-                                    stroke="var(--color-ink-200)"
-                                    strokeWidth={1}
-                                />
+                                <text
+                                    key={`tx-${x}`}
+                                    x={skalaX(x)}
+                                    y={TEPI.atas + tinggiPlot + 16}
+                                    textAnchor="middle"
+                                    fontSize={12}
+                                    fill="var(--color-ink-600)"
+                                >
+                                    {x}
+                                </text>
                             ))}
                             {ticksY.map((y) => (
-                                <line
-                                    key={`gy-${y}`}
-                                    x1={TEPI.kiri}
-                                    x2={TEPI.kiri + lebarPlot}
-                                    y1={skalaY(y)}
-                                    y2={skalaY(y)}
-                                    stroke="var(--color-ink-200)"
-                                    strokeWidth={1}
-                                />
+                                <text
+                                    key={`ty-${y}`}
+                                    x={TEPI.kiri - 6}
+                                    y={skalaY(y) + 4}
+                                    textAnchor="end"
+                                    fontSize={12}
+                                    fill="var(--color-ink-600)"
+                                >
+                                    {y}
+                                </text>
                             ))}
-
-                            {garisTerlihat.map((satu) => (
-                                <polyline
-                                    key={`z-${satu.z}`}
-                                    points={satu.titik
-                                        .map(
-                                            (t) =>
-                                                `${skalaX(t.x)},${skalaY(t.y)}`,
-                                        )
-                                        .join(' ')}
-                                    fill="none"
-                                    stroke={warnaGaris(satu.z)}
-                                    strokeWidth={tebalGaris(satu.z)}
-                                />
-                            ))}
-
-                            {titik.length > 1 && (
-                                <polyline
-                                    points={titik
-                                        .map(
-                                            (t) =>
-                                                `${skalaX(t.x)},${skalaY(t.y)}`,
-                                        )
-                                        .join(' ')}
-                                    fill="none"
-                                    stroke={warnaAnak}
-                                    strokeWidth={2}
-                                />
-                            )}
-                        </g>
-
-                        <rect
-                            x={TEPI.kiri}
-                            y={TEPI.atas}
-                            width={lebarPlot}
-                            height={tinggiPlot}
-                            fill="none"
-                            stroke="var(--color-ink-400)"
-                            strokeWidth={1}
-                        />
-
-                        {/* Sumbu: label minimal 12 px, satuan di atas sumbu Y. */}
-                        {ticksX.map((x) => (
                             <text
-                                key={`tx-${x}`}
-                                x={skalaX(x)}
-                                y={TEPI.atas + tinggiPlot + 16}
+                                x={TEPI.kiri - 6}
+                                y={12}
+                                textAnchor="end"
+                                fontSize={12}
+                                fontWeight={700}
+                                fill="var(--color-ink-900)"
+                            >
+                                {data.sumbuY}
+                            </text>
+                            <text
+                                x={TEPI.kiri + lebarPlot / 2}
+                                y={tinggi - 4}
                                 textAnchor="middle"
                                 fontSize={12}
                                 fill="var(--color-ink-600)"
                             >
-                                {x}
+                                {data.sumbuX}
                             </text>
-                        ))}
-                        {ticksY.map((y) => (
-                            <text
-                                key={`ty-${y}`}
-                                x={TEPI.kiri - 6}
-                                y={skalaY(y) + 4}
-                                textAnchor="end"
-                                fontSize={12}
-                                fill="var(--color-ink-600)"
-                            >
-                                {y}
-                            </text>
-                        ))}
-                        <text
-                            x={TEPI.kiri - 6}
-                            y={12}
-                            textAnchor="end"
-                            fontSize={12}
-                            fontWeight={700}
-                            fill="var(--color-ink-900)"
-                        >
-                            {data.sumbuY}
-                        </text>
-                        <text
-                            x={TEPI.kiri + lebarPlot / 2}
-                            y={tinggi - 4}
-                            textAnchor="middle"
-                            fontSize={12}
-                            fill="var(--color-ink-600)"
-                        >
-                            {data.sumbuX}
-                        </text>
 
-                        {/* Label garis: pil kecil di ujung kanan. */}
-                        {garisTerlihat.map((satu) => {
-                            const akhir = satu.titik[satu.titik.length - 1];
+                            {/* Label garis: pil kecil di ujung kanan. */}
+                            {garisTerlihat.map((satu) => {
+                                const akhir = satu.titik[satu.titik.length - 1];
 
-                            if (
-                                !akhir ||
-                                akhir.y < data.minimumY ||
-                                akhir.y > data.maksimumY
-                            ) {
-                                return null;
-                            }
+                                if (
+                                    !akhir ||
+                                    akhir.y < data.minimumY ||
+                                    akhir.y > data.maksimumY
+                                ) {
+                                    return null;
+                                }
 
-                            const y = skalaY(akhir.y);
+                                const y = skalaY(akhir.y);
 
-                            return (
-                                <g key={`pil-${satu.z}`} aria-hidden="true">
-                                    <rect
-                                        x={TEPI.kiri + lebarPlot + 4}
-                                        y={y - 8}
-                                        width={30}
-                                        height={16}
-                                        rx={8}
-                                        fill={warnaGaris(satu.z)}
-                                    />
-                                    <text
-                                        x={TEPI.kiri + lebarPlot + 19}
-                                        y={y + 4}
-                                        textAnchor="middle"
-                                        fontSize={12}
-                                        fontWeight={700}
-                                        fill="var(--color-white)"
-                                    >
-                                        {labelGaris(satu.z)}
-                                    </text>
-                                </g>
-                            );
-                        })}
+                                return (
+                                    <g key={`pil-${satu.z}`} aria-hidden="true">
+                                        <rect
+                                            x={TEPI.kiri + lebarPlot + 4}
+                                            y={y - 8}
+                                            width={30}
+                                            height={16}
+                                            rx={8}
+                                            fill={warnaGaris(satu.z)}
+                                        />
+                                        <text
+                                            x={TEPI.kiri + lebarPlot + 19}
+                                            y={y + 4}
+                                            textAnchor="middle"
+                                            fontSize={12}
+                                            fontWeight={700}
+                                            fill="var(--color-white)"
+                                        >
+                                            {labelGaris(satu.z)}
+                                        </text>
+                                    </g>
+                                );
+                            })}
+                        </g>
 
-                        {/* Titik anak: lalu = lingkaran putih bergaris; hari ini = penuh dengan halo. */}
+                        {/* Titik anak: lalu = lingkaran putih bergaris; hari ini = penuh
+                            dengan halo. Di luar role="img" agar tombolnya terbaca. */}
                         {titik.map((satu) => {
                             const x = skalaX(satu.x);
                             const y = skalaY(satu.y);
@@ -514,7 +517,7 @@ export function GrafikPertumbuhan({
 
             {tabel && (
                 <div id={idTabel} className="-mx-4 overflow-x-auto">
-                    <table className="w-full min-w-[480px] text-left text-kecil">
+                    <table className="w-full text-left text-kecil">
                         <caption className="sr-only">
                             {data.judul}, semua kunjungan
                         </caption>
