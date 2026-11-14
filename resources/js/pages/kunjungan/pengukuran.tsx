@@ -2,9 +2,11 @@ import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Banner } from '@/components/dasar/banner';
+import { ChipStatus } from '@/components/dasar/chip-status';
 import { HeaderAnak } from '@/components/dasar/header-anak';
 import { IsianAngka } from '@/components/dasar/isian-angka';
 import { KakiTombol } from '@/components/dasar/kaki-tombol';
+import { Kartu } from '@/components/dasar/kartu';
 import { KontrolSegmen } from '@/components/dasar/kontrol-segmen';
 import { RingkasanGalat } from '@/components/dasar/ringkasan-galat';
 import { Tombol } from '@/components/dasar/tombol';
@@ -33,6 +35,8 @@ type Props = {
     nilaiAwal: Partial<Nilai> | null;
     sebelumnya: {
         tanggal: string;
+        /** Contoh: "15 Agu 2026" untuk judul kartu riwayat. */
+        tanggalLengkap: string;
         sumber: 'posyandu' | 'buku_kia';
         bb: string | null;
         pb_tb: string | null;
@@ -120,6 +124,13 @@ export default function Pengukuran({
             : undefined;
     }
 
+    /** Nilai pembanding di kartu riwayat; "—" bila tidak diukur. */
+    function nilaiTampil(nilai: string | null, satuan: string): string {
+        return nilai === null || nilai === ''
+            ? '—'
+            : `${formatDesimal(Number(nilai))} ${satuan}`;
+    }
+
     function simpan(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
@@ -192,7 +203,53 @@ export default function Pengukuran({
                             {peringatan.join(' ')} Tetap boleh disimpan.
                         </Banner>
                     )}
-                    {!sebelumnya && (
+                    {sebelumnya ? (
+                        <Kartu
+                            labelSeksi="1 kunjungan sebelumnya"
+                            aria-label="Riwayat penimbangan kunjungan sebelumnya"
+                        >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <p className="text-teks font-bold text-ink-900">
+                                    {sebelumnya.tanggalLengkap}
+                                </p>
+                                <ChipStatus varian="info">
+                                    {sebelumnya.sumber === 'buku_kia'
+                                        ? 'Buku KIA'
+                                        : 'Posyandu'}
+                                </ChipStatus>
+                            </div>
+                            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 tablet:grid-cols-4">
+                                {(
+                                    [
+                                        ['Berat badan', sebelumnya.bb, 'kg'],
+                                        [
+                                            'Panjang/tinggi badan',
+                                            sebelumnya.pb_tb,
+                                            'cm',
+                                        ],
+                                        [
+                                            'Lingkar lengan atas',
+                                            sebelumnya.lila,
+                                            'cm',
+                                        ],
+                                        ['Lingkar kepala', sebelumnya.lk, 'cm'],
+                                    ] as const
+                                ).map(([label, nilai, satuan]) => (
+                                    <div
+                                        key={label}
+                                        className="flex flex-col rounded-md bg-brand-50 px-3 py-2"
+                                    >
+                                        <dt className="text-kecil text-ink-700">
+                                            {label}
+                                        </dt>
+                                        <dd className="text-judul-2 text-ink-900 tabular-nums">
+                                            {nilaiTampil(nilai, satuan)}
+                                        </dd>
+                                    </div>
+                                ))}
+                            </dl>
+                        </Kartu>
+                    ) : (
                         <p className="text-kecil text-ink-700">
                             Kunjungan pertama, belum ada nilai pembanding.
                         </p>

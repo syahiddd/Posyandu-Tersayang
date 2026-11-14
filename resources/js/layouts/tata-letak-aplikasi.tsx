@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     ArrowLeftRight,
+    BookOpen,
     Building2,
     ClipboardList,
     House,
@@ -11,6 +12,7 @@ import {
     Users,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { KepalaAplikasi } from '@/components/dasar/kepala-aplikasi';
 import {
     NavigasiBawah,
     NavigasiRel,
@@ -25,6 +27,7 @@ import {
     lainnya,
     logout,
     meja,
+    panduanKia,
     pengaturanAkun,
     pilihMeja,
     rekapImunisasi,
@@ -60,6 +63,7 @@ export default function TataLetakAplikasi({
         lainnya(),
         rekapImunisasi(),
         dataPosyandu(),
+        panduanKia(),
         pengaturanAkun(),
         gantiSandi(),
     ]
@@ -121,6 +125,12 @@ export default function TataLetakAplikasi({
             ikon: Building2,
             aktif: diBawah(dataPosyandu().url),
         },
+        {
+            label: 'Panduan KIA',
+            href: panduanKia().url,
+            ikon: BookOpen,
+            aktif: aktif(panduanKia().url),
+        },
         ...(bolehKelolaAkun
             ? [
                   {
@@ -174,16 +184,20 @@ export default function TataLetakAplikasi({
             <NavigasiRel item={itemUtama} />
             {!layarAnak && <NavigasiBawah item={itemUtama} />}
 
-            <main
-                id="konten"
-                className={
-                    layarMeja
-                        ? 'flex min-h-dvh flex-col tablet:pl-24 desktop:pl-sidebar'
-                        : 'flex min-h-dvh flex-col px-4 pt-5 pb-19 tablet:pr-5 tablet:pb-0 tablet:pl-30 desktop:pt-6 desktop:pr-6 desktop:pb-6 desktop:pl-66'
-                }
-            >
-                {children}
-            </main>
+            <div className="flex min-h-dvh flex-col tablet:pl-24 desktop:pl-sidebar">
+                <KepalaAplikasi judul={name} mejaNomor={mejaAktif?.nomor} />
+
+                <main
+                    id="konten"
+                    className={
+                        layarMeja
+                            ? 'flex flex-1 flex-col'
+                            : 'flex flex-1 flex-col px-4 pt-5 pb-19 tablet:px-5 tablet:pb-0 desktop:px-6 desktop:pt-6 desktop:pb-6'
+                    }
+                >
+                    {children}
+                </main>
+            </div>
         </div>
     );
 }

@@ -11,10 +11,13 @@ use App\Enums\Meja;
 use App\Gizi\GrafikPertumbuhan;
 use App\Gizi\HasilAntropometri;
 use App\Http\Requests\SelesaiPenyuluhanRequest;
+use App\Kia\PanduanKia;
 use App\Models\Kunjungan;
+use App\Models\Pendataan;
 use App\Models\Penyuluhan;
 use App\Penyuluhan\AnalisisKunjungan;
 use App\Penyuluhan\MateriPenyuluhan;
+use App\Support\Tanggal;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -45,6 +48,7 @@ class PenyuluhanController extends Controller
         $tertunda = $analisis->imunisasiTertunda();
         $umur = (int) ($hariIni['umurBulan'] ?? TampilanKunjungan::header($kunjungan)['umurBulan']);
         $grafik = GrafikPertumbuhan::props($anak, $analisis->pengukuran, $kunjungan->pengukuran?->id);
+        $asi = self::asiEksklusif($kunjungan, $umur);
 
         return [
             'anak' => TampilanKunjungan::header($kunjungan),
@@ -56,12 +60,38 @@ class PenyuluhanController extends Controller
                 'lk' => $hariIni['lk'],
                 'imt' => $hariIni['imt'],
             ],
+            'hariIni' => Tanggal::singkat($kunjungan->tanggal),
+            // Catatan Meja 4, termasuk alasan imunisasi tidak diberikan.
+            'catatanPelayanan' => $kunjungan->catatan_pelayanan,
+            // Tiga penimbangan sebelum hari ini, terbaru lebih dulu, agar
+            // riwayat mudah dilihat tanpa membuka tabel grafik.
+            'riwayatPenimbangan' => collect($analisis->riwayat)
+                ->where('hariIni', false)
+                ->take(-3)
+                ->reverse()
+                ->map(fn (array $ukur) => [
+                    'tanggal' => Tanggal::singkat($ukur['tanggal']),
+                    'umurBulan' => $ukur['umurBulan'],
+                    'bb' => $ukur['bb'],
+                    'pbTb' => $ukur['pbTb'],
+                    'lila' => $ukur['lila'],
+                    'lk' => $ukur['lk'],
+                    'dariBukuKia' => $ukur['dariBukuKia'],
+                ])
+                ->values()
+                ->all(),
             'perluUkurUlang' => $analisis->perluUkurUlang(),
             'statusGizi' => $statusGizi,
             'penimbangan' => $penimbangan,
             'rujukanKms' => $rujukan,
             'stunting' => [...$analisis->stunting, 'hasil' => $analisis->stunting['hasil']->value],
             'banner' => self::banner($analisis, $statusGizi, $rujukan),
+            // Tindak lanjut dan anjuran Buku KIA sesuai umur dan status gizi
+            // hari ini (FR-45; Buku KIA hlm. 38–87, 122–125).
+            'tindakLanjut' => PanduanKia::tindakLanjut($umur, $statusGizi),
+            'anjuranUmur' => PanduanKia::anjuranUmur($umur),
+            'tandaBahaya' => PanduanKia::tandaBahaya($umur),
+            'asiEksklusif' => $asi,
             'grafik' => $hariIni === null ? null : [
                 'jenisKelamin' => $anak->jenis_kelamin->value,
                 'tabAwal' => self::tabAwal($statusGizi),
@@ -96,9 +126,38 @@ class PenyuluhanController extends Controller
                 'fisik' => self::opsi('penyuluhan.pengamatan_fisik'),
                 'motorik' => self::opsi('penyuluhan.pengamatan_motorik'),
             ],
-            'catatanMeja4' => $kunjungan->catatan_penyuluhan,
             'alasanWajib' => self::alasanCatatanWajib($kunjungan, $analisis),
             'nilaiAwal' => self::nilaiAwal($kunjungan),
+        ];
+    }
+
+    /**
+     * Catatan ASI eksklusif anak (FR-27; Buku KIA hlm. 38–39): isian Meja 3
+     * hari ini dan catatan terakhir sebelumnya. Meja 5 memakainya untuk
+     * mengingatkan ibu pada anak umur 0–6 bulan.
+     *
+     * @return array{relevan: bool, hariIni: bool|null, terakhir: array{nilai: bool, tanggal: string}|null, judul: string, halaman: string}
+     */
+    private static function asiEksklusif(Kunjungan $kunjungan, int $umur): array
+    {
+        $terakhir = Pendataan::query()
+            ->whereNotNull('asi_eksklusif')
+            ->whereHas('kunjungan', fn ($q) => $q
+                ->where('anak_id', $kunjungan->anak_id)
+                ->whereKeyNot($kunjungan->id))
+            ->with('kunjungan')
+            ->latest('id')
+            ->first();
+
+        return [
+            'relevan' => $umur <= PendataanController::BULAN_MAKS_ASI,
+            'hariIni' => $kunjungan->pendataan?->asi_eksklusif,
+            'terakhir' => $terakhir === null ? null : [
+                'nilai' => (bool) $terakhir->asi_eksklusif,
+                'tanggal' => Tanggal::singkat($terakhir->kunjungan->tanggal),
+            ],
+            'judul' => (string) config('kia.asi.judul'),
+            'halaman' => (string) config('kia.asi.sumber'),
         ];
     }
 

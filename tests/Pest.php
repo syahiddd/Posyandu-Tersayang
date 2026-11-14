@@ -18,6 +18,9 @@ pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
 
+// Tes Unit hanya butuh aplikasi Laravel (mis. config()), tanpa basis data.
+pest()->extend(TestCase::class)->in('Unit');
+
 /*
 |--------------------------------------------------------------------------
 | Expectations

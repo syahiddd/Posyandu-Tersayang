@@ -3,7 +3,7 @@ import type { ComponentProps, ReactNode } from 'react';
 
 /**
  * Kartu (DESIGN 3.6): permukaan putih di atas latar kertas, garis tepi
- * ink-200 1 px, bayangan shadow-1, radius 10 px, padding 12/16 px.
+ * ink-200 1 px, bayangan shadow-1, radius besar agar tampak lembut.
  */
 type PropsKartu = Omit<ComponentProps<'section'>, 'title'> & {
     judul?: ReactNode;
@@ -21,13 +21,13 @@ export function Kartu({
     return (
         <section
             className={clsx(
-                'rounded-md border border-ink-200 bg-white px-4 py-3 shadow-1',
+                'rounded-lg border border-ink-200 bg-white px-4 py-4 shadow-1',
                 className,
             )}
             {...props}
         >
             {labelSeksi && (
-                <h2 className="mb-2 text-label-seksi text-ink-600 uppercase">
+                <h2 className="mb-2 text-label-seksi text-brand-700 uppercase">
                     {labelSeksi}
                 </h2>
             )}

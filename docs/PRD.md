@@ -492,6 +492,9 @@ Tabel 18. Kebutuhan fungsional Menu Data Anak
 | FR-52 | Kader dapat mengubah data identitas, orang tua, dan alamat anak. Setiap perubahan dicatat di log aktivitas. | Wajib |
 | FR-53 | Ketua Kader dapat menghapus data anak setelah konfirmasi dua langkah. Data yang dihapus dapat dipulihkan dalam 30 hari sebelum terhapus permanen. | Wajib |
 | FR-54 | Daftar anak, sesuai pencarian dan penyaringan yang aktif, dapat diunduh dalam format CSV. | Wajib |
+| FR-69 | Di atas daftar anak ditampilkan ringkasan seluruh anak: jumlah anak terdaftar, jumlah anak laki-laki dan perempuan, serta jumlah anak yang belum ditimbang pada bulan berjalan. Angka ringkasan berlaku untuk seluruh posyandu dan tidak mengikuti pencarian atau penyaring yang aktif. | Wajib |
+| FR-70 | Kartu anak pada daftar menampilkan hasil ukur terakhir (berat badan, panjang atau tinggi badan, dan tanggal ukur) serta status imunisasi, yaitu "sesuai umur" bila tidak ada dosis yang jatuh tempo dan belum tercatat, atau nama dosis yang perlu diberikan beserta tanda kejar bila sudah terlambat. | Wajib |
+| FR-71 | Kartu anak pada daftar menyediakan aksi cepat "Lihat grafik & KMS" yang membuka halaman detail anak langsung pada tab grafik. | Penting |
 
 ## 4.10 Menu Rekapitulasi Imunisasi
 
@@ -801,7 +804,7 @@ Tabel 35. Daftar layar aplikasi
 | Meja 3 Pendataan | Antrean, tampilan baca saja dengan perbandingan kunjungan sebelumnya, isian ASI eksklusif |
 | Meja 4 Pelayanan | Antrean, rekomendasi imunisasi, isian layanan, riwayat singkat, catatan |
 | Meja 5 Penyuluhan | Antrean, ringkasan kunjungan, status gizi, grafik, edukasi, catatan tindak lanjut |
-| Data Anak | Pencarian, penyaringan, daftar anak, detail anak, ubah, hapus, unduh CSV |
+| Data Anak | Ringkasan seluruh anak, pencarian, penyaringan, daftar anak, detail anak, ubah, hapus, unduh CSV |
 | Rekapitulasi Imunisasi | Penyaringan, tabel rekap, ringkasan cakupan, unduh CSV |
 | Data Posyandu | Profil, daftar kader, rekap SKDN dan status gizi, unduh CSV |
 | Pengaturan Akun | Khusus Ketua Kader: daftar akun, tambah, nonaktifkan, atur ulang kata sandi |

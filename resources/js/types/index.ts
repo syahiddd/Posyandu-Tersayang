@@ -65,6 +65,35 @@ export type RingkasanAnak = {
     nikSamar: string | null;
     kunjunganTerakhir: string | null;
     sudahDiAntrean: boolean;
+    /** Hasil ukur terakhir; hanya diisi pada kartu daftar Data Anak (FR-50). */
+    ukurTerakhir?: UkurTerakhir | null;
+    /** Status imunisasi; hanya diisi pada kartu daftar Data Anak (FR-50). */
+    imunisasi?: StatusImunisasi;
+};
+
+/** Hasil ukur terakhir anak di kartu daftar Data Anak (FR-50). */
+export type UkurTerakhir = {
+    tanggal: string;
+    bb: string | null;
+    pbTb: string | null;
+};
+
+/** Status imunisasi anak di kartu daftar Data Anak (FR-30, FR-50). */
+export type StatusImunisasi = {
+    /** True bila tidak ada dosis yang jatuh tempo dan belum tercatat. */
+    sesuai: boolean;
+    /** Nama dosis berikutnya yang perlu dikejar, bila ada. */
+    berikutnya: string | null;
+    /** Dosis berikutnya sudah melewati jadwal umurnya. */
+    terlambat: boolean;
+};
+
+/** Statistik seluruh anak di atas daftar Data Anak (FR-50). */
+export type StatistikAnak = {
+    total: number;
+    lakiLaki: number;
+    perempuan: number;
+    belumDitimbangBulanIni: number;
 };
 
 /** Pilihan meja untuk isian "meja yang biasa dipegang" (FR-60). */
@@ -131,6 +160,8 @@ export type RiwayatKunjungan = {
     tanggal: string;
     nomorAntrean: number;
     keadaan: string;
+    /** Catatan Meja 4, misalnya alasan imunisasi tidak diberikan. */
+    catatanPelayanan: string | null;
 };
 
 /** Imunisasi, vitamin A, atau obat cacing (FR-51, FR-66). */

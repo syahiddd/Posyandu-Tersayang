@@ -114,24 +114,28 @@ export function Bidang({
     );
 }
 
-/** Kelas bingkai isian: tinggi 52 px, tepi ink-400, huruf minimal 16 px. */
+/** Kelas bingkai isian: tinggi 52 px, kapsul putih, huruf minimal 16 px. */
 export function kelasBingkai({
     galat,
     peringatan,
     bacaSaja,
+    bulat = true,
 }: {
     galat?: string;
     peringatan?: string;
     bacaSaja?: boolean;
+    /** Isian satu baris memakai kapsul; area teks memakai sudut besar. */
+    bulat?: boolean;
 }) {
     return clsx(
-        'w-full rounded-sm border bg-white text-ink-900 placeholder:text-ink-500 focus:border-ink-900',
-        'disabled:cursor-not-allowed disabled:border-ink-300 disabled:bg-ink-100 disabled:text-ink-500',
-        bacaSaja && 'border-dashed border-ink-400 bg-ink-100',
+        'w-full border bg-white text-ink-900 shadow-1 placeholder:text-ink-500 focus:border-brand-700',
+        bulat ? 'rounded-pill' : 'rounded-lg',
+        'disabled:cursor-not-allowed disabled:border-ink-300 disabled:bg-ink-100 disabled:text-ink-500 disabled:shadow-none',
+        bacaSaja && 'border-dashed border-ink-400 bg-ink-100 shadow-none',
         galat
-            ? 'border-2 border-status-bahaya-teks'
+            ? 'border-2 border-status-bahaya-teks shadow-none'
             : peringatan
-              ? 'border-2 border-status-waspada-teks'
+              ? 'border-2 border-status-waspada-teks shadow-none'
               : !bacaSaja && 'border-ink-400',
     );
 }

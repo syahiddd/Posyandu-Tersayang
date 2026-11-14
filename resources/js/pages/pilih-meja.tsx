@@ -42,12 +42,12 @@ export default function PilihMeja({ tanggal, meja, terpilih }: Props) {
         <>
             <Head title="Pilih meja" />
             <form onSubmit={kirim} className="flex min-h-dvh flex-col bg-paper">
-                <header className="border-b border-ink-200 bg-white pt-5 pb-4">
+                <header className="bg-brand-700 pt-5 pb-4 text-white">
                     <div className="mx-auto w-full max-w-xl px-4 tablet:px-5">
-                        <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
+                        <h1 className="text-judul-2 text-white desktop:text-judul-1">
                             Pilih meja hari ini
                         </h1>
-                        <p className="text-teks text-ink-700">{tanggal}</p>
+                        <p className="text-teks text-white/90">{tanggal}</p>
                     </div>
                 </header>
 
@@ -73,7 +73,7 @@ export default function PilihMeja({ tanggal, meja, terpilih }: Props) {
                                                 'flex min-h-target-min cursor-pointer items-center gap-4 rounded-md bg-white px-4 py-3 shadow-1',
                                                 'has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-ink-900',
                                                 dipilih
-                                                    ? 'border-2 border-ink-900'
+                                                    ? 'border-2 border-brand-700'
                                                     : 'border border-ink-200',
                                             )}
                                         >
@@ -108,12 +108,12 @@ export default function PilihMeja({ tanggal, meja, terpilih }: Props) {
                                                 className={clsx(
                                                     'flex size-5 shrink-0 items-center justify-center rounded-pill border-2',
                                                     dipilih
-                                                        ? 'border-ink-900'
+                                                        ? 'border-brand-700'
                                                         : 'border-ink-400',
                                                 )}
                                             >
                                                 {dipilih && (
-                                                    <span className="size-3 rounded-pill bg-ink-900" />
+                                                    <span className="size-3 rounded-pill bg-brand-700" />
                                                 )}
                                             </span>
                                         </label>

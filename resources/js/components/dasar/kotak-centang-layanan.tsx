@@ -34,7 +34,7 @@ export function KotakCentangLayanan({
                 nonaktif
                     ? 'border-ink-200 bg-ink-100'
                     : dicentang
-                      ? 'border-ink-900'
+                      ? 'border-brand-700'
                       : 'border-ink-300',
             )}
         >
@@ -59,7 +59,7 @@ export function KotakCentangLayanan({
                         nonaktif
                             ? 'border-ink-300 bg-ink-100'
                             : dicentang
-                              ? 'border-ink-900 bg-ink-900 text-white'
+                              ? 'border-brand-700 bg-brand-700 text-white'
                               : 'border-ink-900 bg-white',
                     )}
                 >

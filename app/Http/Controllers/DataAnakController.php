@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Anak\KelompokUmur;
 use App\Anak\PencarianAnak;
+use App\Anak\StatistikDataAnak;
 use App\Anak\TampilanDetailAnak;
 use App\Antrean\TampilanAnak;
 use App\Ekspor\BerkasCsv;
@@ -28,7 +29,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 /**
  * Menu Data Anak (PRD 4.9, DESIGN S14): daftar seluruh anak dengan
  * pencarian nama atau NIK, serta penyaring jenis kelamin, kelompok umur,
- * dan dusun (FR-50). NIK tersamar di daftar (NFR-05).
+ * dan dusun (FR-50). NIK tersamar di daftar (NFR-05). Di atas daftar
+ * tampil ringkasan seluruh anak (FR-69), dan tiap kartu memuat hasil ukur
+ * terakhir serta status imunisasi (FR-70).
  */
 class DataAnakController extends Controller
 {
@@ -40,13 +43,16 @@ class DataAnakController extends Controller
 
         return Inertia::render('data-anak/daftar', [
             'penyaring' => $penyaring,
+            'statistik' => fn () => StatistikDataAnak::semua(),
             'jumlah' => fn () => $this->query($penyaring)->count(),
             'adaAnak' => fn () => Anak::query()->exists(),
-            'anak' => Inertia::scroll(fn () => TampilanAnak::denganRingkasan($this->query($penyaring))
+            'anak' => Inertia::scroll(fn () => TampilanAnak::denganUkurTerakhir(
+                TampilanAnak::denganRingkasan($this->query($penyaring)),
+            )
                 ->orderBy('nama')
                 ->orderBy('id')
                 ->paginate(self::PER_HALAMAN)
-                ->through(fn (Anak $anak) => TampilanAnak::ringkas($anak))),
+                ->through(fn (Anak $anak) => TampilanAnak::ringkasLengkap($anak))),
             'daftarDusun' => fn () => Anak::query()->distinct()->orderBy('dusun')->pluck('dusun'),
             'jumlahTerhapus' => fn () => $request->user()?->can('viewTrashed', Anak::class)
                 ? Anak::onlyTrashed()->count()
@@ -109,6 +115,7 @@ class DataAnakController extends Controller
         $grafik = GrafikPertumbuhan::props($anak, $anak->pengukuran()->get());
 
         return Inertia::render('data-anak/detail', [
+            'tabAwal' => $this->tabAwal($request),
             'grafik' => $grafik['riwayat'] === [] ? null : [
                 'tabAwal' => $grafik['tabAwal'],
                 // Sama dengan rentang grafik: umur pada pengukuran terakhir.
@@ -122,6 +129,17 @@ class DataAnakController extends Controller
             'layanan' => TampilanDetailAnak::layanan($anak),
             'perubahanTerakhir' => TampilanDetailAnak::perubahanTerakhir($anak),
         ]);
+    }
+
+    /**
+     * Tab awal detail dari ?tab=, dipakai aksi cepat "Lihat grafik/KMS" pada
+     * kartu Data Anak (FR-71). Nilai tak dikenal jatuh ke Ringkasan.
+     */
+    private function tabAwal(Request $request): string
+    {
+        $tab = (string) $request->query('tab');
+
+        return in_array($tab, ['ringkasan', 'grafik', 'riwayat'], true) ? $tab : 'ringkasan';
     }
 
     /** S16 Ubah Data Anak (FR-52). */

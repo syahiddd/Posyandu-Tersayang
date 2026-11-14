@@ -41,12 +41,12 @@ export type DataGrafik = {
     titik: TitikAnak[];
 };
 
-export type WarnaZona =
-    | 'normal'
-    | 'waspada'
-    | 'kurang'
-    | 'sangat-kurang'
-    | 'tinggi';
+/**
+ * Hanya dua warna agar kader cepat membaca: hijau = aman (di dalam batas
+ * normal), merah = tidak aman (di luar batas normal). Nama kategori tetap
+ * ditampilkan di teks, jadi warna bukan satu-satunya penanda.
+ */
+export type WarnaZona = 'aman' | 'tidak-aman';
 
 /** Zona di antara dua garis z; null = tepi grafik. */
 export type Zona = {
@@ -58,6 +58,8 @@ export type Zona = {
 
 /**
  * Zona per indeks sesuai kategori PRD Tabel 25. KMS memakai zona BB/U.
+ * Batas kategori tetap mengikuti Buku KIA; warnanya disederhanakan menjadi
+ * "aman" (hijau) dan "tidak aman" (merah).
  */
 export function zonaIndeks(indeks: IndeksGrafik): Zona[] {
     switch (indeks) {
@@ -67,15 +69,15 @@ export function zonaIndeks(indeks: IndeksGrafik): Zona[] {
                 {
                     bawah: null,
                     atas: -3,
-                    warna: 'sangat-kurang',
+                    warna: 'tidak-aman',
                     label: 'Sangat kurang',
                 },
-                { bawah: -3, atas: -2, warna: 'kurang', label: 'Kurang' },
-                { bawah: -2, atas: 1, warna: 'normal', label: 'Normal' },
+                { bawah: -3, atas: -2, warna: 'tidak-aman', label: 'Kurang' },
+                { bawah: -2, atas: 1, warna: 'aman', label: 'Normal' },
                 {
                     bawah: 1,
                     atas: null,
-                    warna: 'waspada',
+                    warna: 'tidak-aman',
                     label: 'Risiko lebih',
                 },
             ];
@@ -84,45 +86,60 @@ export function zonaIndeks(indeks: IndeksGrafik): Zona[] {
                 {
                     bawah: null,
                     atas: -3,
-                    warna: 'sangat-kurang',
+                    warna: 'tidak-aman',
                     label: 'Sangat pendek',
                 },
-                { bawah: -3, atas: -2, warna: 'kurang', label: 'Pendek' },
-                { bawah: -2, atas: 3, warna: 'normal', label: 'Normal' },
-                { bawah: 3, atas: null, warna: 'tinggi', label: 'Tinggi' },
+                { bawah: -3, atas: -2, warna: 'tidak-aman', label: 'Pendek' },
+                { bawah: -2, atas: 3, warna: 'aman', label: 'Normal' },
+                { bawah: 3, atas: null, warna: 'aman', label: 'Tinggi' },
             ];
         case 'lk_u':
             return [
                 {
                     bawah: null,
                     atas: -2,
-                    warna: 'kurang',
+                    warna: 'tidak-aman',
                     label: 'Mikrosefali',
                 },
-                { bawah: -2, atas: 2, warna: 'normal', label: 'Normal' },
-                { bawah: 2, atas: null, warna: 'kurang', label: 'Makrosefali' },
+                { bawah: -2, atas: 2, warna: 'aman', label: 'Normal' },
+                {
+                    bawah: 2,
+                    atas: null,
+                    warna: 'tidak-aman',
+                    label: 'Makrosefali',
+                },
             ];
         default:
             return [
                 {
                     bawah: null,
                     atas: -3,
-                    warna: 'sangat-kurang',
+                    warna: 'tidak-aman',
                     label: 'Gizi buruk',
                 },
-                { bawah: -3, atas: -2, warna: 'kurang', label: 'Gizi kurang' },
-                { bawah: -2, atas: 1, warna: 'normal', label: 'Gizi baik' },
+                {
+                    bawah: -3,
+                    atas: -2,
+                    warna: 'tidak-aman',
+                    label: 'Gizi kurang',
+                },
+                { bawah: -2, atas: 1, warna: 'aman', label: 'Gizi baik' },
                 {
                     bawah: 1,
                     atas: 2,
-                    warna: 'waspada',
+                    warna: 'tidak-aman',
                     label: 'Berisiko gizi lebih',
                 },
-                { bawah: 2, atas: 3, warna: 'kurang', label: 'Gizi lebih' },
+                {
+                    bawah: 2,
+                    atas: 3,
+                    warna: 'tidak-aman',
+                    label: 'Gizi lebih',
+                },
                 {
                     bawah: 3,
                     atas: null,
-                    warna: 'sangat-kurang',
+                    warna: 'tidak-aman',
                     label: 'Obesitas',
                 },
             ];

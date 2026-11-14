@@ -10,6 +10,7 @@ use App\Http\Controllers\GantiSandiController;
 use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\Meja1Controller;
 use App\Http\Controllers\MejaController;
+use App\Http\Controllers\PanduanKiaController;
 use App\Http\Controllers\PelayananController;
 use App\Http\Controllers\PendataanController;
 use App\Http\Controllers\PengukuranController;
@@ -77,6 +78,9 @@ Route::middleware('auth')->group(function () {
 
         // S20: menu Lainnya (DESIGN Tabel 11).
         Route::inertia('lainnya', 'lainnya')->name('lainnya');
+
+        // Panduan KIA: materi edukasi Buku KIA 2024 menurut umur.
+        Route::get('panduan-kia', [PanduanKiaController::class, 'index'])->name('panduan-kia');
 
         // S14–S16 Data Anak (PRD 4.9, FR-50 sampai FR-54).
         Route::get('data-anak', [DataAnakController::class, 'index'])->name('data-anak');

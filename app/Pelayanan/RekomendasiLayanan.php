@@ -22,7 +22,9 @@ use Illuminate\Support\Collection;
  * atau Tunda. Meja 5 menyertakannya untuk imunisasi yang masih harus
  * dikejar setelah layanan hari ini (FR-41).
  *
- * @phpstan-type Vaksin array{nama: string, umur_bulan: int, kelompok: string, umur_maks: int, khusus_endemis?: bool}
+ * @phpstan-import-type Dosis from JadwalImunisasi
+ * @phpstan-import-type Vaksin from JadwalImunisasi
+ *
  * @phpstan-type AcuanVitaminObat array{jenis: string, nama: string, umur_min: int, umur_maks: int|null}
  */
 final class RekomendasiLayanan
@@ -61,44 +63,23 @@ final class RekomendasiLayanan
      */
     public function imunisasi(): array
     {
-        /** @var array<string, Vaksin> $vaksin */
-        $vaksin = config('imunisasi.vaksin');
-
-        $sudah = $this->riwayat
+        $sudah = array_values($this->riwayat
             ->where('jenis', JenisLayanan::Imunisasi)
-            ->pluck('detail')
-            ->flip();
+            ->map(fn (Layanan $layanan) => $layanan->detail)
+            ->all());
 
-        $daftar = [];
-        $kelompokSelesai = [];
-
-        foreach ($vaksin as $kode => $satu) {
-            if ($sudah->has($kode) || isset($kelompokSelesai[$satu['kelompok']])) {
-                continue;
-            }
-
-            // Dosis pertama yang belum tercatat menentukan rangkaian ini.
-            $kelompokSelesai[$satu['kelompok']] = true;
-
-            if ($this->umur < $satu['umur_bulan'] || $this->umur > $satu['umur_maks']) {
-                continue;
-            }
-
-            $terlambat = $this->umur > $satu['umur_bulan'];
-            $endemis = $satu['khusus_endemis'] ?? false;
-
-            $daftar[] = [
-                'kode' => $kode,
+        return array_map(
+            fn (array $satu) => [
+                'kode' => $satu['kode'],
                 'nama' => $satu['nama'],
-                'alasan' => $terlambat
-                    ? "Imunisasi kejar · jadwal umur {$satu['umur_bulan']} bulan"
+                'alasan' => $satu['terlambat']
+                    ? "Imunisasi kejar · jadwal umur {$satu['umurBulan']} bulan"
                     : "Umur {$this->umur} bulan",
-                'terlambat' => $terlambat,
-                'tercentang' => ! $endemis,
-            ];
-        }
-
-        return $daftar;
+                'terlambat' => $satu['terlambat'],
+                'tercentang' => ! $satu['khususEndemis'],
+            ],
+            JadwalImunisasi::jatuhTempo($this->umur, $sudah),
+        );
     }
 
     /**

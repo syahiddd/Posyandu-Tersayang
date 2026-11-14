@@ -59,7 +59,9 @@ export function IsianAngka({
     const teksPetunjuk =
         [
             petunjuk ??
-                (jenis === 'desimal' ? 'Boleh pakai koma atau titik' : null),
+                (jenis === 'desimal'
+                    ? 'Boleh pakai titik atau koma, contoh 8.5 atau 8,5'
+                    : null),
             nilaiLalu ? `Lalu: ${nilaiLalu}` : null,
         ]
             .filter(Boolean)
@@ -83,7 +85,7 @@ export function IsianAngka({
             <div
                 className={clsx(
                     kelasBingkai({ galat, peringatan, bacaSaja }),
-                    'flex h-control-h items-center focus-within:border-ink-900',
+                    'flex h-control-h items-center focus-within:border-brand-700',
                     // Cincin fokus (bab 10.3) di bingkai, bukan di dalam isian.
                     'focus-within:outline-3 focus-within:outline-offset-3 focus-within:outline-ink-900',
                 )}

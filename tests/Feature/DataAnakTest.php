@@ -121,6 +121,88 @@ test('kartu menandai anak yang sudah di antrean hari ini dan kunjungan terakhir'
         ->where('anak.data.0.kunjunganTerakhir', fn ($nilai) => $nilai !== null));
 });
 
+test('daftar menampilkan statistik seluruh anak, tidak mengikuti penyaring (FR-69)', function () {
+    $laki = Anak::factory()->create(['jenis_kelamin' => 'L']);
+    Anak::factory()->create(['jenis_kelamin' => 'P']);
+    $belum = Anak::factory()->create(['jenis_kelamin' => 'P']);
+
+    // Sudah ditimbang bulan ini; bulan lalu tidak dihitung (FR-06).
+    Kunjungan::factory()->for($laki)->selesai()->create(['tanggal' => today()]);
+    Kunjungan::factory()->for($belum)->selesai()->create(['tanggal' => today()->subMonth()]);
+
+    // Anak terhapus tidak ikut ke total maupun ke "sudah ditimbang".
+    $dihapus = Anak::factory()->create(['jenis_kelamin' => 'L']);
+    Kunjungan::factory()->for($dihapus)->selesai()->create(['tanggal' => today()]);
+    $dihapus->delete();
+
+    daftar_anak()->assertInertia(fn ($page) => $page
+        ->where('statistik.total', 3)
+        ->where('statistik.lakiLaki', 1)
+        ->where('statistik.perempuan', 2)
+        ->where('statistik.belumDitimbangBulanIni', 2));
+
+    // Angka global tetap meski penyaring menyusutkan daftar.
+    daftar_anak(['jk' => 'L'])->assertInertia(fn ($page) => $page
+        ->where('jumlah', 1)
+        ->where('statistik.total', 3));
+});
+
+test('kartu daftar memuat hasil ukur terakhir dan status imunisasi (FR-70)', function () {
+    $anak = Anak::factory()->create(['tanggal_lahir' => today()->subMonths(3)]);
+    Pengukuran::factory()->for($anak)->create([
+        'tanggal_ukur' => today()->subWeek(),
+        'bb' => '6.2',
+        'pb_tb' => '60.5',
+    ]);
+    Pengukuran::factory()->for($anak)->create([
+        'tanggal_ukur' => today()->subMonths(2),
+        'bb' => '5.4',
+        'pb_tb' => '57.0',
+    ]);
+    foreach (['HB0', 'BCG', 'OPV 1'] as $kode) {
+        Layanan::factory()->for($anak)->create(['jenis' => 'imunisasi', 'detail' => $kode, 'tanggal' => today()->subMonths(2)]);
+    }
+
+    daftar_anak()->assertInertia(fn ($page) => $page
+        ->where('anak.data.0.ukurTerakhir.bb', '6.2')
+        ->where('anak.data.0.ukurTerakhir.pbTb', '60.5')
+        ->where('anak.data.0.ukurTerakhir.tanggal', fn ($nilai) => $nilai !== null)
+        ->where('anak.data.0.imunisasi.sesuai', false)
+        ->where('anak.data.0.imunisasi.berikutnya', 'DPT-HB-Hib 1')
+        ->where('anak.data.0.imunisasi.terlambat', true));
+});
+
+test('imunisasi ditandai sesuai umur bila dosis yang jatuh tempo sudah lengkap (FR-70)', function () {
+    $anak = Anak::factory()->create(['tanggal_lahir' => today()->subMonths(2)]);
+    foreach (['HB0', 'BCG', 'OPV 1', 'OPV 2', 'DPT-HB-Hib 1', 'PCV 1', 'RV 1'] as $kode) {
+        Layanan::factory()->for($anak)->create(['jenis' => 'imunisasi', 'detail' => $kode, 'tanggal' => today()->subMonth()]);
+    }
+
+    daftar_anak()->assertInertia(fn ($page) => $page
+        ->where('anak.data.0.imunisasi.sesuai', true)
+        ->where('anak.data.0.imunisasi.berikutnya', null));
+});
+
+test('anak belum punya pengukuran tetap tampil di kartu daftar (FR-50)', function () {
+    Anak::factory()->create();
+
+    daftar_anak()->assertInertia(fn ($page) => $page
+        ->where('anak.data.0.ukurTerakhir', null));
+});
+
+test('detail anak membuka tab dari ?tab= untuk aksi cepat KMS (FR-71)', function () {
+    $anak = Anak::factory()->create();
+
+    $this->get(route('data-anak.detail', ['anak' => $anak, 'tab' => 'grafik']))
+        ->assertInertia(fn ($page) => $page->where('tabAwal', 'grafik'));
+
+    $this->get(route('data-anak.detail', ['anak' => $anak, 'tab' => 'ngawur']))
+        ->assertInertia(fn ($page) => $page->where('tabAwal', 'ringkasan'));
+
+    $this->get(route('data-anak.detail', $anak))
+        ->assertInertia(fn ($page) => $page->where('tabAwal', 'ringkasan'));
+});
+
 test('detail anak menampilkan identitas lengkap termasuk NIK (FR-51, NFR-05)', function () {
     $anak = Anak::factory()->create([
         'nama' => 'Nayla Putri',

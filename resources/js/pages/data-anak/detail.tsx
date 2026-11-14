@@ -30,6 +30,8 @@ type Props = {
     layanan: RiwayatLayanan[];
     perubahanTerakhir: { oleh: string; pada: string } | null;
     bolehHapus: boolean;
+    /** Tab yang dibuka lebih dulu, dari aksi cepat daftar Data Anak (FR-50). */
+    tabAwal: IdTab;
     /** Null bila anak belum punya pengukuran. */
     grafik: {
         tabAwal: IndeksGrafik;
@@ -79,9 +81,10 @@ export default function DetailDataAnak({
     layanan,
     perubahanTerakhir,
     bolehHapus,
+    tabAwal,
     grafik,
 }: Props) {
-    const [tab, setTab] = useState<IdTab>('ringkasan');
+    const [tab, setTab] = useState<IdTab>(tabAwal);
     const [tabGrafik, setTabGrafik] = useState<IndeksGrafik>(
         grafik?.tabAwal ?? 'kms',
     );
@@ -461,7 +464,7 @@ export default function DetailDataAnak({
                                 varian="sekunder"
                                 lebarPenuh
                             >
-                                + Tambah dari Buku KIA
+                                Tambah dari Buku KIA
                             </TombolTautan>
                             <Kartu labelSeksi="Layanan">
                                 {layanan.length === 0 ? (
@@ -517,6 +520,14 @@ export default function DetailDataAnak({
                                                     ).padStart(2, '0')}{' '}
                                                     · {satu.keadaan}
                                                 </span>
+                                                {satu.catatanPelayanan && (
+                                                    <p className="basis-full text-kecil text-ink-700">
+                                                        <span className="font-bold text-ink-900">
+                                                            Catatan pelayanan:
+                                                        </span>{' '}
+                                                        {satu.catatanPelayanan}
+                                                    </p>
+                                                )}
                                             </li>
                                         ))}
                                     </ul>

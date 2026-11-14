@@ -6,23 +6,17 @@
 /* DESIGN 2.3: tanpa mode gelap. Varian dark: dibuat tidak pernah cocok. */
 @custom-variant dark (&:not(*));
 
-/* DESIGN 3.5: Atkinson Hyperlegible, hanya Regular 400 dan Bold 700, di-self-host. */
+/*
+ * DESIGN 3.5: Plus Jakarta Sans (variable 200–800) di-self-host, hanya
+ * subset Latin. Bentuk hurufnya lembut dan bersih, angka mudah dibedakan,
+ * sejalan dengan bahasa visual prototipe "Posya App".
+ */
 @font-face {
-    font-family: 'Atkinson Hyperlegible';
+    font-family: 'Plus Jakarta Sans';
     font-style: normal;
-    font-weight: 400;
+    font-weight: 200 800;
     font-display: swap;
-    src: url('../fonts/atkinson-hyperlegible-latin-400-normal.woff2')
-        format('woff2');
-}
-
-@font-face {
-    font-family: 'Atkinson Hyperlegible';
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url('../fonts/atkinson-hyperlegible-latin-700-normal.woff2')
-        format('woff2');
+    src: url('../fonts/plus-jakarta-sans-latin-variable.woff2') format('woff2');
 }
 
 /*
@@ -45,6 +39,20 @@
     --color-paper: #fafaf7;
     --color-white: #ffffff;
 
+    /*
+     * Warna merek (acuan prototipe "Posya App"): plum hangat untuk header,
+     * tombol utama, dan penanda aktif. Berbeda rona dari merah muda identitas
+     * anak (girl-700) dan merah status bahaya, sehingga makna data tetap utuh.
+     */
+    --color-brand-900: #3b1f2b;
+    --color-brand-800: #4c2a3a;
+    --color-brand-700: #6b3b52;
+    --color-brand-600: #8b4f69;
+    --color-brand-300: #d9a8bd;
+    --color-brand-200: #e9ccd9;
+    --color-brand-100: #f7e9ef;
+    --color-brand-50: #fcf6f9;
+
     /* 3.2 Warna identitas anak (Tabel 5) */
     --color-boy-700: #1d5fa8;
     --color-boy-100: #eaf2fb;
@@ -65,21 +73,17 @@
     --color-status-info-teks: #3a4457;
     --color-status-info-latar: #f1f3f6;
 
-    /* 3.4 Warna grafik pertumbuhan (Tabel 7) */
+    /* 3.4 Warna grafik pertumbuhan (Tabel 7): hanya dua zona, aman dan tidak aman */
     --color-garis-z0: #2e8b47;
     --color-garis-z1: #b86200;
     --color-garis-z2: #d33a2c;
     --color-garis-z3: #1b2333;
-    --color-zona-normal: #d9efdf;
-    --color-zona-waspada: #fff0c7;
-    --color-zona-kurang: #fde3c2;
-    --color-zona-sangat-kurang: #f6c7c2;
-    --color-zona-tinggi: #dce8f7;
+    --color-zona-aman: #d9efdf;
+    --color-zona-tidak-aman: #f6c7c2;
 
     /* 3.5 Tipografi (Tabel 8) */
     --font-*: initial;
-    --font-sans:
-        'Atkinson Hyperlegible', system-ui, 'Segoe UI', Roboto, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
 
     --font-weight-*: initial;
     --font-weight-normal: 400;
@@ -127,14 +131,15 @@
     --spacing-sidebar: 232px;
 
     --radius-*: initial;
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 16px;
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
     --radius-pill: 999px;
 
     --shadow-*: initial;
-    --shadow-1: 0 1px 2px rgba(27, 35, 51, 0.08);
-    --shadow-2: 0 6px 16px rgba(27, 35, 51, 0.14);
+    --shadow-1:
+        0 1px 2px rgba(59, 31, 43, 0.06), 0 2px 6px rgba(59, 31, 43, 0.06);
+    --shadow-2: 0 8px 24px rgba(59, 31, 43, 0.16);
 
     /* Gerak: 150 ms ease-out; 250 ms untuk sheet */
     --default-transition-duration: 150ms;

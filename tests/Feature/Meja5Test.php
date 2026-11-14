@@ -123,15 +123,14 @@ test('status T dan BB di bawah garis merah memunculkan pesan rujukan KMS (FR-40)
         ->where('rujukanKms', ['Berat badan tidak naik (T)', 'Berat badan di bawah garis merah KMS']));
 });
 
-test('catatan dari Meja 4 dan layanan hari ini serta imunisasi kejar ditampilkan (FR-41, FR-45)', function () {
-    $k = buka_di_meja5(18, 'L', kunjungan: ['catatan_penyuluhan' => 'Anak sedikit demam']);
+test('layanan hari ini serta imunisasi kejar ditampilkan (FR-41, FR-45)', function () {
+    $k = buka_di_meja5(18, 'L');
     $k->layanan()->create([
         'anak_id' => $k->anak_id, 'jenis' => 'imunisasi', 'detail' => 'MR 2',
         'tanggal' => today()->toDateString(), 'sumber' => 'posyandu',
     ]);
 
     $this->get(route('kunjungan.layar', $k))->assertInertia(fn ($page) => $page
-        ->where('catatanMeja4', 'Anak sedikit demam')
         ->where('layanan.0.detail', 'MR 2')
         ->where('imunisasiTertunda', fn ($daftar) => ! collect($daftar)->pluck('kode')->contains('MR 2')
             && collect($daftar)->pluck('kode')->contains('OPV 1')

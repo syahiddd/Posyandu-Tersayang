@@ -39,7 +39,6 @@ use Illuminate\Support\Carbon;
  * @property bool $perlu_ukur_ulang
  * @property string|null $alasan_kembali
  * @property string|null $catatan_pelayanan
- * @property string|null $catatan_penyuluhan
  */
 #[Table('kunjungan')]
 #[Fillable([
@@ -48,7 +47,7 @@ use Illuminate\Support\Carbon;
     'selesai_meja_1_pada', 'selesai_meja_2_pada', 'selesai_meja_3_pada',
     'selesai_meja_4_pada', 'selesai_meja_5_pada',
     'draf', 'perlu_ukur_ulang', 'alasan_kembali',
-    'catatan_pelayanan', 'catatan_penyuluhan',
+    'catatan_pelayanan',
 ])]
 class Kunjungan extends Model
 {

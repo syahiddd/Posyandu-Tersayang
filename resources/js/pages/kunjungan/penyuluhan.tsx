@@ -11,7 +11,7 @@ import { Kartu } from '@/components/dasar/kartu';
 import { KotakCentangLayanan } from '@/components/dasar/kotak-centang-layanan';
 import { SheetBawah } from '@/components/dasar/sheet-bawah';
 import { Tab } from '@/components/dasar/tab';
-import { Tombol } from '@/components/dasar/tombol';
+import { Tombol, TombolTautan } from '@/components/dasar/tombol';
 import { DetailDuaKolom } from '@/components/detail-dua-kolom';
 import { GrafikPertumbuhan } from '@/components/grafik-pertumbuhan';
 import { useDaftarLayarAnak } from '@/hooks/use-layar-anak';
@@ -20,6 +20,7 @@ import type { DataGrafik, IndeksGrafik } from '@/lib/grafik';
 import { teksKbm } from '@/lib/perbandingan';
 import { formatUmurBulan } from '@/lib/umur';
 import { lepas, selesai, tunda } from '@/routes/kunjungan';
+import { panduanKia } from '@/routes';
 import type { HeaderKunjungan, RiwayatLayanan } from '@/types';
 
 type StatusGizi = {
@@ -38,6 +39,20 @@ type Opsi = { kode: string; label: string };
 
 type Materi = { kode: string; nama: string; kondisi: string };
 
+/** Tindak lanjut satu kategori status gizi, digabung anjuran sesuai umur. */
+type TindakLanjut = {
+    indeks: string;
+    label: string;
+    kode: string;
+    kategori: string;
+    varian: VarianChip;
+    tingkat: 'rujuk' | 'tindak_lanjut' | 'pantau';
+    tindakan: string[];
+    sumber: string;
+    anjuran: string[];
+    halamanAnjuran: string | null;
+};
+
 type Isian = {
     pengamatan_fisik: string[];
     pengamatan_motorik: string[];
@@ -55,6 +70,20 @@ type Props = {
         lk: number | null;
         imt: number | null;
     } | null;
+    /** Tanggal kunjungan yang sedang dilayani, contoh "14 Nov 2026". */
+    hariIni: string;
+    /** Catatan Meja 4, termasuk alasan imunisasi tidak diberikan. */
+    catatanPelayanan: string | null;
+    /** Tiga penimbangan sebelum hari ini, terbaru lebih dulu. */
+    riwayatPenimbangan: {
+        tanggal: string;
+        umurBulan: number;
+        bb: number | null;
+        pbTb: number | null;
+        lila: number | null;
+        lk: number | null;
+        dariBukuKia: boolean;
+    }[];
     perluUkurUlang: boolean;
     statusGizi: StatusGizi[];
     penimbangan: {
@@ -85,6 +114,28 @@ type Props = {
         jumlahTitik: number;
         daftar: Record<IndeksGrafik, DataGrafik>;
     } | null;
+    tindakLanjut: TindakLanjut[];
+    anjuranUmur: {
+        dari: number;
+        sampai: number;
+        label: string;
+        halaman: string;
+        anjuran: string[];
+    } | null;
+    tandaBahaya: {
+        dari: number;
+        sampai: number;
+        label: string;
+        halaman: string;
+        daftar: string[];
+    } | null;
+    asiEksklusif: {
+        relevan: boolean;
+        hariIni: boolean | null;
+        terakhir: { nilai: boolean; tanggal: string } | null;
+        judul: string;
+        halaman: string;
+    };
     layanan: RiwayatLayanan[];
     imunisasiTertunda: { kode: string; nama: string; alasan: string }[];
     isiPiringku: {
@@ -97,7 +148,6 @@ type Props = {
         pemicuPengamatan: { fisik: string; motorik: string };
     };
     pengamatan: { fisik: Opsi[]; motorik: Opsi[] };
-    catatanMeja4: string | null;
     alasanWajib: string[];
     nilaiAwal: Partial<Isian> | null;
 };
@@ -106,6 +156,13 @@ const STATUS_NT: Record<string, { teks: string; varian: VarianChip }> = {
     N: { teks: 'N · Naik', varian: 'normal' },
     T: { teks: 'T · Tidak naik', varian: 'bahaya' },
     tidak_ditimbang: { teks: 'Tidak ditimbang bulan lalu', varian: 'info' },
+};
+
+/** Label tingkat tindak lanjut dari config/kia.php. */
+const LABEL_TINGKAT: Record<TindakLanjut['tingkat'], string> = {
+    rujuk: 'Rujuk ke puskesmas',
+    tindak_lanjut: 'Tindak lanjut di Posyandu',
+    pantau: 'Pantau bulan depan',
 };
 
 const VARIAN_STUNTING: Record<Props['stunting']['hasil'], VarianChip> = {
@@ -128,19 +185,25 @@ export default function Penyuluhan(props: Props) {
     const {
         anak,
         ringkasan,
+        hariIni,
+        catatanPelayanan,
+        riwayatPenimbangan,
         perluUkurUlang,
         statusGizi,
         penimbangan,
         rujukanKms,
         stunting,
         banner,
+        tindakLanjut,
+        anjuranUmur,
+        tandaBahaya,
+        asiEksklusif,
         grafik,
         layanan,
         imunisasiTertunda,
         isiPiringku,
         materi,
         pengamatan,
-        catatanMeja4,
         alasanWajib,
         nilaiAwal,
     } = props;
@@ -268,8 +331,27 @@ export default function Penyuluhan(props: Props) {
 
     const status = penimbangan?.status ? STATUS_NT[penimbangan.status] : null;
     const layananHariIni = layanan.filter(
-        (satu) => satu.tanggal === layanan[0]?.tanggal && !satu.dariBukuKia,
+        (satu) => satu.tanggal === hariIni && !satu.dariBukuKia,
     );
+    const imunisasiHariIni = layananHariIni.filter(
+        (satu) => satu.jenis === 'Imunisasi',
+    );
+    const jenisKelaminTeks =
+        anak.jenisKelamin === 'L' ? 'Laki-laki' : 'Perempuan';
+    const sudahDiukur =
+        ringkasan === null
+            ? []
+            : [
+                  ringkasan.bb !== null && 'Berat badan',
+                  ringkasan.pbTb !== null &&
+                      (ringkasan.caraUkur === 'telentang'
+                          ? 'Panjang badan'
+                          : ringkasan.caraUkur === 'berdiri'
+                            ? 'Tinggi badan'
+                            : 'PB/TB'),
+                  ringkasan.lila !== null && 'LiLA',
+                  ringkasan.lk !== null && 'Lingkar kepala',
+              ].filter((satu): satu is string => Boolean(satu));
     const galatMateri = Object.entries(
         form.errors as Record<string, string | undefined>,
     ).find(
@@ -317,6 +399,94 @@ export default function Penyuluhan(props: Props) {
                             {banner.isi}
                         </Banner>
                     )}
+
+                    {/* Ringkasan sekali lihat: hasil hitung, yang sudah
+                        dilakukan, dan imunisasi yang didapat hari ini. */}
+                    <Kartu labelSeksi="Ringkasan hasil kunjungan">
+                        <div className="grid gap-4 py-1 tablet:grid-cols-3">
+                            <div className="flex flex-col gap-1">
+                                <p className="text-kecil font-bold text-ink-900">
+                                    Umur & jenis kelamin
+                                </p>
+                                <p className="text-judul-2 text-ink-900">
+                                    {formatUmurBulan(anak.umurBulan)}
+                                </p>
+                                <p className="text-teks text-ink-700">
+                                    {jenisKelaminTeks}
+                                </p>
+                                <p className="text-keterangan text-ink-600">
+                                    Acuan status gizi dan grafik: standar WHO
+                                    sesuai umur dan jenis kelamin (Buku KIA).
+                                </p>
+                            </div>
+
+                            <div className="flex flex-col gap-2 border-t border-ink-200 pt-3 tablet:border-t-0 tablet:border-l tablet:pt-0 tablet:pl-4">
+                                <p className="text-kecil font-bold text-ink-900">
+                                    Hasil perhitungan
+                                </p>
+                                {statusGizi.length === 0 ? (
+                                    <p className="text-teks text-ink-700">
+                                        {perluUkurUlang
+                                            ? 'Perlu ukur ulang, status gizi belum dihitung.'
+                                            : ringkasan === null
+                                              ? 'Belum ada hasil ukur hari ini.'
+                                              : 'Belum ada status gizi.'}
+                                    </p>
+                                ) : (
+                                    <ul className="flex flex-wrap gap-2">
+                                        {statusGizi.map((satu) => (
+                                            <li key={satu.indeks}>
+                                                <ChipStatus
+                                                    varian={satu.varian}
+                                                >
+                                                    {satu.label} ·{' '}
+                                                    {satu.kategori}
+                                                </ChipStatus>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col gap-2 border-t border-ink-200 pt-3 tablet:border-t-0 tablet:border-l tablet:pt-0 tablet:pl-4">
+                                <p className="text-kecil font-bold text-ink-900">
+                                    Sudah dilakukan hari ini
+                                </p>
+                                <p className="text-teks text-ink-900">
+                                    <span className="font-bold">Diukur:</span>{' '}
+                                    {sudahDiukur.length > 0
+                                        ? sudahDiukur.join(', ')
+                                        : 'belum ada'}
+                                </p>
+                                <p className="text-teks text-ink-900">
+                                    <span className="font-bold">Layanan:</span>{' '}
+                                    {layananHariIni.length > 0
+                                        ? layananHariIni
+                                              .map((satu) => satu.detail)
+                                              .join(', ')
+                                        : 'belum ada'}
+                                </p>
+                                <p className="text-teks text-ink-900">
+                                    <span className="font-bold">
+                                        Imunisasi didapat:
+                                    </span>{' '}
+                                    {imunisasiHariIni.length > 0
+                                        ? imunisasiHariIni
+                                              .map((satu) => satu.detail)
+                                              .join(', ')
+                                        : 'belum ada'}
+                                </p>
+                                {catatanPelayanan && (
+                                    <p className="text-teks text-ink-700">
+                                        <span className="font-bold text-ink-900">
+                                            Catatan pelayanan:
+                                        </span>{' '}
+                                        {catatanPelayanan}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </Kartu>
 
                     <DetailDuaKolom
                         kiriLebar
@@ -453,6 +623,51 @@ export default function Penyuluhan(props: Props) {
                                     </Kartu>
                                 )}
 
+                                {riwayatPenimbangan.length > 0 && (
+                                    <Kartu labelSeksi="Riwayat penimbangan sebelumnya">
+                                        <ul className="-mx-1 mt-1 flex gap-2 overflow-x-auto px-1 pb-1">
+                                            {riwayatPenimbangan.map((satu) => (
+                                                <li
+                                                    key={`${satu.tanggal}-${satu.umurBulan}`}
+                                                    className="min-w-44 shrink-0 rounded-md bg-brand-50 px-3 py-2"
+                                                >
+                                                    <p className="text-kecil text-ink-700">
+                                                        {satu.tanggal} ·{' '}
+                                                        {satu.umurBulan} bln
+                                                    </p>
+                                                    <p className="text-teks font-bold text-ink-900 tabular-nums">
+                                                        BB{' '}
+                                                        {formatSatuDesimal(
+                                                            satu.bb,
+                                                        )}{' '}
+                                                        kg · PB/TB{' '}
+                                                        {formatSatuDesimal(
+                                                            satu.pbTb,
+                                                        )}{' '}
+                                                        cm
+                                                    </p>
+                                                    <p className="text-kecil text-ink-700 tabular-nums">
+                                                        LiLA{' '}
+                                                        {formatSatuDesimal(
+                                                            satu.lila,
+                                                        )}{' '}
+                                                        cm · LK{' '}
+                                                        {formatSatuDesimal(
+                                                            satu.lk,
+                                                        )}{' '}
+                                                        cm
+                                                    </p>
+                                                    {satu.dariBukuKia && (
+                                                        <p className="text-keterangan text-ink-600">
+                                                            Dari Buku KIA
+                                                        </p>
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </Kartu>
+                                )}
+
                                 <Kartu labelSeksi="Status penimbangan (KMS)">
                                     {status ? (
                                         <div className="flex flex-wrap items-center gap-3 py-1">
@@ -522,6 +737,191 @@ export default function Penyuluhan(props: Props) {
                                     </div>
                                 </Kartu>
 
+                                {tindakLanjut.length > 0 && (
+                                    <Kartu labelSeksi="Tindak lanjut Buku KIA">
+                                        <div className="flex flex-col gap-4 py-1">
+                                            {tindakLanjut.map((satu) => (
+                                                <div
+                                                    key={satu.kode}
+                                                    className="flex flex-col gap-2"
+                                                >
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <ChipStatus
+                                                            varian={satu.varian}
+                                                        >
+                                                            {satu.label} ·{' '}
+                                                            {satu.kategori}
+                                                        </ChipStatus>
+                                                        <span className="text-kecil font-bold text-ink-900">
+                                                            {
+                                                                LABEL_TINGKAT[
+                                                                    satu.tingkat
+                                                                ]
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                    <ul className="flex list-disc flex-col gap-1 pl-5 text-teks text-ink-900">
+                                                        {satu.tindakan.map(
+                                                            (tindakan) => (
+                                                                <li
+                                                                    key={
+                                                                        tindakan
+                                                                    }
+                                                                >
+                                                                    {tindakan}
+                                                                </li>
+                                                            ),
+                                                        )}
+                                                    </ul>
+                                                    {satu.anjuran.length >
+                                                        0 && (
+                                                        <div>
+                                                            <p className="text-kecil font-bold text-ink-900">
+                                                                Anjuran sesuai
+                                                                umur
+                                                            </p>
+                                                            <ul className="flex list-disc flex-col gap-1 pl-5 text-teks text-ink-900">
+                                                                {satu.anjuran.map(
+                                                                    (
+                                                                        anjuran,
+                                                                    ) => (
+                                                                        <li
+                                                                            key={
+                                                                                anjuran
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                anjuran
+                                                                            }
+                                                                        </li>
+                                                                    ),
+                                                                )}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                    <p className="text-keterangan text-ink-600">
+                                                        {satu.sumber}
+                                                        {satu.halamanAnjuran &&
+                                                            ` · ${satu.halamanAnjuran}`}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                            <p className="text-keterangan text-ink-600">
+                                                Anjuran Buku KIA, bukan
+                                                diagnosis. Konfirmasi tenaga
+                                                kesehatan untuk tata laksana.
+                                            </p>
+                                        </div>
+                                    </Kartu>
+                                )}
+
+                                <Kartu labelSeksi="Materi untuk ibu">
+                                    <div className="flex flex-col gap-2 py-1">
+                                        <p className="text-teks text-ink-700">
+                                            Buka materi Buku KIA lengkap sesuai
+                                            umur anak: ASI dan MPASI, tanda
+                                            bahaya, serta perawatan di rumah.
+                                        </p>
+                                        <TombolTautan
+                                            varian="sekunder"
+                                            lebarPenuh
+                                            href={panduanKia.url({
+                                                query: {
+                                                    umur: anak.umurBulan,
+                                                },
+                                            })}
+                                        >
+                                            Buka Panduan KIA
+                                        </TombolTautan>
+                                    </div>
+                                </Kartu>
+
+                                {asiEksklusif.relevan && (
+                                    <Kartu labelSeksi="ASI eksklusif">
+                                        <div className="flex flex-col gap-2 py-1">
+                                            <p className="text-teks font-bold text-ink-900">
+                                                {asiEksklusif.judul}
+                                            </p>
+                                            <p className="text-teks text-ink-900">
+                                                {asiEksklusif.hariIni === null
+                                                    ? asiEksklusif.terakhir ===
+                                                      null
+                                                        ? 'Belum tercatat di Meja 3.'
+                                                        : `Tercatat ${
+                                                              asiEksklusif
+                                                                  .terakhir
+                                                                  .nilai
+                                                                  ? 'ya'
+                                                                  : 'tidak'
+                                                          } pada ${
+                                                              asiEksklusif
+                                                                  .terakhir
+                                                                  .tanggal
+                                                          }.`
+                                                    : `Hari ini tercatat ${
+                                                          asiEksklusif.hariIni
+                                                              ? 'ya'
+                                                              : 'tidak'
+                                                      }.`}
+                                            </p>
+                                            <p className="text-teks text-ink-700">
+                                                Beri hanya ASI saja sampai usia
+                                                6 bulan, tanpa air putih,
+                                                makanan, atau minuman lain.
+                                                Lanjutkan ASI sampai usia 2
+                                                tahun atau lebih.
+                                            </p>
+                                            <p className="text-keterangan text-ink-600">
+                                                {asiEksklusif.halaman}
+                                            </p>
+                                        </div>
+                                    </Kartu>
+                                )}
+
+                                {anjuranUmur !== null && (
+                                    <Kartu
+                                        judul={anjuranUmur.label}
+                                        labelSeksi="Anjuran sesuai umur"
+                                    >
+                                        <div className="flex flex-col gap-2 py-1">
+                                            <ul className="flex list-disc flex-col gap-1 pl-5 text-teks text-ink-900">
+                                                {anjuranUmur.anjuran.map(
+                                                    (satu) => (
+                                                        <li key={satu}>
+                                                            {satu}
+                                                        </li>
+                                                    ),
+                                                )}
+                                            </ul>
+                                            <p className="text-keterangan text-ink-600">
+                                                {anjuranUmur.halaman}
+                                            </p>
+                                        </div>
+                                    </Kartu>
+                                )}
+
+                                {tandaBahaya !== null && (
+                                    <Kartu
+                                        judul={tandaBahaya.label}
+                                        labelSeksi="Tanda bahaya"
+                                    >
+                                        <div className="flex flex-col gap-2 py-1">
+                                            <p className="text-teks text-ink-900">
+                                                {tandaBahaya.daftar.join(' · ')}
+                                                .
+                                            </p>
+                                            <p className="text-teks font-bold text-status-bahaya-teks">
+                                                Segera periksa ke bidan, dokter,
+                                                atau fasilitas kesehatan bila
+                                                ditemukan.
+                                            </p>
+                                            <p className="text-keterangan text-ink-600">
+                                                {tandaBahaya.halaman}
+                                            </p>
+                                        </div>
+                                    </Kartu>
+                                )}
+
                                 <Kartu labelSeksi="Layanan">
                                     <div className="flex flex-col gap-3 py-1">
                                         <div>
@@ -559,7 +959,9 @@ export default function Penyuluhan(props: Props) {
                                         </div>
                                         <div>
                                             <p className="text-kecil font-bold text-ink-900">
-                                                Sudah diterima
+                                                {layananHariIni.length > 0
+                                                    ? 'Sudah diterima hari ini'
+                                                    : 'Layanan terakhir'}
                                             </p>
                                             {layanan.length === 0 ? (
                                                 <p className="text-teks text-ink-700">
@@ -843,12 +1245,6 @@ export default function Penyuluhan(props: Props) {
                                             </div>
                                         </div>
                                     )}
-                                </Kartu>
-
-                                <Kartu labelSeksi="Catatan untuk penyuluhan dari Meja 4">
-                                    <p className="py-1 text-teks whitespace-pre-line text-ink-900">
-                                        {catatanMeja4 ?? 'Tidak ada catatan.'}
-                                    </p>
                                 </Kartu>
 
                                 <AreaTeks

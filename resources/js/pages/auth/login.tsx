@@ -1,8 +1,8 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
+import { HeartPulse } from 'lucide-react';
 import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { IsianTeks } from '@/components/dasar/isian-teks';
-import { LencanaMeja } from '@/components/dasar/lencana-meja';
 import { Tombol } from '@/components/dasar/tombol';
 import { store } from '@/routes/login';
 
@@ -58,11 +58,12 @@ export default function Masuk() {
             <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pt-7 pb-4 tablet:justify-center tablet:py-7">
                 <div className="flex flex-1 flex-col tablet:flex-none tablet:rounded-lg tablet:border tablet:border-ink-200 tablet:bg-white tablet:p-6 tablet:shadow-1">
                     <header className="mt-6 flex items-center gap-4 tablet:mt-0">
-                        <LencanaMeja
-                            nomor="1–5"
-                            denganLabel
-                            className="h-14! min-w-14!"
-                        />
+                        <span
+                            aria-hidden="true"
+                            className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-brand-700 text-white shadow-1"
+                        >
+                            <HeartPulse className="size-7" />
+                        </span>
                         <div className="min-w-0">
                             <h1 className="text-judul-1 text-ink-900">
                                 {name}
