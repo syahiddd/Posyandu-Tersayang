@@ -1,4 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
+import { clsx } from 'clsx';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Banner } from '@/components/dasar/banner';
@@ -9,7 +10,9 @@ import { KakiTombol } from '@/components/dasar/kaki-tombol';
 import { Kartu } from '@/components/dasar/kartu';
 import { propsPanel, Tab } from '@/components/dasar/tab';
 import { Tombol, TombolTautan } from '@/components/dasar/tombol';
+import { GrafikPertumbuhan } from '@/components/grafik-pertumbuhan';
 import { formatDesimal } from '@/lib/desimal';
+import type { DataGrafik, IndeksGrafik } from '@/lib/grafik';
 import { formatUmurTahunBulan } from '@/lib/umur';
 import { dataAnak, riwayatBukuKia } from '@/routes';
 import { hapus as hapusAnak, ubah } from '@/routes/data-anak';
@@ -27,6 +30,12 @@ type Props = {
     layanan: RiwayatLayanan[];
     perubahanTerakhir: { oleh: string; pada: string } | null;
     bolehHapus: boolean;
+    /** Null bila anak belum punya pengukuran. */
+    grafik: {
+        tabAwal: IndeksGrafik;
+        pakaiPanjang: boolean;
+        daftar: Record<IndeksGrafik, DataGrafik>;
+    } | null;
 };
 
 type IdTab = 'ringkasan' | 'grafik' | 'riwayat';
@@ -70,8 +79,12 @@ export default function DetailDataAnak({
     layanan,
     perubahanTerakhir,
     bolehHapus,
+    grafik,
 }: Props) {
     const [tab, setTab] = useState<IdTab>('ringkasan');
+    const [tabGrafik, setTabGrafik] = useState<IndeksGrafik>(
+        grafik?.tabAwal ?? 'kms',
+    );
     const [dialogHapus, setDialogHapus] = useState(false);
     const hapus = useForm({ konfirmasi: '' });
     // FR-53 langkah kedua: tombol Hapus aktif setelah nama anak diketik.
@@ -246,14 +259,83 @@ export default function DetailDataAnak({
                             {...propsPanel('grafik')}
                             className="flex flex-col gap-4"
                         >
-                            <Banner
-                                varian="info"
-                                judul="Grafik pertumbuhan belum tersedia"
-                            >
-                                Grafik, z-score, dan status gizi tampil setelah
-                                tabel standar WHO dimuat ke aplikasi. Sementara
-                                ini hasil ukur ditampilkan sebagai tabel.
-                            </Banner>
+                            {grafik === null ? (
+                                <Banner
+                                    varian="info"
+                                    judul="Belum ada pengukuran"
+                                >
+                                    Grafik tampil setelah anak diukur di Meja 2
+                                    atau riwayat dari Buku KIA dimasukkan.
+                                </Banner>
+                            ) : (
+                                // Kepala kartu DESIGN 7.1: garis atas 6 px warna
+                                // jenis kelamin, nama, indeks, lencana.
+                                <Kartu
+                                    aria-label="Grafik pertumbuhan"
+                                    className={clsx(
+                                        'flex flex-col gap-3 border-t-6',
+                                        laki
+                                            ? 'border-t-boy-700'
+                                            : 'border-t-girl-700',
+                                    )}
+                                >
+                                    <div className="flex flex-wrap items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <p className="text-judul-2 text-ink-900">
+                                                {anak.nama}
+                                            </p>
+                                            <p className="text-kecil text-ink-700">
+                                                {grafik.daftar[tabGrafik].judul}
+                                            </p>
+                                        </div>
+                                        <span
+                                            className={clsx(
+                                                'rounded-pill px-3 py-1 text-kecil font-bold whitespace-nowrap',
+                                                laki
+                                                    ? 'bg-boy-100 text-boy-700'
+                                                    : 'bg-girl-100 text-girl-700',
+                                            )}
+                                        >
+                                            {laki ? 'Laki-laki' : 'Perempuan'}
+                                        </span>
+                                    </div>
+                                    <Tab<IndeksGrafik>
+                                        label="Jenis grafik"
+                                        aktif={tabGrafik}
+                                        onUbah={setTabGrafik}
+                                        className="-mx-4"
+                                        item={[
+                                            { id: 'kms', label: 'KMS' },
+                                            { id: 'bb_u', label: 'BB/U' },
+                                            {
+                                                id: 'pb_tb_u',
+                                                label: grafik.pakaiPanjang
+                                                    ? 'PB/U'
+                                                    : 'TB/U',
+                                            },
+                                            {
+                                                id: 'bb_pb_tb',
+                                                label: grafik.pakaiPanjang
+                                                    ? 'BB/PB'
+                                                    : 'BB/TB',
+                                            },
+                                            { id: 'imt_u', label: 'IMT/U' },
+                                            { id: 'lk_u', label: 'LK' },
+                                        ]}
+                                    />
+                                    <div
+                                        id={`panel-${tabGrafik}`}
+                                        role="tabpanel"
+                                        aria-labelledby={`tab-${tabGrafik}`}
+                                    >
+                                        <GrafikPertumbuhan
+                                            data={grafik.daftar[tabGrafik]}
+                                            indeks={tabGrafik}
+                                            jenisKelamin={anak.jenisKelamin}
+                                        />
+                                    </div>
+                                </Kartu>
+                            )}
                             <Kartu labelSeksi="Hasil ukur">
                                 {pengukuran.length === 0 ? (
                                     <p className="py-2 text-teks text-ink-700">
