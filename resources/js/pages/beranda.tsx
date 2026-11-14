@@ -43,7 +43,7 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
                     <h2 id="judul-ringkasan" className="sr-only">
                         Ringkasan hari ini
                     </h2>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-3 gap-3 max-[359px]:gap-2">
                         <TileAngka
                             angka={ringkasan.terdaftar}
                             label="Terdaftar hari ini"
@@ -136,7 +136,7 @@ function BarisAntrean({ item }: { item: AntreanMeja }) {
             <span className="text-teks font-bold text-ink-900 tabular-nums">
                 {item.menunggu}
             </span>
-            <span className="flex w-28 justify-end">
+            <span className="flex w-28 justify-end max-[359px]:w-auto">
                 {item.ditunda > 0 && (
                     <ChipStatus varian="waspada">
                         {item.ditunda} ditunda

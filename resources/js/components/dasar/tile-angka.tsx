@@ -16,7 +16,7 @@ export function TileAngka({
     return (
         <div
             className={clsx(
-                'flex flex-col gap-1 rounded-md border border-ink-200 bg-white px-4 py-3 shadow-1',
+                'flex flex-col gap-1 rounded-md border border-ink-200 bg-white px-4 py-3 shadow-1 max-[359px]:px-3',
                 className,
             )}
         >
