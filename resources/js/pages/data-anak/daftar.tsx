@@ -1,6 +1,6 @@
 import { Head, InfiniteScroll, Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
-import { ChipPenyaring } from '@/components/dasar/chip-penyaring';
+import { Bidang, kelasBingkai } from '@/components/dasar/bidang';
 import { IsianTeks } from '@/components/dasar/isian-teks';
 import {
     KartuHasilAnak,
@@ -36,9 +36,10 @@ function parameter(penyaring: PenyaringDataAnak) {
 }
 
 /**
- * S14 Data Anak (FR-50, DESIGN 6.5): isian cari; chip penyaring jenis
- * kelamin, kelompok umur, dusun; jumlah hasil; daftar kartu anak dengan NIK
- * tersamar (NFR-05).
+ * S14 Data Anak (FR-50, DESIGN 6.5): isian cari; penyaring jenis kelamin,
+ * kelompok umur, dusun; jumlah hasil; daftar kartu anak dengan NIK tersamar
+ * (NFR-05). Penyaring berupa pilihan tarik-turun, bukan chip seperti di
+ * DESIGN 6.5, atas permintaan pemilik produk.
  */
 export default function DaftarDataAnak({
     penyaring,
@@ -112,40 +113,36 @@ export default function DaftarDataAnak({
                     enterKeyHint="search"
                 />
 
-                <div className="flex flex-col gap-3">
-                    <ChipPenyaring
+                <div className="grid gap-3 tablet:grid-cols-3">
+                    <PilihPenyaring
+                        id="penyaring-jk"
                         label="Jenis kelamin"
                         nilai={penyaring.jk}
                         onUbah={(jk) =>
                             saring({ jk: jk as JenisKelamin | null })
                         }
                         opsi={[
-                            { nilai: null, label: 'Semua' },
                             { nilai: 'L', label: 'Laki-laki' },
                             { nilai: 'P', label: 'Perempuan' },
                         ]}
                     />
-                    <ChipPenyaring
+                    <PilihPenyaring
+                        id="penyaring-umur"
                         label="Kelompok umur"
                         nilai={penyaring.umur}
                         onUbah={(umur) => saring({ umur })}
-                        opsi={[
-                            { nilai: null, label: 'Semua' },
-                            ...daftarKelompokUmur,
-                        ]}
+                        opsi={daftarKelompokUmur}
                     />
                     {daftarDusun.length > 1 && (
-                        <ChipPenyaring
+                        <PilihPenyaring
+                            id="penyaring-dusun"
                             label="Dusun"
                             nilai={penyaring.dusun}
                             onUbah={(dusun) => saring({ dusun })}
-                            opsi={[
-                                { nilai: null, label: 'Semua' },
-                                ...daftarDusun.map((dusun) => ({
-                                    nilai: dusun,
-                                    label: dusun,
-                                })),
-                            ]}
+                            opsi={daftarDusun.map((dusun) => ({
+                                nilai: dusun,
+                                label: dusun,
+                            }))}
                         />
                     )}
                 </div>
@@ -241,5 +238,38 @@ export default function DaftarDataAnak({
                 )}
             </div>
         </>
+    );
+}
+
+/** Pilihan tarik-turun bawaan; pilihan pertama "Semua" berarti tanpa penyaring. */
+function PilihPenyaring({
+    id,
+    label,
+    opsi,
+    nilai,
+    onUbah,
+}: {
+    id: string;
+    label: string;
+    opsi: { nilai: string; label: string }[];
+    nilai: string | null;
+    onUbah: (nilai: string | null) => void;
+}) {
+    return (
+        <Bidang id={id} label={label}>
+            <select
+                id={id}
+                value={nilai ?? ''}
+                onChange={(event) => onUbah(event.target.value || null)}
+                className={`${kelasBingkai({})} h-control-h cursor-pointer px-4 text-teks`}
+            >
+                <option value="">Semua</option>
+                {opsi.map((satu) => (
+                    <option key={satu.nilai} value={satu.nilai}>
+                        {satu.label}
+                    </option>
+                ))}
+            </select>
+        </Bidang>
     );
 }
