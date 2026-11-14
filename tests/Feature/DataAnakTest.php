@@ -47,8 +47,8 @@ test('daftar kosong menandai belum ada anak terdaftar', function () {
 });
 
 test('cari dengan nama anak, nama ibu, atau sebagian NIK (FR-50)', function () {
-    Anak::factory()->create(['nama' => 'Nayla Putri', 'nama_ibu' => 'Dewi', 'nik' => '1871010101010042']);
-    Anak::factory()->create(['nama' => 'Raka', 'nama_ibu' => 'Sari', 'nik' => '1871010101019999']);
+    Anak::factory()->create(['nama' => 'Nayla Putri', 'nama_ibu' => 'Dewi', 'nik' => '1871010101010042', 'nik_ibu' => null]);
+    Anak::factory()->create(['nama' => 'Raka', 'nama_ibu' => 'Sari', 'nik' => '1871010101019999', 'nik_ibu' => null]);
 
     daftar_anak(['cari' => 'nay'])->assertInertia(fn ($page) => $page->where('jumlah', 1)->where('anak.data.0.nama', 'Nayla Putri'));
     daftar_anak(['cari' => 'sari'])->assertInertia(fn ($page) => $page->where('jumlah', 1)->where('anak.data.0.nama', 'Raka'));
