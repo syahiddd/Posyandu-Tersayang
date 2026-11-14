@@ -87,7 +87,8 @@ export function Tab<T extends string>({
                         tabIndex={terpilih ? 0 : -1}
                         onClick={() => onUbah(satu.id)}
                         className={clsx(
-                            'min-h-target-min shrink-0 cursor-pointer border-b-4 px-4 text-teks whitespace-nowrap',
+                            // Cincin fokus ke dalam: wadah gulir memotong cincin di luar tab.
+                            'min-h-target-min shrink-0 cursor-pointer border-b-4 px-4 text-teks whitespace-nowrap focus-visible:-outline-offset-3',
                             terpilih
                                 ? 'border-ink-900 font-bold text-ink-900'
                                 : 'border-transparent text-ink-700',
