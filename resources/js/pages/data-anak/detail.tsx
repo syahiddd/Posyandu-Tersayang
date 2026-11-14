@@ -118,7 +118,7 @@ export default function DetailDataAnak({
                     kembaliLewatPost={false}
                 />
 
-                <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-4 pb-6 tablet:px-5">
+                <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-4 tablet:px-5">
                     <Tab<IdTab>
                         label="Bagian detail anak"
                         aktif={tab}
@@ -303,7 +303,7 @@ export default function DetailDataAnak({
                                         label="Jenis grafik"
                                         aktif={tabGrafik}
                                         onUbah={setTabGrafik}
-                                        className="-mx-4"
+                                        varian="pil"
                                         item={[
                                             { id: 'kms', label: 'KMS' },
                                             { id: 'bb_u', label: 'BB/U' },

@@ -292,7 +292,7 @@ export default function Penyuluhan(props: Props) {
             <form
                 noValidate
                 onSubmit={kirim}
-                className="flex min-h-dvh flex-col bg-paper [--offset-toast:96px]"
+                className="toast-di-atas-kaki flex min-h-dvh flex-col bg-paper"
             >
                 <HeaderAnak
                     nama={anak.nama}
@@ -432,7 +432,7 @@ export default function Penyuluhan(props: Props) {
                                             item={tabGrafik}
                                             aktif={tab}
                                             onUbah={setTab}
-                                            className="-mx-4"
+                                            varian="pil"
                                         />
                                         <div
                                             id={`panel-${tab}`}
@@ -746,7 +746,7 @@ export default function Penyuluhan(props: Props) {
                                                 KIA.
                                             </p>
                                             <div className="-mx-4 overflow-x-auto">
-                                                <table className="w-full min-w-[420px] text-left text-kecil">
+                                                <table className="w-full text-left text-kecil">
                                                     <caption className="sr-only">
                                                         Isi Piringku ibu
                                                         menyusui
