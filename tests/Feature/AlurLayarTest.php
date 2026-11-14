@@ -79,7 +79,7 @@ test('meja terakhir terpilih otomatis dari cookie perangkat', function () {
 });
 
 test('Beranda menghitung ringkasan hari ini dari database (FR-06, FR-07)', function () {
-    Posyandu::factory()->create(['nama' => 'Posyandu Melati']);
+    Posyandu::factory()->create(['nama' => 'Posyandu Tersayang']);
     Kunjungan::factory()->count(2)->diMeja(Meja::Pengukuran)->create();
     Kunjungan::factory()->diMeja(Meja::Pendataan)->create();
     Kunjungan::factory()->diMeja(Meja::Pelayanan, StatusAntrean::Ditunda)->create();
@@ -96,7 +96,7 @@ test('Beranda menghitung ringkasan hari ini dari database (FR-06, FR-07)', funct
             ->where('antrean.1', ['nomor' => 2, 'tahap' => 'Pengukuran', 'menunggu' => 2, 'ditunda' => 0])
             ->where('antrean.3.ditunda', 1)
             ->where('mejaAktif', ['nomor' => 2, 'tahap' => 'Pengukuran'])
-            ->where('namaPosyandu', 'Posyandu Melati'));
+            ->where('namaPosyandu', 'Posyandu Tersayang'));
 });
 
 test('Beranda tetap tampil dengan angka 0 saat belum ada kunjungan', function () {

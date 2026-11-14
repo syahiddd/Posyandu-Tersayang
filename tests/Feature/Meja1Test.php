@@ -112,13 +112,17 @@ test('tanpa ukuran Buku KIA tidak membuat data pengukuran', function () {
 });
 
 test('isian wajib dan aturan PRD 7.2 divalidasi', function (array $ganti, string $isian) {
+    if (($ganti['tanggal_lahir'] ?? null) === 'besok') {
+        $ganti['tanggal_lahir'] = today()->addDay()->toDateString();
+    }
+
     $this->post(route('meja1.simpan'), data_anak($ganti))->assertSessionHasErrors($isian);
 
     expect(Anak::query()->count())->toBe(0);
 })->with([
     'nama kosong' => [['nama' => ''], 'nama'],
     'jenis kelamin kosong' => [['jenis_kelamin' => ''], 'jenis_kelamin'],
-    'tanggal lahir besok' => [['tanggal_lahir' => today()->addDay()->toDateString()], 'tanggal_lahir'],
+    'tanggal lahir besok' => [['tanggal_lahir' => 'besok'], 'tanggal_lahir'],
     'nama ibu kosong' => [['nama_ibu' => ''], 'nama_ibu'],
     'NIK 15 digit' => [['nik' => '187101010101004'], 'nik'],
     'NIK berhuruf' => [['nik' => '18710101010100AB'], 'nik'],

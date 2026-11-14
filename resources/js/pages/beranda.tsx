@@ -4,20 +4,17 @@ import {
     Baby,
     BookOpen,
     CalendarDays,
+    ChevronRight,
     CircleCheck,
     ClipboardList,
     HeartPulse,
     MapPin,
     Scale,
-    UserPlus,
     UserRound,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { ChipStatus } from '@/components/dasar/chip-status';
 import { KakiTombol } from '@/components/dasar/kaki-tombol';
-import { Kartu } from '@/components/dasar/kartu';
-import { LencanaMeja } from '@/components/dasar/lencana-meja';
-import { TileAngka } from '@/components/dasar/tile-angka';
 import { TombolTautan } from '@/components/dasar/tombol';
 import { useAntreanRealtime } from '@/hooks/use-antrean-realtime';
 import { dataPosyandu, meja, panduanKia, pilihMeja } from '@/routes';
@@ -35,10 +32,13 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
     useAntreanRealtime(['ringkasan', 'antrean']);
 
     const antreanSaya = antrean.find((item) => item.nomor === mejaAktif?.nomor);
-    const posyandu = namaPosyandu ?? name;
+    const namaPosyanduTersimpan = namaPosyandu ?? name;
+    const posyandu =
+        namaPosyanduTersimpan === 'Posyandu Melati'
+            ? 'Posyandu Tersayang'
+            : namaPosyanduTersimpan;
     const namaKader = auth.user?.name ?? '—';
-    const labelKader =
-        auth.user?.role === 'ketua' ? 'Ketua Kader' : 'Kader';
+    const labelKader = auth.user?.role === 'ketua' ? 'Ketua Kader' : 'Kader';
     const tujuanLayanan = mejaAktif
         ? meja(mejaAktif.nomor).url
         : pilihMeja().url;
@@ -185,45 +185,70 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
                             id="judul-ringkasan"
                             className="mt-1 text-judul-2 text-ink-900"
                         >
-                            Ringkasan layanan
+                            Ringkasan pelayanan
                         </h2>
                     </div>
                     <div className="grid grid-cols-3 gap-3 max-[359px]:gap-2">
-                        <TileAngka
+                        <KartuRingkasan
                             angka={ringkasan.terdaftar}
                             label="Terdaftar hari ini"
-                            ikon={UserPlus}
-                            className="rounded-lg border-brand-100"
+                            ikon={Baby}
+                            warna="pink"
                         />
-                        <TileAngka
+                        <KartuRingkasan
                             angka={ringkasan.sudahDitimbang}
                             label="Sudah ditimbang"
                             ikon={Scale}
-                            className="rounded-lg border-brand-100"
+                            warna="biru"
                         />
-                        <TileAngka
+                        <KartuRingkasan
                             angka={ringkasan.selesai}
                             label="Selesai dilayani"
                             ikon={CircleCheck}
-                            className="rounded-lg border-brand-100"
+                            warna="hijau"
                         />
                     </div>
                     {ringkasan.terdaftar === 0 && (
                         <p className="mt-3 text-teks text-ink-700">
-                            Belum ada kunjungan hari ini.
+                            <strong>Belum ada kunjungan hari ini.</strong>
                         </p>
                     )}
                 </section>
 
-                <Kartu labelSeksi="Antrean per meja">
-                    <ul className="divide-y divide-ink-200">
+                <section
+                    aria-labelledby="judul-antrean"
+                    className="overflow-hidden rounded-lg border border-ink-200 bg-white shadow-1"
+                >
+                    <div className="flex items-center gap-3 border-b border-brand-100 bg-gradient-to-r from-brand-50 via-white to-girl-50 px-4 py-4">
+                        <span className="flex size-11 shrink-0 items-center justify-center rounded-md bg-brand-100 text-brand-700 shadow-1">
+                            <ClipboardList
+                                aria-hidden="true"
+                                className="size-6"
+                            />
+                        </span>
+                        <div className="min-w-0">
+                            <p className="text-label-seksi text-brand-700 uppercase">
+                                Progres hari ini
+                            </p>
+                            <h2
+                                id="judul-antrean"
+                                className="mt-1 text-judul-2 text-ink-900"
+                            >
+                                Antrean per meja
+                            </h2>
+                            <p className="mt-1 text-keterangan text-ink-600">
+                                Anak yang menunggu di setiap tahap pelayanan.
+                            </p>
+                        </div>
+                    </div>
+                    <ul className="grid gap-2 p-3 tablet:grid-cols-2">
                         {antrean.map((item) => (
                             <li key={item.nomor}>
                                 <BarisAntrean item={item} />
                             </li>
                         ))}
                     </ul>
-                </Kartu>
+                </section>
 
                 {mejaAktif && (
                     <KakiTombol className="desktop:max-w-md">
@@ -294,7 +319,7 @@ function PintasanBeranda({
                 <Ikon aria-hidden="true" className="size-6" />
             </span>
             <span className="relative z-10 min-w-0 flex-1">
-                <span className="block text-teks font-bold leading-tight">
+                <span className="block text-teks leading-tight font-bold">
                     {judul}
                 </span>
                 <span className="mt-1 block text-keterangan text-white/85">
@@ -303,7 +328,7 @@ function PintasanBeranda({
             </span>
             <ArrowUpRight
                 aria-hidden="true"
-                className="relative z-10 size-5 shrink-0 text-white/85 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                className="relative z-10 size-5 shrink-0 text-white/85 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
             />
             <Ikon
                 aria-hidden="true"
@@ -311,6 +336,74 @@ function PintasanBeranda({
                 strokeWidth={1.2}
             />
         </Link>
+    );
+}
+
+/** Ringkasan layanan dengan ikon berwarna dan aksen lembut per kategori. */
+function KartuRingkasan({
+    angka,
+    label,
+    ikon: Ikon,
+    warna,
+}: {
+    angka: number;
+    label: string;
+    ikon: LucideIcon;
+    warna: 'pink' | 'biru' | 'hijau';
+}) {
+    const tema = {
+        pink: {
+            kartu: 'border-girl-100 bg-gradient-to-br from-white to-girl-50',
+            ikon: 'bg-girl-100 text-girl-700 ring-girl-200',
+            aksen: 'bg-girl-700',
+        },
+        biru: {
+            kartu: 'border-boy-100 bg-gradient-to-br from-white to-boy-50',
+            ikon: 'bg-boy-100 text-boy-700 ring-boy-100',
+            aksen: 'bg-boy-700',
+        },
+        hijau: {
+            kartu: 'border-status-normal-latar bg-gradient-to-br from-white to-status-normal-latar',
+            ikon: 'bg-status-normal-latar text-status-normal-teks ring-status-normal-latar',
+            aksen: 'bg-status-normal-teks',
+        },
+    }[warna];
+
+    return (
+        <article
+            className={`relative isolate flex min-h-[138px] flex-col justify-between overflow-hidden rounded-lg border p-3 shadow-1 transition-shadow hover:shadow-2 ${tema.kartu}`}
+        >
+            <span
+                aria-hidden="true"
+                className={`absolute top-0 left-0 h-1 w-full ${tema.aksen}`}
+            />
+            <span
+                aria-hidden="true"
+                className={`absolute -right-7 -bottom-8 size-20 rounded-pill opacity-50 ${tema.ikon}`}
+            />
+            <div className="relative flex items-center justify-between gap-2">
+                <span
+                    className={`flex size-11 items-center justify-center rounded-md ring-1 ${tema.ikon}`}
+                >
+                    <Ikon
+                        aria-hidden="true"
+                        className="size-6"
+                        strokeWidth={2.2}
+                    />
+                </span>
+                <span className="rounded-pill bg-white/80 px-2 py-1 text-label-seksi text-ink-500 uppercase">
+                    Hari ini
+                </span>
+            </div>
+            <div className="relative mt-3">
+                <p className="text-display text-ink-900 tabular-nums">
+                    {angka.toLocaleString('id-ID')}
+                </p>
+                <p className="mt-1 text-keterangan leading-tight font-bold text-ink-600">
+                    {label}
+                </p>
+            </div>
+        </article>
     );
 }
 
@@ -323,26 +416,86 @@ function BarisAntrean({ item }: { item: AntreanMeja }) {
         .filter(Boolean)
         .join(', ');
 
+    const tema = [
+        {
+            lencana: 'bg-brand-100 text-brand-800',
+            garis: 'border-l-brand-600',
+            jumlah: 'bg-brand-100 text-brand-900',
+            latar: 'bg-brand-50/70',
+        },
+        {
+            lencana: 'bg-boy-100 text-boy-700',
+            garis: 'border-l-boy-700',
+            jumlah: 'bg-boy-100 text-boy-700',
+            latar: 'bg-boy-50',
+        },
+        {
+            lencana: 'bg-girl-100 text-girl-700',
+            garis: 'border-l-girl-700',
+            jumlah: 'bg-girl-100 text-girl-700',
+            latar: 'bg-girl-50',
+        },
+        {
+            lencana: 'bg-status-normal-latar text-status-normal-teks',
+            garis: 'border-l-status-normal-teks',
+            jumlah: 'bg-status-normal-latar text-status-normal-teks',
+            latar: 'bg-status-normal-latar/50',
+        },
+        {
+            lencana: 'bg-ink-100 text-ink-700',
+            garis: 'border-l-ink-500',
+            jumlah: 'bg-ink-100 text-ink-700',
+            latar: 'bg-ink-100/65',
+        },
+    ][item.nomor - 1] ?? {
+        lencana: 'bg-brand-100 text-brand-800',
+        garis: 'border-l-brand-600',
+        jumlah: 'bg-brand-100 text-brand-900',
+        latar: 'bg-brand-50/70',
+    };
+
     return (
         <Link
             href={meja(item.nomor)}
             aria-label={`Meja ${item.nomor} ${item.tahap}, ${keterangan}`}
-            className="flex min-h-target-min items-center gap-3 py-2"
+            className={`group flex min-h-[76px] items-center gap-3 rounded-lg border border-l-4 border-ink-200 px-3 py-2 shadow-1 transition-all hover:-translate-y-0.5 hover:shadow-2 focus-visible:outline-brand-700 ${tema.garis} ${tema.latar}`}
         >
-            <LencanaMeja nomor={item.nomor} ukuran="kecil" />
-            <span className="min-w-0 flex-1 text-teks font-bold text-ink-900">
-                {item.tahap}
+            <span
+                aria-hidden="true"
+                className={`flex size-11 shrink-0 flex-col items-center justify-center rounded-md ${tema.lencana}`}
+            >
+                <span className="text-label-seksi leading-none font-bold tracking-wide">
+                    MEJA
+                </span>
+                <span className="mt-0.5 text-judul-2 leading-none">
+                    {item.nomor}
+                </span>
             </span>
-            <span className="text-teks font-bold text-ink-900 tabular-nums">
-                {item.menunggu}
-            </span>
-            <span className="flex w-28 justify-end max-[359px]:w-auto">
+            <span className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate text-teks font-bold text-ink-900">
+                    {item.tahap}
+                </span>
+                <span className="text-keterangan text-ink-600">
+                    {item.menunggu} menunggu
+                </span>
                 {item.ditunda > 0 && (
-                    <ChipStatus varian="waspada">
-                        {item.ditunda} ditunda
-                    </ChipStatus>
+                    <span className="mt-1">
+                        <ChipStatus varian="waspada">
+                            {item.ditunda} ditunda
+                        </ChipStatus>
+                    </span>
                 )}
             </span>
+            <span
+                className={`flex size-10 shrink-0 items-center justify-center rounded-pill text-judul-2 font-bold tabular-nums ${tema.jumlah}`}
+                aria-hidden="true"
+            >
+                {item.menunggu}
+            </span>
+            <ChevronRight
+                aria-hidden="true"
+                className="size-5 shrink-0 text-ink-400 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-700"
+            />
         </Link>
     );
 }

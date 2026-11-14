@@ -20,7 +20,7 @@ use Illuminate\Support\Carbon;
 
 beforeEach(function () {
     Posyandu::factory()->create([
-        'nama' => 'Posyandu Melati',
+        'nama' => 'Posyandu Tersayang',
         'desa_kelurahan' => null,
         'kecamatan' => 'Sukasari',
         'jadwal_kegiatan' => 'Setiap tanggal 5',
@@ -35,7 +35,7 @@ function masuk_posyandu(User $user): void
 function profil_posyandu(array $ganti = []): array
 {
     return [
-        'nama' => 'Posyandu Melati',
+        'nama' => 'Posyandu Tersayang',
         'desa_kelurahan' => 'Sukamaju',
         'kecamatan' => 'Sukasari',
         'kabupaten_kota' => 'Bandar Lampung',
@@ -53,7 +53,7 @@ test('semua kader melihat profil posyandu dan daftar kader aktif (FR-59, FR-60)'
 
     $this->get(route('data-posyandu'))->assertOk()->assertInertia(fn ($page) => $page
         ->component('data-posyandu/profil')
-        ->where('profil.nama', 'Posyandu Melati')
+        ->where('profil.nama', 'Posyandu Tersayang')
         ->where('profil.kecamatan', 'Sukasari')
         ->where('bolehUbah', false)
         ->has('kader', 2)
@@ -70,7 +70,7 @@ test('kader biasa tidak dapat mengubah profil posyandu (FR-59)', function () {
     $this->get(route('data-posyandu.ubah'))->assertForbidden();
     $this->put(route('data-posyandu.perbarui'), profil_posyandu(['nama' => 'Ganti']))->assertForbidden();
 
-    expect(Posyandu::query()->sole()->nama)->toBe('Posyandu Melati');
+    expect(Posyandu::query()->sole()->nama)->toBe('Posyandu Tersayang');
 });
 
 test('Ketua Kader mengubah profil posyandu (FR-59)', function () {

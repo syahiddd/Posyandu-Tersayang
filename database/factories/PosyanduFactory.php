@@ -16,7 +16,7 @@ class PosyanduFactory extends Factory
     public function definition(): array
     {
         return [
-            'nama' => 'Posyandu '.fake()->randomElement(['Melati', 'Mawar', 'Kenanga', 'Anggrek']),
+            'nama' => 'Posyandu '.fake()->randomElement(['Mawar', 'Kenanga', 'Anggrek']),
             'desa_kelurahan' => 'Desa '.fake()->lastName(),
             'kecamatan' => 'Kecamatan '.fake()->lastName(),
             'kabupaten_kota' => fake()->city(),
