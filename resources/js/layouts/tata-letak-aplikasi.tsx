@@ -117,7 +117,7 @@ export default function TataLetakAplikasi({
         'flex min-h-target-min w-full cursor-pointer items-center rounded-md px-3 text-left text-teks text-ink-700 hover:bg-ink-100';
 
     return (
-        <div className="min-h-dvh bg-paper [--offset-toast:168px] tablet:[--offset-toast:92px] desktop:[--offset-toast:24px]">
+        <div className="toast-di-atas-navigasi min-h-dvh bg-paper">
             <a
                 href="#konten"
                 className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-3 focus:text-teks focus:font-bold"

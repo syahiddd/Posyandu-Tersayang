@@ -21,7 +21,7 @@ export default function AnakTersimpan({ anak }: { anak: RingkasanAnak }) {
     return (
         <>
             <Head title={anak.nama} />
-            <div className="flex min-h-dvh flex-col bg-paper [--offset-toast:96px]">
+            <div className="toast-di-atas-kaki flex min-h-dvh flex-col bg-paper">
                 <HeaderAnak
                     nama={anak.nama}
                     keterangan={`${anak.jenisKelamin === 'L' ? 'Laki-laki' : 'Perempuan'} · ${formatUmurTahunBulan(anak.umurBulan)}`}

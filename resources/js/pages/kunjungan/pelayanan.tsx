@@ -182,7 +182,7 @@ export default function Pelayanan(props: Props) {
             <form
                 noValidate
                 onSubmit={simpan}
-                className="flex min-h-dvh flex-col bg-paper [--offset-toast:96px]"
+                className="toast-di-atas-kaki flex min-h-dvh flex-col bg-paper"
             >
                 <HeaderAnak
                     nama={anak.nama}

@@ -17,6 +17,21 @@ describe('antrean toast (DESIGN bab 7: Batal 5 detik)', () => {
         vi.useRealTimers();
     });
 
+    it('tidak menghilang selama ditahan, lalu menghitung ulang 5 detik', () => {
+        const antrean = buatAntreanToast();
+        const id = antrean.tampilkan({ jenis: 'sukses', pesan: 'Tersimpan' });
+
+        antrean.tahan(id);
+        vi.advanceTimersByTime(DURASI_TOAST_MS * 3);
+        expect(antrean.daftar()).toHaveLength(1);
+
+        antrean.lanjutkan(id);
+        vi.advanceTimersByTime(DURASI_TOAST_MS - 1);
+        expect(antrean.daftar()).toHaveLength(1);
+        vi.advanceTimersByTime(1);
+        expect(antrean.daftar()).toHaveLength(0);
+    });
+
     it('menghilang sendiri setelah 5 detik', () => {
         const antrean = buatAntreanToast();
         antrean.tampilkan({ jenis: 'sukses', pesan: 'Tersimpan' });

@@ -98,7 +98,7 @@ export default function TambahAnak({
             <form
                 noValidate
                 onSubmit={(event) => kirim(event)}
-                className="flex min-h-dvh flex-col bg-paper [--offset-toast:96px]"
+                className="toast-di-atas-kaki flex min-h-dvh flex-col bg-paper"
             >
                 <HeaderAnak
                     nama="Tambah anak baru"
