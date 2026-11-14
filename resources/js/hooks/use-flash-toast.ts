@@ -7,6 +7,9 @@ import { urungkan } from '@/routes/antrean';
  * Menampilkan notifikasi yang dikirim server lewat flash Inertia. Tombol
  * Batal membatalkan tindakan antrean terakhir, atau tindakan lain bila
  * server mengirim urlBatal (DESIGN Prinsip 1).
+ *
+ * Juga menangani permintaan yang gagal (DESIGN bab 8, state Error): tanpa
+ * ini Inertia menampilkan halaman galat mentah. Isian di layar tidak hilang.
  */
 export function useFlashToast(): void {
     const toast = useToast();
@@ -37,5 +40,30 @@ export function useFlashToast(): void {
                     : undefined,
             );
         });
+    }, [toast]);
+
+    useEffect(() => {
+        const lepasJaringan = router.on('networkError', (event) => {
+            event.preventDefault();
+            toast.error(
+                'Tidak tersambung, belum terkirim. Isian masih ada; coba simpan lagi.',
+            );
+        });
+        // 419: sesi atau halaman kedaluwarsa (FR-05).
+        const lepasSesi = router.on('httpException', (event) => {
+            if (event.detail.response.status !== 419) {
+                return;
+            }
+
+            event.preventDefault();
+            toast.error('Sesi berakhir. Muat ulang, lalu masuk lagi.', () =>
+                window.location.reload(),
+            );
+        });
+
+        return () => {
+            lepasJaringan();
+            lepasSesi();
+        };
     }, [toast]);
 }

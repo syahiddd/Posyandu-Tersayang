@@ -86,7 +86,9 @@ export default function DaftarDataAnak({
             <Head title="Data Anak" />
             <div className="flex flex-col gap-4 desktop:max-w-3xl">
                 <header className="flex flex-wrap items-center justify-between gap-3">
-                    <h1 className="text-judul-1 text-ink-900">Data Anak</h1>
+                    <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
+                        Data Anak
+                    </h1>
                     {adaAnak && (
                         <TombolUnduhCsv
                             url={unduh.url({ query: parameter(penyaring) })}

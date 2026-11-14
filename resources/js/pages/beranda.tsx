@@ -1,4 +1,12 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import {
+    Building2,
+    CircleCheck,
+    Scale,
+    Syringe,
+    UserPlus,
+    Users,
+} from 'lucide-react';
 import { ChipStatus } from '@/components/dasar/chip-status';
 import { KakiTombol } from '@/components/dasar/kaki-tombol';
 import { Kartu } from '@/components/dasar/kartu';
@@ -30,7 +38,7 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
             <Head title="Beranda" />
             <div className="flex flex-1 flex-col gap-5 desktop:max-w-4xl">
                 <header>
-                    <h1 className="text-judul-1 text-ink-900">
+                    <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
                         {namaPosyandu ?? name}
                     </h1>
                     <p className="text-teks text-ink-700">
@@ -43,18 +51,21 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
                     <h2 id="judul-ringkasan" className="sr-only">
                         Ringkasan hari ini
                     </h2>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-3 gap-3 max-[359px]:gap-2">
                         <TileAngka
                             angka={ringkasan.terdaftar}
                             label="Terdaftar hari ini"
+                            ikon={UserPlus}
                         />
                         <TileAngka
                             angka={ringkasan.sudahDitimbang}
                             label="Sudah ditimbang"
+                            ikon={Scale}
                         />
                         <TileAngka
                             angka={ringkasan.selesai}
                             label="Selesai dilayani"
+                            ikon={CircleCheck}
                         />
                     </div>
                     {ringkasan.terdaftar === 0 && (
@@ -78,22 +89,34 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
                     <Kartu labelSeksi="Menu lain">
                         <ul className="divide-y divide-ink-200">
                             {[
-                                { label: 'Data Anak', href: dataAnak().url },
                                 {
-                                    label: 'Rekapitulasi Imunisasi',
+                                    label: 'Data Anak',
+                                    href: dataAnak().url,
+                                    ikon: Users,
+                                },
+                                {
+                                    label: 'Rekap Imunisasi',
                                     href: rekapImunisasi().url,
+                                    ikon: Syringe,
                                 },
                                 {
                                     label: 'Data Posyandu',
                                     href: dataPosyandu().url,
+                                    ikon: Building2,
                                 },
-                            ].map((menu) => (
-                                <li key={menu.label}>
+                            ].map(({ label, href, ikon: Ikon }) => (
+                                <li key={label}>
                                     <Link
-                                        href={menu.href}
-                                        className="flex min-h-target-min items-center py-2 text-teks font-bold text-ink-900 underline underline-offset-4"
+                                        href={href}
+                                        className="flex min-h-target-min items-center gap-3 py-2 text-teks font-bold text-ink-900"
                                     >
-                                        {menu.label}
+                                        <Ikon
+                                            aria-hidden="true"
+                                            className="size-5 shrink-0"
+                                        />
+                                        <span className="underline underline-offset-4">
+                                            {label}
+                                        </span>
                                     </Link>
                                 </li>
                             ))}
@@ -136,7 +159,7 @@ function BarisAntrean({ item }: { item: AntreanMeja }) {
             <span className="text-teks font-bold text-ink-900 tabular-nums">
                 {item.menunggu}
             </span>
-            <span className="flex w-28 justify-end">
+            <span className="flex w-28 justify-end max-[359px]:w-auto">
                 {item.ditunda > 0 && (
                     <ChipStatus varian="waspada">
                         {item.ditunda} ditunda

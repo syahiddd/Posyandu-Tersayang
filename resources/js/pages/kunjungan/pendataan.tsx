@@ -138,7 +138,7 @@ export default function Pendataan({
             <form
                 noValidate
                 onSubmit={salin}
-                className="flex min-h-dvh flex-col bg-paper [--offset-toast:96px]"
+                className="toast-di-atas-kaki flex min-h-dvh flex-col bg-paper"
             >
                 <HeaderAnak
                     nama={anak.nama}

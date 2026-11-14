@@ -21,7 +21,7 @@ export default function LayarSementara({
     return (
         <>
             <Head title={anak.nama} />
-            <div className="flex min-h-dvh flex-col bg-paper [--offset-toast:96px]">
+            <div className="toast-di-atas-kaki flex min-h-dvh flex-col bg-paper">
                 <HeaderAnak
                     nama={anak.nama}
                     keterangan={`${anak.jenisKelamin === 'L' ? 'Laki-laki' : 'Perempuan'} · ${formatUmurBulan(anak.umurBulan)} · Antrean #${String(anak.nomorAntrean).padStart(2, '0')}`}

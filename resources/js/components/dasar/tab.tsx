@@ -25,7 +25,8 @@ export function propsPanel(id: string) {
 /**
  * Tab (DESIGN bab 7 "Tab grafik", 10.3–10.4): tablist dengan panah
  * kiri/kanan, Home, dan End; hanya tab aktif yang masuk urutan Tab.
- * Dapat digulir horizontal di ponsel bila tidak muat.
+ * Dapat digulir horizontal di ponsel bila tidak muat. Varian "pil" untuk tab
+ * grafik (Gambar 7, 8, 10; radius-pill); "garis" untuk bagian halaman.
  */
 export function Tab<T extends string>({
     label,
@@ -33,12 +34,14 @@ export function Tab<T extends string>({
     aktif,
     onUbah,
     className,
+    varian = 'garis',
 }: {
     label: string;
     item: ItemTab<T>[];
     aktif: T;
     onUbah: (id: T) => void;
     className?: string;
+    varian?: 'garis' | 'pil';
 }) {
     const refDaftar = useRef<HTMLDivElement>(null);
 
@@ -69,7 +72,12 @@ export function Tab<T extends string>({
             aria-label={label}
             onKeyDown={pindah}
             className={clsx(
-                'flex overflow-x-auto border-b border-ink-200',
+                'flex overflow-x-auto',
+                // Pil: ruang 8 px di sekeliling agar cincin fokus (6 px)
+                // tidak terpotong wadah gulir.
+                varian === 'pil'
+                    ? '-mx-2 gap-2 p-2'
+                    : 'border-b border-ink-200',
                 className,
             )}
         >
@@ -87,10 +95,22 @@ export function Tab<T extends string>({
                         tabIndex={terpilih ? 0 : -1}
                         onClick={() => onUbah(satu.id)}
                         className={clsx(
-                            'min-h-target-min shrink-0 cursor-pointer border-b-4 px-4 text-teks whitespace-nowrap',
-                            terpilih
-                                ? 'border-ink-900 font-bold text-ink-900'
-                                : 'border-transparent text-ink-700',
+                            'min-h-target-min shrink-0 cursor-pointer px-4 whitespace-nowrap',
+                            varian === 'pil'
+                                ? [
+                                      'rounded-pill border-2 text-kecil font-bold',
+                                      terpilih
+                                          ? 'border-ink-900 bg-ink-900 text-white'
+                                          : 'border-ink-300 bg-white text-ink-900',
+                                  ]
+                                : [
+                                      // Cincin fokus ke dalam: wadah gulir
+                                      // memotong cincin di luar tab.
+                                      'border-b-4 text-teks focus-visible:-outline-offset-3',
+                                      terpilih
+                                          ? 'border-ink-900 font-bold text-ink-900'
+                                          : 'border-transparent text-ink-700',
+                                  ],
                         )}
                     >
                         {satu.label}

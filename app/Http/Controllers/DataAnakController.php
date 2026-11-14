@@ -9,6 +9,7 @@ use App\Antrean\TampilanAnak;
 use App\Ekspor\BerkasCsv;
 use App\Enums\JenisKelamin;
 use App\Enums\StatusAntrean;
+use App\Gizi\GrafikPertumbuhan;
 use App\Http\Requests\UbahAnakRequest;
 use App\Models\Anak;
 use App\Models\User;
@@ -103,7 +104,17 @@ class DataAnakController extends Controller
     /** S15 Detail Anak: tab Ringkasan, Grafik, dan Riwayat (FR-51). */
     public function show(Request $request, Anak $anak): Response
     {
+        // Grafik penuh di tab Grafik (DESIGN Tabel 30, 7.1), dari standar WHO
+        // yang sama dengan Meja 5.
+        $grafik = GrafikPertumbuhan::props($anak, $anak->pengukuran()->get());
+
         return Inertia::render('data-anak/detail', [
+            'grafik' => $grafik['riwayat'] === [] ? null : [
+                'tabAwal' => $grafik['tabAwal'],
+                // Sama dengan rentang grafik: umur pada pengukuran terakhir.
+                'pakaiPanjang' => $grafik['riwayat'][array_key_last($grafik['riwayat'])]['umurBulan'] < 24,
+                'daftar' => $grafik['grafik'],
+            ],
             'bolehHapus' => $request->user()?->can('delete', $anak) ?? false,
             'anak' => TampilanDetailAnak::identitas($anak),
             'pengukuran' => TampilanDetailAnak::pengukuran($anak),

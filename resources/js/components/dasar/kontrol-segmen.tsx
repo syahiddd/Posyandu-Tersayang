@@ -57,7 +57,7 @@ export function KontrolSegmen<T extends string>({
                 role="radiogroup"
                 aria-invalid={galat ? true : undefined}
                 className={clsx(
-                    'grid h-control-h overflow-hidden rounded-sm border',
+                    'grid min-h-control-h overflow-hidden rounded-sm border',
                     // Cincin fokus 3 px tinta di bingkai grup (bab 10.3).
                     'has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-ink-900',
                     galat
@@ -75,7 +75,7 @@ export function KontrolSegmen<T extends string>({
                         <label
                             key={item.nilai}
                             className={clsx(
-                                'flex cursor-pointer items-center justify-center px-2 text-center text-teks leading-tight font-bold',
+                                'flex cursor-pointer items-center justify-center px-2 py-1 text-center text-teks leading-tight font-bold',
                                 dipilih
                                     ? 'bg-ink-900 text-white'
                                     : 'bg-white text-ink-900',

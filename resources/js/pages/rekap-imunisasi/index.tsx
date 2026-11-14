@@ -82,11 +82,11 @@ export default function RekapImunisasi({
 
     return (
         <>
-            <Head title="Rekapitulasi Imunisasi" />
+            <Head title="Rekap Imunisasi" />
             <div className="flex min-w-0 flex-col gap-4">
                 <header className="flex flex-wrap items-center justify-between gap-3">
-                    <h1 className="text-judul-1 text-ink-900">
-                        Rekapitulasi Imunisasi
+                    <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
+                        Rekap Imunisasi
                     </h1>
                     {adaAnak && (
                         <TombolUnduhCsv

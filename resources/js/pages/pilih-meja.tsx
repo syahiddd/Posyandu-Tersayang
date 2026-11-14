@@ -44,7 +44,7 @@ export default function PilihMeja({ tanggal, meja, terpilih }: Props) {
             <form onSubmit={kirim} className="flex min-h-dvh flex-col bg-paper">
                 <header className="border-b border-ink-200 bg-white pt-5 pb-4">
                     <div className="mx-auto w-full max-w-xl px-4 tablet:px-5">
-                        <h1 className="text-judul-1 text-ink-900">
+                        <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
                             Pilih meja hari ini
                         </h1>
                         <p className="text-teks text-ink-700">{tanggal}</p>
@@ -106,14 +106,14 @@ export default function PilihMeja({ tanggal, meja, terpilih }: Props) {
                                             <span
                                                 aria-hidden="true"
                                                 className={clsx(
-                                                    'flex size-7 shrink-0 items-center justify-center rounded-pill border-2',
+                                                    'flex size-5 shrink-0 items-center justify-center rounded-pill border-2',
                                                     dipilih
                                                         ? 'border-ink-900'
                                                         : 'border-ink-400',
                                                 )}
                                             >
                                                 {dipilih && (
-                                                    <span className="size-4 rounded-pill bg-ink-900" />
+                                                    <span className="size-3 rounded-pill bg-ink-900" />
                                                 )}
                                             </span>
                                         </label>

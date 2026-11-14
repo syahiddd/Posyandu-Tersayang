@@ -1,5 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import { Banner } from '@/components/dasar/banner';
+import { Dialog } from '@/components/dasar/dialog';
 import { ChipStatus } from '@/components/dasar/chip-status';
 import { KakiTombol } from '@/components/dasar/kaki-tombol';
 import { Kartu } from '@/components/dasar/kartu';
@@ -34,6 +36,11 @@ export default function DaftarAkun({
 }: Props) {
     const { errors } = usePage().props;
     const galat = errors.aktif ?? errors.sandi;
+    // Atur ulang tidak bisa dibatalkan, jadi dikonfirmasi dulu (DESIGN Prinsip 1).
+    const [aturUlang, setAturUlang] = useState<Props['akun'][number] | null>(
+        null,
+    );
+    const [mengatur, setMengatur] = useState(false);
     const labelMeja = (nomor: number | null) => {
         const meja = daftarMeja.find((satu) => satu.nomor === nomor);
 
@@ -45,7 +52,7 @@ export default function DaftarAkun({
             <Head title="Pengaturan Akun" />
             <div className="flex flex-1 flex-col gap-5 desktop:max-w-2xl">
                 <header>
-                    <h1 className="text-judul-1 text-ink-900">
+                    <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
                         Pengaturan Akun
                     </h1>
                     <p className="text-teks text-ink-700">{akun.length} akun</p>
@@ -86,9 +93,7 @@ export default function DaftarAkun({
                                             {satu.diriSendiri && ' · Anda'}
                                         </p>
                                     </div>
-                                    <ChipStatus
-                                        varian={satu.aktif ? 'info' : 'bahaya'}
-                                    >
+                                    <ChipStatus varian="info">
                                         {satu.aktif ? 'Aktif' : 'Nonaktif'}
                                     </ChipStatus>
                                 </div>
@@ -110,13 +115,7 @@ export default function DaftarAkun({
                                     {!satu.diriSendiri && satu.aktif && (
                                         <Tombol
                                             varian="sekunder"
-                                            onClick={() =>
-                                                router.post(
-                                                    aturUlangSandi.url(satu.id),
-                                                    {},
-                                                    { preserveScroll: false },
-                                                )
-                                            }
+                                            onClick={() => setAturUlang(satu)}
                                         >
                                             Atur ulang kata sandi
                                         </Tombol>
@@ -152,6 +151,39 @@ export default function DaftarAkun({
                         Tambah kader
                     </TombolTautan>
                 </KakiTombol>
+
+                <Dialog
+                    terbuka={aturUlang !== null}
+                    onTutup={() => setAturUlang(null)}
+                    judul={`Atur ulang kata sandi ${aturUlang?.nama ?? ''}?`}
+                    labelBahaya="Atur ulang kata sandi"
+                    memuat={mengatur}
+                    teksMemuat="Mengatur ulang…"
+                    onKonfirmasi={() => {
+                        if (aturUlang === null) {
+                            return;
+                        }
+
+                        router.post(
+                            aturUlangSandi.url(aturUlang.id),
+                            {},
+                            {
+                                preserveScroll: false,
+                                onStart: () => setMengatur(true),
+                                onFinish: () => {
+                                    setMengatur(false);
+                                    setAturUlang(null);
+                                },
+                            },
+                        );
+                    }}
+                >
+                    <p>
+                        Kata sandi lama langsung tidak berlaku dan tidak dapat
+                        dikembalikan. Kata sandi sementara tampil sekali untuk
+                        Anda berikan kepada {aturUlang?.nama}.
+                    </p>
+                </Dialog>
             </div>
         </>
     );

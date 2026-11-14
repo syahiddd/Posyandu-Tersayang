@@ -155,6 +155,40 @@
     html {
         color-scheme: light;
         background-color: var(--color-paper);
+        /* Isian yang difokus tidak tertutup kaki tombol dan navigasi bawah
+           yang menempel (bab 10.2, WCAG 2.4.11). */
+        scroll-padding-block-end: var(--offset-toast);
+    }
+
+    /*
+     * Tinggi kaki layar (kaki tombol dan navigasi bawah) ditambah 16 px.
+     * Ditentukan tata letak, tetapi dipakai di luarnya (wilayah toast adalah
+     * saudara tata letak), jadi nilainya diangkat ke :root. Kaki tombol
+     * ditulis terakhir agar menang di layar anak di dalam tata letak aplikasi.
+     */
+    :root {
+        --offset-toast: 16px;
+    }
+
+    :root:has(.toast-di-atas-navigasi) {
+        --offset-toast: 168px;
+
+        @variant tablet {
+            --offset-toast: 92px;
+        }
+
+        @variant desktop {
+            --offset-toast: 24px;
+        }
+    }
+
+    :root:has(.toast-di-atas-kaki) {
+        --offset-toast: 96px;
+    }
+
+    /* Isian cari sudah punya tombol "Hapus" sendiri (DESIGN Gambar 4). */
+    input[type='search']::-webkit-search-cancel-button {
+        appearance: none;
     }
 
     body {

@@ -1,7 +1,9 @@
 import { createInertiaApp } from '@inertiajs/react';
 import { configureEcho } from '@laravel/echo-react';
+import { Banner } from '@/components/dasar/banner';
 import { PenyediaToast } from '@/components/dasar/toast';
 import { useFlashToast } from '@/hooks/use-flash-toast';
+import { useOnline } from '@/hooks/use-online';
 import TataLetakAplikasi from '@/layouts/tata-letak-aplikasi';
 import TataLetakMeja from '@/layouts/tata-letak-meja';
 
@@ -16,6 +18,27 @@ function PendengarFlash() {
     useFlashToast();
 
     return null;
+}
+
+/**
+ * Banner offline (DESIGN bab 7 dan 8). Antrean kirim saat sinyal kembali
+ * (NFR-03) masuk Rilis 2, jadi teksnya tidak menjanjikan kirim otomatis.
+ */
+function BannerOffline() {
+    if (useOnline()) {
+        return null;
+    }
+
+    return (
+        <Banner
+            varian="offline"
+            judul="Offline"
+            className="sticky top-0 z-50 rounded-none"
+        >
+            Tidak ada sinyal. Isian tetap ada di layar; simpan lagi setelah
+            sinyal kembali.
+        </Banner>
+    );
 }
 
 void createInertiaApp({
@@ -46,6 +69,7 @@ void createInertiaApp({
         return (
             <PenyediaToast>
                 <PendengarFlash />
+                <BannerOffline />
                 {app}
             </PenyediaToast>
         );

@@ -34,7 +34,7 @@ export default function UbahDataAnak({ anak, hariIni, daftarDusun }: Props) {
             <form
                 noValidate
                 onSubmit={kirim}
-                className="flex min-h-dvh flex-col bg-paper [--offset-toast:96px]"
+                className="toast-di-atas-kaki flex min-h-dvh flex-col bg-paper"
             >
                 <HeaderAnak
                     nama={`Ubah data ${anak.nama}`}

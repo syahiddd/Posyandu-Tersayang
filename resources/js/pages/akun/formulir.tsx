@@ -81,7 +81,9 @@ export default function FormulirAkun({ akun, usulanSandi, daftarMeja }: Props) {
                     >
                         ‹ Kembali
                     </TombolTautan>
-                    <h1 className="text-judul-1 text-ink-900">{judul}</h1>
+                    <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
+                        {judul}
+                    </h1>
                 </header>
 
                 <RingkasanGalat

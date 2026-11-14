@@ -98,7 +98,7 @@ export default function TambahAnak({
             <form
                 noValidate
                 onSubmit={(event) => kirim(event)}
-                className="flex min-h-dvh flex-col bg-paper [--offset-toast:96px]"
+                className="toast-di-atas-kaki flex min-h-dvh flex-col bg-paper"
             >
                 <HeaderAnak
                     nama="Tambah anak baru"
@@ -181,7 +181,8 @@ export default function TambahAnak({
                         open={adaGalatUkur || undefined}
                         className="rounded-md border border-ink-200 bg-white px-4 shadow-1"
                     >
-                        <summary className="flex min-h-target-min cursor-pointer items-center text-teks font-bold text-ink-900">
+                        {/* list-item (bawaan) agar segitiga buka-tutup tampil. */}
+                        <summary className="min-h-target-min cursor-pointer py-3 text-teks font-bold text-ink-900">
                             Ukuran terakhir dari Buku KIA (opsional)
                         </summary>
                         <div className="flex flex-col gap-4 pt-2 pb-4">

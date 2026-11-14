@@ -31,13 +31,29 @@ export function buatAntreanToast(durasiMs = DURASI_TOAST_MS) {
         kabari();
     }
 
-    function tampilkan(toast: Omit<DataToast, 'id'>): number {
-        const id = idBerikutnya++;
-        daftar = [...daftar, { ...toast, id }];
+    /** Menahan hitungan selama notifikasi disorot atau difokus. */
+    function tahan(id: number) {
+        clearTimeout(pengatur.get(id));
+        pengatur.delete(id);
+    }
+
+    /** Memulai (ulang) hitungan penuh untuk notifikasi yang masih tampil. */
+    function lanjutkan(id: number) {
+        if (!daftar.some((toast) => toast.id === id)) {
+            return;
+        }
+
+        tahan(id);
         pengatur.set(
             id,
             setTimeout(() => tutup(id), durasiMs),
         );
+    }
+
+    function tampilkan(toast: Omit<DataToast, 'id'>): number {
+        const id = idBerikutnya++;
+        daftar = [...daftar, { ...toast, id }];
+        lanjutkan(id);
         kabari();
 
         return id;
@@ -61,6 +77,8 @@ export function buatAntreanToast(durasiMs = DURASI_TOAST_MS) {
     return {
         tampilkan,
         tutup,
+        tahan,
+        lanjutkan,
         jalankanAksi,
         langganan,
         daftar: () => daftar,

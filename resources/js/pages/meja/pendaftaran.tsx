@@ -87,7 +87,7 @@ export default function Pendaftaran({ cari, cukupUntukMencari, hasil }: Props) {
                 <header className="flex items-center gap-4">
                     <LencanaMeja nomor={1} denganLabel />
                     <div className="min-w-0 flex-1">
-                        <h1 className="text-judul-1 text-ink-900">
+                        <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
                             Lanjutkan progres anak
                         </h1>
                         <p className="text-teks text-ink-700">

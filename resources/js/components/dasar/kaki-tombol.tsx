@@ -10,8 +10,11 @@ export function KakiTombol({
     children,
     denganNavigasi = true,
     className,
+    petunjuk,
 }: {
     children: ReactNode;
+    /** Tampil di atas tombol, ikut menempel: alasan tombol utama belum aktif. */
+    petunjuk?: ReactNode;
     /** False untuk layar tanpa navigasi bawah, misalnya Pilih Meja. */
     denganNavigasi?: boolean;
     className?: string;
@@ -25,6 +28,7 @@ export function KakiTombol({
                 className,
             )}
         >
+            {petunjuk}
             <div className="flex gap-2">{children}</div>
         </div>
     );

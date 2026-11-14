@@ -104,7 +104,9 @@ export default function DataPosyandu({
             <Head title="Data Posyandu" />
             <div className="flex flex-col gap-4 desktop:max-w-3xl">
                 <header className="flex flex-wrap items-center justify-between gap-3">
-                    <h1 className="text-judul-1 text-ink-900">Data Posyandu</h1>
+                    <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
+                        Data Posyandu
+                    </h1>
                     <div className="flex flex-col items-start gap-1">
                         <TombolUnduhCsv
                             url={unduh.url({
@@ -235,9 +237,10 @@ export default function DataPosyandu({
                     </Kartu>
 
                     <Kartu labelSeksi="Status gizi dan risiko stunting">
-                        <Banner varian="info" judul="Belum dapat dihitung">
+                        <Banner varian="info" judul="Belum tersedia">
                             Jumlah anak per status gizi dan risiko stunting
-                            tampil setelah tabel standar WHO dipasang.
+                            belum dihitung di versi ini. Status gizi tiap anak
+                            tampil di Meja 5 dan di Detail Anak.
                         </Banner>
                     </Kartu>
                 </section>

@@ -69,6 +69,12 @@ export default function Pengukuran({
     // Ringkasan galat muncul dan menerima fokus setelah simpan dicoba
     // (DESIGN Tabel 33, bab 10.2), bukan saat isian ditinggalkan.
     const [percobaan, setPercobaan] = useState(0);
+    // Nilai saat isian terakhir ditinggalkan: banner "Periksa lagi" tidak
+    // muncul dan menggeser isian di tengah mengetik (DESIGN 5.4 langkah 3).
+    const [diperiksa, setDiperiksa] = useState({
+        bb: form.data.bb,
+        pbTb: form.data.pb_tb,
+    });
 
     const labelPbTb =
         form.data.cara_ukur === 'telentang' ? 'Panjang badan' : 'Tinggi badan';
@@ -81,6 +87,7 @@ export default function Pengukuran({
 
     function periksa(jenis: JenisUkur) {
         const aturan = isian.find((item) => item.jenis === jenis)!;
+        setDiperiksa({ bb: form.data.bb, pbTb: form.data.pb_tb });
         setGalatLokal((lama) => ({
             ...lama,
             [jenis]: periksaUkur(
@@ -98,14 +105,11 @@ export default function Pengukuran({
             : galatLokal[nama]) ?? undefined;
 
     const peringatan = sebelumnya
-        ? peringatanPerubahan(
-              { bb: form.data.bb, pbTb: form.data.pb_tb },
-              {
-                  bb: sebelumnya.bb,
-                  pbTb: sebelumnya.pb_tb,
-                  tanggal: sebelumnya.tanggal,
-              },
-          )
+        ? peringatanPerubahan(diperiksa, {
+              bb: sebelumnya.bb,
+              pbTb: sebelumnya.pb_tb,
+              tanggal: sebelumnya.tanggal,
+          })
         : [];
 
     function nilaiLalu(jenis: JenisUkur, satuan: string): string | undefined {
@@ -150,7 +154,7 @@ export default function Pengukuran({
             <form
                 noValidate
                 onSubmit={simpan}
-                className="flex min-h-dvh flex-col bg-paper [--offset-toast:96px]"
+                className="toast-di-atas-kaki flex min-h-dvh flex-col bg-paper"
             >
                 <HeaderAnak
                     nama={anak.nama}

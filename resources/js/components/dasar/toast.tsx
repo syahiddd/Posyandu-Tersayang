@@ -41,6 +41,7 @@ export function useToast() {
         () => ({
             sukses: (pesan: string, onBatal?: () => void) =>
                 antrean.tampilkan({ jenis: 'sukses', pesan, aksi: onBatal }),
+            /** Aksi error selalu berlabel "Coba lagi". */
             error: (pesan: string, onCobaLagi?: () => void) =>
                 antrean.tampilkan({ jenis: 'error', pesan, aksi: onCobaLagi }),
             tutup: antrean.tutup,
@@ -60,7 +61,7 @@ function WilayahToast({ antrean }: { antrean: AntreanToast }) {
         <div
             role="status"
             aria-live="polite"
-            className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex flex-col items-center gap-2 px-4 pb-[var(--offset-toast,16px)]"
+            className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex flex-col items-center gap-2 px-4 pb-(--offset-toast)"
         >
             {daftar.map((toast) => (
                 <ItemToast key={toast.id} toast={toast} antrean={antrean} />
@@ -79,7 +80,15 @@ function ItemToast({
     const labelAksi = toast.jenis === 'sukses' ? 'Batal' : 'Coba lagi';
 
     return (
-        <div className="pointer-events-auto flex w-full max-w-md items-center gap-2 rounded-md bg-ink-900 py-1 pr-1 pl-4 text-white shadow-2">
+        // Selama disorot atau difokus, hitungan 5 detik ditahan agar tombol
+        // Batal tidak hilang saat hendak ditekan (WCAG 2.2.1).
+        <div
+            onPointerEnter={() => antrean.tahan(toast.id)}
+            onPointerLeave={() => antrean.lanjutkan(toast.id)}
+            onFocus={() => antrean.tahan(toast.id)}
+            onBlur={() => antrean.lanjutkan(toast.id)}
+            className="pointer-events-auto flex w-full max-w-md items-center gap-2 rounded-md bg-ink-900 py-1 pr-1 pl-4 text-white shadow-2"
+        >
             <p className="min-w-0 flex-1 py-2 text-teks">{toast.pesan}</p>
             {toast.aksi && (
                 <button

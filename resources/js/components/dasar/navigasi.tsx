@@ -7,7 +7,8 @@ import type { ReactNode } from 'react';
  * Navigasi (DESIGN bab 7 dan bab 9): setiap tujuan memiliki teks.
  * - Ponsel < 600 px: navigasi bawah 4 tujuan dengan ikon dan teks.
  * - Tablet 600–1023 px: rel samping ikon dan teks.
- * - Desktop ≥ 1024 px: sidebar 232 px (Gambar 10).
+ * - Desktop ≥ 1024 px: sidebar 232 px (Gambar 10), juga dengan ikon dan teks
+ *   (Tabel komponen "Navigasi") dan transisi warna 150 ms (token motion).
  * Semua memakai nav aria-label "Menu utama" dan aria-current="page".
  */
 export type ItemNavigasi = {
@@ -97,7 +98,7 @@ export function Sidebar({
     kaki,
 }: {
     judul: string;
-    item: Omit<ItemNavigasi, 'ikon'>[];
+    item: ItemNavigasi[];
     /** Tindakan di bagian bawah, misalnya Ganti meja dan Keluar. */
     kaki?: ReactNode;
 }) {
@@ -108,18 +109,22 @@ export function Sidebar({
         >
             <p className="px-3 pb-6 text-judul-2 text-ink-900">{judul}</p>
             <ul className="flex flex-col gap-1">
-                {item.map(({ label, href, aktif }) => (
+                {item.map(({ label, href, ikon: Ikon, aktif }) => (
                     <li key={label}>
                         <Link
                             href={href}
                             aria-current={aktif ? 'page' : undefined}
                             className={clsx(
-                                'flex min-h-target-min items-center rounded-md px-3 text-teks font-bold',
+                                'flex min-h-target-min items-center gap-3 rounded-md px-3 py-2 text-teks font-bold transition-colors',
                                 aktif
                                     ? 'bg-ink-900 text-white'
-                                    : 'text-ink-700 hover:bg-ink-100',
+                                    : 'text-ink-700 hover:bg-ink-100 hover:text-ink-900 active:bg-ink-200',
                             )}
                         >
+                            <Ikon
+                                aria-hidden="true"
+                                className="size-5 shrink-0"
+                            />
                             {label}
                         </Link>
                     </li>

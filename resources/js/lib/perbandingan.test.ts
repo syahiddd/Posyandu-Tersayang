@@ -37,7 +37,7 @@ describe('teks perubahan dan KBM (DESIGN Gambar 5)', () => {
         ).toBe('▲ +0,2 kg dari 8 Okt');
         expect(
             teksPerubahan({ arah: 'turun', selisih: 0.3 }, 'kg', '8 Okt'),
-        ).toBe('▼ -0,3 kg dari 8 Okt');
+        ).toBe('▼ −0,3 kg dari 8 Okt');
         expect(
             teksPerubahan({ arah: 'tetap', selisih: 0 }, 'cm', '8 Okt'),
         ).toBe('Tetap sejak 8 Okt');
