@@ -1,6 +1,5 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { Kartu } from '@/components/dasar/kartu';
 import { KartuHasilAnak } from '@/components/dasar/kartu-hasil-anak';
 import { Tombol, TombolTautan } from '@/components/dasar/tombol';
 import { dataAnak } from '@/routes';
@@ -59,32 +58,35 @@ export default function DataAnakTerhapus({ anak }: { anak: AnakTerhapus[] }) {
                     <ul className="flex flex-col gap-3">
                         {anak.map((satu) => (
                             <li key={satu.id}>
-                                <Kartu className="flex flex-col gap-3">
-                                    <KartuHasilAnak
-                                        anak={satu}
-                                        redupDiAntrean={false}
-                                    />
-                                    <p className="text-kecil text-ink-700">
-                                        Dihapus {satu.dihapusPada}
-                                        {satu.dihapusOleh &&
-                                            ` oleh ${satu.dihapusOleh}`}
-                                        {' · '}
-                                        <span className="font-bold text-ink-900">
-                                            {satu.sisaHari === 0
-                                                ? 'Terhapus permanen malam ini'
-                                                : `Sisa ${satu.sisaHari} hari`}
-                                        </span>
-                                    </p>
-                                    <Tombol
-                                        varian="sekunder"
-                                        className="self-start"
-                                        memuat={memulihkan === satu.id}
-                                        teksMemuat="Memulihkan…"
-                                        onClick={() => pulihkanAnak(satu.id)}
-                                    >
-                                        Pulihkan {satu.nama}
-                                    </Tombol>
-                                </Kartu>
+                                <KartuHasilAnak
+                                    anak={satu}
+                                    redupDiAntrean={false}
+                                    catatan={
+                                        <>
+                                            Dihapus {satu.dihapusPada}
+                                            {satu.dihapusOleh &&
+                                                ` oleh ${satu.dihapusOleh}`}
+                                            {' · '}
+                                            <span className="font-bold text-ink-900">
+                                                {satu.sisaHari === 0
+                                                    ? 'Terhapus permanen malam ini'
+                                                    : `Sisa ${satu.sisaHari} hari`}
+                                            </span>
+                                        </>
+                                    }
+                                    aksi={
+                                        <Tombol
+                                            varian="sekunder"
+                                            memuat={memulihkan === satu.id}
+                                            teksMemuat="Memulihkan..."
+                                            onClick={() =>
+                                                pulihkanAnak(satu.id)
+                                            }
+                                        >
+                                            Pulihkan {satu.nama}
+                                        </Tombol>
+                                    }
+                                />
                             </li>
                         ))}
                     </ul>

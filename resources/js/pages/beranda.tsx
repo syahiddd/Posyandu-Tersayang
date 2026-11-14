@@ -1,12 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import {
-    Building2,
-    CircleCheck,
-    Scale,
-    Syringe,
-    UserPlus,
-    Users,
-} from 'lucide-react';
+import { Baby, CircleCheck, Scale, UserPlus } from 'lucide-react';
 import { ChipStatus } from '@/components/dasar/chip-status';
 import { KakiTombol } from '@/components/dasar/kaki-tombol';
 import { Kartu } from '@/components/dasar/kartu';
@@ -14,7 +7,7 @@ import { LencanaMeja } from '@/components/dasar/lencana-meja';
 import { TileAngka } from '@/components/dasar/tile-angka';
 import { TombolTautan } from '@/components/dasar/tombol';
 import { useAntreanRealtime } from '@/hooks/use-antrean-realtime';
-import { dataAnak, dataPosyandu, meja, rekapImunisasi } from '@/routes';
+import { meja } from '@/routes';
 import type { AntreanMeja } from '@/types';
 
 type Props = {
@@ -25,27 +18,63 @@ type Props = {
 
 /**
  * S03 Beranda (FR-06, FR-07, FR-08; DESIGN 6.1 Tabel 24). Semua angka
- * dihitung dari kunjungan hari ini di database.
+ * dihitung dari kunjungan hari ini di database. Susunan visual mengikuti
+ * acuan prototipe "Posya App": bilah layanan plum, panel identitas kader,
+ * lalu ringkasan dan antrean lima meja.
  */
 export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
-    const { mejaAktif, namaPosyandu, name } = usePage().props;
+    const { auth, mejaAktif, namaPosyandu, name } = usePage().props;
     // Angka diperbarui otomatis tanpa memuat ulang halaman (FR-09).
     useAntreanRealtime(['ringkasan', 'antrean']);
     const antreanSaya = antrean.find((item) => item.nomor === mejaAktif?.nomor);
+    const posyandu = namaPosyandu ?? name;
 
     return (
         <>
             <Head title="Beranda" />
             <div className="flex flex-1 flex-col gap-5 desktop:max-w-4xl">
-                <header>
-                    <h1 className="text-judul-2 text-ink-900 desktop:text-judul-1">
-                        {namaPosyandu ?? name}
-                    </h1>
-                    <p className="text-teks text-ink-700">
-                        {tanggal}
-                        {mejaAktif && ` · Anda di Meja ${mejaAktif.nomor}`}
-                    </p>
-                </header>
+                <section
+                    aria-labelledby="judul-beranda"
+                    className="overflow-hidden rounded-lg shadow-2"
+                >
+                    <div className="relative overflow-hidden bg-gradient-to-br from-brand-700 via-brand-700 to-brand-900 px-5 pt-6 pb-8 text-white">
+                        <p className="text-label-seksi text-white/75 uppercase">
+                            Selamat bertugas
+                        </p>
+                        <h1
+                            id="judul-beranda"
+                            className="mt-1 text-display text-white"
+                        >
+                            Layanan Posyandu
+                        </h1>
+                        <p className="mt-1 text-teks text-white/90">
+                            {tanggal}
+                        </p>
+                        <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute right-2 -bottom-1 flex items-end gap-1 text-white/15"
+                        >
+                            <Baby className="size-8" />
+                            <Baby className="size-12" />
+                            <Baby className="size-9" />
+                        </div>
+                    </div>
+                    <dl className="flex flex-col gap-2 bg-brand-800 px-4 py-4">
+                        <BarisIdentitas
+                            label="Kader"
+                            nilai={auth.user?.name ?? '—'}
+                        />
+                        <BarisIdentitas
+                            label="Meja Anda"
+                            nilai={
+                                mejaAktif
+                                    ? `Meja ${mejaAktif.nomor} · ${mejaAktif.tahap}`
+                                    : 'Belum dipilih'
+                            }
+                        />
+                        <BarisIdentitas label="Posyandu" nilai={posyandu} />
+                    </dl>
+                </section>
 
                 <section aria-labelledby="judul-ringkasan">
                     <h2 id="judul-ringkasan" className="sr-only">
@@ -75,54 +104,15 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
                     )}
                 </section>
 
-                <div className="grid gap-5 desktop:grid-cols-[3fr_2fr] desktop:items-start">
-                    <Kartu labelSeksi="Antrean per meja">
-                        <ul className="divide-y divide-ink-200">
-                            {antrean.map((item) => (
-                                <li key={item.nomor}>
-                                    <BarisAntrean item={item} />
-                                </li>
-                            ))}
-                        </ul>
-                    </Kartu>
-
-                    <Kartu labelSeksi="Menu lain">
-                        <ul className="divide-y divide-ink-200">
-                            {[
-                                {
-                                    label: 'Data Anak',
-                                    href: dataAnak().url,
-                                    ikon: Users,
-                                },
-                                {
-                                    label: 'Rekap Imunisasi',
-                                    href: rekapImunisasi().url,
-                                    ikon: Syringe,
-                                },
-                                {
-                                    label: 'Data Posyandu',
-                                    href: dataPosyandu().url,
-                                    ikon: Building2,
-                                },
-                            ].map(({ label, href, ikon: Ikon }) => (
-                                <li key={label}>
-                                    <Link
-                                        href={href}
-                                        className="flex min-h-target-min items-center gap-3 py-2 text-teks font-bold text-ink-900"
-                                    >
-                                        <Ikon
-                                            aria-hidden="true"
-                                            className="size-5 shrink-0"
-                                        />
-                                        <span className="underline underline-offset-4">
-                                            {label}
-                                        </span>
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </Kartu>
-                </div>
+                <Kartu labelSeksi="Antrean per meja">
+                    <ul className="divide-y divide-ink-200">
+                        {antrean.map((item) => (
+                            <li key={item.nomor}>
+                                <BarisAntrean item={item} />
+                            </li>
+                        ))}
+                    </ul>
+                </Kartu>
 
                 {mejaAktif && (
                     <KakiTombol className="desktop:max-w-md">
@@ -134,6 +124,22 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
                 )}
             </div>
         </>
+    );
+}
+
+/** Satu baris panel identitas: label putih, nilai dalam kotak putih kapsul. */
+function BarisIdentitas({ label, nilai }: { label: string; nilai: string }) {
+    return (
+        <div className="flex items-center gap-3">
+            <dt className="w-28 shrink-0 text-kecil font-bold text-white/90">
+                {label}
+            </dt>
+            <dd className="flex h-control-h min-w-0 flex-1 items-center rounded-pill bg-white px-4 shadow-1">
+                <span className="truncate text-teks font-bold text-ink-900">
+                    {nilai}
+                </span>
+            </dd>
+        </div>
     );
 }
 

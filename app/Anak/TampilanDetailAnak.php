@@ -93,6 +93,8 @@ final class TampilanDetailAnak
                         StatusAntrean::SedangDilayani => 'sedang dilayani',
                         StatusAntrean::Ditunda => 'ditunda',
                     },
+                // Catatan Meja 4, misalnya alasan imunisasi tidak diberikan.
+                'catatanPelayanan' => $kunjungan->catatan_pelayanan,
             ])
             ->values()
             ->all();

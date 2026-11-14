@@ -4,6 +4,7 @@ import {
     dataPosyandu,
     gantiSandi,
     logout,
+    panduanKia,
     pengaturanAkun,
     pilihMeja,
     rekapImunisasi,
@@ -48,6 +49,11 @@ export default function Lainnya() {
                         <li>
                             <Link href={dataPosyandu()} className={kelasBaris}>
                                 Data Posyandu
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href={panduanKia()} className={kelasBaris}>
+                                Panduan KIA
                             </Link>
                         </li>
                         {bolehKelolaAkun && (

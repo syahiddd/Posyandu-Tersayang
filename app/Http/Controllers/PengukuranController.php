@@ -58,6 +58,7 @@ class PengukuranController extends Controller
             ] : $draf,
             'sebelumnya' => $sebelumnya ? [
                 'tanggal' => Tanggal::pendek($sebelumnya->tanggal_ukur),
+                'tanggalLengkap' => Tanggal::singkat($sebelumnya->tanggal_ukur),
                 'sumber' => $sebelumnya->sumber->value,
                 'bb' => $sebelumnya->bb,
                 'pb_tb' => $sebelumnya->pb_tb,

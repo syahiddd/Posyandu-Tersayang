@@ -45,8 +45,8 @@ export function ChipPenyaring({
                             className={clsx(
                                 'inline-flex min-h-target-min cursor-pointer items-center rounded-pill border-2 px-4 text-kecil font-bold transition-colors',
                                 terpilih
-                                    ? 'border-ink-900 bg-ink-900 text-white'
-                                    : 'border-ink-300 bg-white text-ink-900 hover:border-ink-900',
+                                    ? 'border-brand-700 bg-brand-700 text-white'
+                                    : 'border-ink-300 bg-white text-ink-900 hover:border-brand-700',
                             )}
                         >
                             {satu.label}

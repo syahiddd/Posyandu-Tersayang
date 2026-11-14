@@ -291,40 +291,58 @@ export default function RiwayatBukuKia({
                                 Belum ada.
                             </p>
                         ) : (
-                            <ul className="divide-y divide-ink-200">
-                                {layanan.map((satu) => (
-                                    <li
-                                        key={`layanan-${satu.id}`}
-                                        className="flex flex-wrap justify-between gap-x-4 py-3"
-                                    >
-                                        <span className="text-teks text-ink-900">
-                                            <span className="font-bold">
-                                                {satu.jenis}
-                                            </span>{' '}
-                                            · {satu.detail}
-                                        </span>
-                                        <span className="text-kecil text-ink-700">
-                                            {satu.tanggal}
-                                        </span>
-                                    </li>
-                                ))}
-                                {pengukuran.map((satu) => (
-                                    <li
-                                        key={`ukur-${satu.id}`}
-                                        className="flex flex-wrap justify-between gap-x-4 py-3"
-                                    >
-                                        <span className="text-teks text-ink-900">
-                                            <span className="font-bold">
-                                                Pengukuran
-                                            </span>{' '}
-                                            · {ringkasUkur(satu)}
-                                        </span>
-                                        <span className="text-kecil text-ink-700">
-                                            {satu.tanggal}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
+                            <div className="flex flex-col gap-4">
+                                {layanan.length > 0 && (
+                                    <div className="flex flex-col gap-2">
+                                        <p className="text-label-seksi text-ink-600 uppercase">
+                                            Layanan
+                                        </p>
+                                        <ul className="divide-y divide-ink-200">
+                                            {layanan.map((satu) => (
+                                                <li
+                                                    key={`layanan-${satu.id}`}
+                                                    className="flex flex-wrap justify-between gap-x-4 py-3"
+                                                >
+                                                    <span className="text-teks text-ink-900">
+                                                        <span className="font-bold">
+                                                            {satu.jenis}
+                                                        </span>{' '}
+                                                        · {satu.detail}
+                                                    </span>
+                                                    <span className="text-kecil text-ink-700">
+                                                        {satu.tanggal}
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                                {pengukuran.length > 0 && (
+                                    <div className="flex flex-col gap-2">
+                                        <p className="text-label-seksi text-ink-600 uppercase">
+                                            Pengukuran
+                                        </p>
+                                        <ul className="divide-y divide-ink-200">
+                                            {pengukuran.map((satu) => (
+                                                <li
+                                                    key={`ukur-${satu.id}`}
+                                                    className="flex flex-wrap justify-between gap-x-4 py-3"
+                                                >
+                                                    <span className="text-teks text-ink-900">
+                                                        <span className="font-bold">
+                                                            Pengukuran
+                                                        </span>{' '}
+                                                        · {ringkasUkur(satu)}
+                                                    </span>
+                                                    <span className="text-kecil text-ink-700">
+                                                        {satu.tanggal}
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </Kartu>
 

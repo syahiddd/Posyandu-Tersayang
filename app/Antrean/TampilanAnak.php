@@ -2,11 +2,15 @@
 
 namespace App\Antrean;
 
+use App\Enums\JenisLayanan;
 use App\Models\Anak;
+use App\Models\Layanan;
+use App\Pelayanan\JadwalImunisasi;
 use App\Support\Nik;
 use App\Support\Tanggal;
 use App\Support\Umur;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Ringkasan anak untuk hasil pencarian dan kartu pembanding Meja 1
@@ -51,5 +55,60 @@ final class TampilanAnak
         return $query
             ->withMax('kunjungan as kunjungan_terakhir', 'tanggal')
             ->withExists(['kunjungan as di_antrean_hari_ini' => fn (Builder $q) => $q->whereDate('tanggal', today())]);
+    }
+
+    /**
+     * Ringkasan lengkap untuk kartu daftar Data Anak: ringkasan dasar ditambah
+     * hasil ukur terakhir dan status imunisasi (FR-70). Butuh relasi dari
+     * denganUkurTerakhir() agar tidak N+1.
+     *
+     * @return array<string, mixed>
+     */
+    public static function ringkasLengkap(Anak $anak): array
+    {
+        $umur = Umur::bulanPenuh($anak->tanggal_lahir);
+
+        $ukur = $anak->relationLoaded('pengukuranTerakhir')
+            ? $anak->getRelation('pengukuranTerakhir')
+            : $anak->pengukuranTerakhir()->first();
+
+        $sudahImunisasi = array_values(($anak->relationLoaded('layanan')
+            ? $anak->layanan
+            : $anak->layanan()->get())
+            ->where('jenis', JenisLayanan::Imunisasi)
+            ->map(fn (Layanan $layanan) => $layanan->detail)
+            ->all());
+
+        $jatuhTempo = JadwalImunisasi::jatuhTempo($umur, $sudahImunisasi);
+
+        return [
+            ...self::ringkas($anak),
+            'ukurTerakhir' => $ukur === null ? null : [
+                'tanggal' => Tanggal::singkat($ukur->tanggal_ukur),
+                // Kolom angka kosong diperlakukan sebagai belum ada nilai.
+                'bb' => $ukur->bb === '' ? null : $ukur->bb,
+                'pbTb' => $ukur->pb_tb === '' ? null : $ukur->pb_tb,
+            ],
+            'imunisasi' => [
+                'sesuai' => $jatuhTempo === [],
+                'berikutnya' => $jatuhTempo[0]['nama'] ?? null,
+                'terlambat' => $jatuhTempo[0]['terlambat'] ?? false,
+            ],
+        ];
+    }
+
+    /**
+     * Memuat hasil ukur terakhir dan riwayat imunisasi untuk daftar panjang
+     * dalam satu query tambahan per relasi.
+     *
+     * @param  Builder<Anak>  $query
+     * @return Builder<Anak>
+     */
+    public static function denganUkurTerakhir(Builder $query): Builder
+    {
+        return $query->with([
+            'pengukuranTerakhir',
+            'layanan' => fn (HasMany $q) => $q->where('jenis', JenisLayanan::Imunisasi->value),
+        ]);
     }
 }

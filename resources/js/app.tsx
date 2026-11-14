@@ -75,6 +75,6 @@ void createInertiaApp({
         );
     },
     progress: {
-        color: 'var(--color-ink-900)',
+        color: 'var(--color-brand-700)',
     },
 });

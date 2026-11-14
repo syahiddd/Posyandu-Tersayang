@@ -1,20 +1,26 @@
-import { Head, InfiniteScroll, Link, router } from '@inertiajs/react';
+import { Head, InfiniteScroll, router } from '@inertiajs/react';
+import { LineChart, Scale, User, Users } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Bidang, kelasBingkai } from '@/components/dasar/bidang';
 import { IsianTeks } from '@/components/dasar/isian-teks';
-import {
-    KartuHasilAnak,
-    labelHasilAnak,
-} from '@/components/dasar/kartu-hasil-anak';
+import { Kartu } from '@/components/dasar/kartu';
+import { KartuHasilAnak } from '@/components/dasar/kartu-hasil-anak';
+import { TileAngka } from '@/components/dasar/tile-angka';
 import { Tombol, TombolTautan } from '@/components/dasar/tombol';
+import { TombolUnduhCsv } from '@/components/tombol-unduh-csv';
 import { usePintasanCari } from '@/hooks/use-pintasan-cari';
 import { dataAnak, meja } from '@/routes';
-import { TombolUnduhCsv } from '@/components/tombol-unduh-csv';
 import { detail, terhapus, unduh } from '@/routes/data-anak';
-import type { JenisKelamin, PenyaringDataAnak, RingkasanAnak } from '@/types';
+import type {
+    JenisKelamin,
+    PenyaringDataAnak,
+    RingkasanAnak,
+    StatistikAnak,
+} from '@/types';
 
 type Props = {
     penyaring: PenyaringDataAnak;
+    statistik: StatistikAnak;
     jumlah: number;
     adaAnak: boolean;
     anak: { data: RingkasanAnak[] };
@@ -36,13 +42,14 @@ function parameter(penyaring: PenyaringDataAnak) {
 }
 
 /**
- * S14 Data Anak (FR-50, DESIGN 6.5): isian cari; penyaring jenis kelamin,
- * kelompok umur, dusun; jumlah hasil; daftar kartu anak dengan NIK tersamar
- * (NFR-05). Penyaring berupa pilihan tarik-turun, bukan chip seperti di
- * DESIGN 6.5, atas permintaan pemilik produk.
+ * S14 Data Anak (FR-50, DESIGN 6.5): ringkasan seluruh anak di atas daftar
+ * (FR-69), pencarian dan penyaring dalam satu kartu, lalu daftar kartu anak
+ * dengan NIK tersamar (NFR-05), hasil ukur terakhir, status imunisasi
+ * (FR-70), dan aksi cepat ke grafik/KMS (FR-71).
  */
 export default function DaftarDataAnak({
     penyaring,
+    statistik,
     jumlah,
     adaAnak,
     anak,
@@ -144,8 +151,70 @@ export default function DaftarDataAnak({
                                 label: dusun,
                             }))}
                         />
-                    )}
-                </div>
+
+                        <div className="flex flex-col gap-3">
+                            {/* Jenis Kelamin - menggunakan select dropdown */}
+                            <select
+                                className="h-control-h w-full rounded-pill border border-ink-300 bg-white px-4 text-teks text-ink-900 placeholder:text-ink-500 focus:border-brand-700 focus:outline-none"
+                                value={penyaring.jk ?? ''}
+                                onChange={(e) =>
+                                    saring({
+                                        jk: e.target
+                                            .value as JenisKelamin | null,
+                                    })
+                                }
+                            >
+                                <option value="">Semua</option>
+                                <option
+                                    value="L"
+                                    className="font-bold text-ink-900"
+                                >
+                                    Laki-laki
+                                </option>
+                                <option
+                                    value="P"
+                                    className="font-bold text-ink-900"
+                                >
+                                    Perempuan
+                                </option>
+                            </select>
+
+                            {/* Kelompok Umur - menggunakan select dropdown */}
+                            <select
+                                className="h-control-h w-full rounded-pill border border-ink-300 bg-white px-4 text-teks text-ink-900 placeholder:text-ink-500 focus:border-brand-700 focus:outline-none"
+                                value={penyaring.umur ?? ''}
+                                onChange={(e) =>
+                                    saring({ umur: e.target.value })
+                                }
+                            >
+                                <option value="">Semua</option>
+                                {daftarKelompokUmur.map((satu) => (
+                                    <option key={satu.nilai} value={satu.nilai}>
+                                        {satu.label}
+                                    </option>
+                                ))}
+                            </select>
+
+                            {/* Dusun - menggunakan select dropdown (hanya muncul > 1 dusun) */}
+                            {daftarDusun.length > 1 && (
+                                <select
+                                    className="h-control-h w-full rounded-pill border border-ink-300 bg-white px-4 text-teks text-ink-900 placeholder:text-ink-500 focus:border-brand-700 focus:outline-none"
+                                    value={penyaring.dusun ?? ''}
+                                    onChange={(e) =>
+                                        saring({ dusun: e.target.value })
+                                    }
+                                >
+                                    <option value="">Semua</option>
+                                    {daftarDusun.map((dusun) => (
+                                        <option key={dusun} value={dusun}>
+                                            {dusun}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+                    </div>
+                </Kartu>
 
                 <section aria-labelledby="judul-hasil">
                     <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -199,7 +268,7 @@ export default function DaftarDataAnak({
                                         lebarPenuh
                                         className="mt-3"
                                         memuat={loading}
-                                        teksMemuat="Memuat…"
+                                        teksMemuat="Memuat..."
                                         onClick={fetch}
                                     >
                                         Tampilkan lebih banyak
@@ -210,16 +279,27 @@ export default function DaftarDataAnak({
                             <ul className="flex flex-col gap-3">
                                 {anak.data.map((satu) => (
                                     <li key={satu.id}>
-                                        <Link
-                                            href={detail(satu.id)}
-                                            aria-label={labelHasilAnak(satu)}
-                                            className="block rounded-md"
-                                        >
-                                            <KartuHasilAnak
-                                                anak={satu}
-                                                redupDiAntrean={false}
-                                            />
-                                        </Link>
+                                        <KartuHasilAnak
+                                            anak={satu}
+                                            redupDiAntrean={false}
+                                            tautanDetail={detail.url(satu.id)}
+                                            aksi={
+                                                <TombolTautan
+                                                    href={detail.url(satu.id, {
+                                                        query: {
+                                                            tab: 'grafik',
+                                                        },
+                                                    })}
+                                                    varian="tersier"
+                                                >
+                                                    <LineChart
+                                                        aria-hidden="true"
+                                                        className="size-4"
+                                                    />
+                                                    Lihat grafik &amp; KMS
+                                                </TombolTautan>
+                                            }
+                                        />
                                     </li>
                                 ))}
                             </ul>

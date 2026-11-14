@@ -21,20 +21,20 @@ import type {
 import type { JenisKelamin } from '@/types';
 
 const WARNA_ZONA: Record<WarnaZona, string> = {
-    normal: 'var(--color-zona-normal)',
-    waspada: 'var(--color-zona-waspada)',
-    kurang: 'var(--color-zona-kurang)',
-    'sangat-kurang': 'var(--color-zona-sangat-kurang)',
-    tinggi: 'var(--color-zona-tinggi)',
+    aman: 'var(--color-zona-aman)',
+    'tidak-aman': 'var(--color-zona-tidak-aman)',
 };
 
 const KELAS_ZONA: Record<WarnaZona, string> = {
-    normal: 'bg-zona-normal',
-    waspada: 'bg-zona-waspada',
-    kurang: 'bg-zona-kurang',
-    'sangat-kurang': 'bg-zona-sangat-kurang',
-    tinggi: 'bg-zona-tinggi',
+    aman: 'bg-zona-aman',
+    'tidak-aman': 'bg-zona-tidak-aman',
 };
+
+/** Legenda sederhana: hijau = aman, merah = tidak aman. */
+const LEGENDA_ZONA: { warna: WarnaZona; label: string }[] = [
+    { warna: 'aman', label: 'Aman' },
+    { warna: 'tidak-aman', label: 'Tidak aman' },
+];
 
 /** Ruang di sekitar area plot: label sumbu kiri dan bawah, pil garis kanan. */
 const TEPI = { kiri: 40, kanan: 40, atas: 22, bawah: 40 };
@@ -480,13 +480,10 @@ export function GrafikPertumbuhan({
                 </p>
             )}
 
-            {/* Legenda zona (DESIGN 7.1). */}
-            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-kecil text-ink-900">
-                {zona.map((satu) => (
-                    <li
-                        key={`${satu.label}`}
-                        className="flex items-center gap-2"
-                    >
+            {/* Legenda zona (DESIGN 7.1): dua warna saja agar cepat dibaca. */}
+            <ul className="flex flex-wrap gap-x-5 gap-y-1 text-kecil text-ink-900">
+                {LEGENDA_ZONA.map((satu) => (
+                    <li key={satu.warna} className="flex items-center gap-2">
                         <span
                             aria-hidden="true"
                             className={clsx(
@@ -499,8 +496,9 @@ export function GrafikPertumbuhan({
                 ))}
             </ul>
             <p className="text-keterangan text-ink-600">
-                Sumber: standar WHO, Permenkes Nomor 2 Tahun 2020 (Buku KIA
-                2024).
+                Hijau = aman, tidak perlu tindak lanjut khusus; merah = tidak
+                aman, perlu perhatian. Batas mengikuti Buku KIA; sumber standar
+                WHO, Permenkes Nomor 2 Tahun 2020.
             </p>
 
             <div>

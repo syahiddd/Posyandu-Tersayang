@@ -47,6 +47,29 @@ describe('zona kategori status gizi (PRD Tabel 25)', () => {
         ]);
     });
 
+    it('hanya batas normal yang berwarna aman (hijau)', () => {
+        expect(
+            zonaIndeks('bb_u')
+                .filter((satu) => satu.warna === 'aman')
+                .map((satu) => [satu.bawah, satu.atas]),
+        ).toEqual([[-2, 1]]);
+        expect(
+            zonaIndeks('pb_tb_u')
+                .filter((satu) => satu.warna === 'aman')
+                .map((satu) => [satu.bawah, satu.atas]),
+        ).toEqual([
+            [-2, 3],
+            [3, null],
+        ]);
+        expect(
+            zonaIndeks('imt_u').every(
+                (satu) =>
+                    (satu.warna === 'aman') ===
+                    (satu.bawah === -2 && satu.atas === 1),
+            ),
+        ).toBe(true);
+    });
+
     it('BB/U dan KMS: risiko lebih di atas +1', () => {
         expect(zonaIndeks('kms').at(-1)).toMatchObject({
             bawah: 1,

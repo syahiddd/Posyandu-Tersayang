@@ -1,5 +1,4 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Banner } from '@/components/dasar/banner';
 import { ChipStatus } from '@/components/dasar/chip-status';
@@ -8,7 +7,6 @@ import { AreaTeks, IsianTeks } from '@/components/dasar/isian-teks';
 import { KakiTombol } from '@/components/dasar/kaki-tombol';
 import { Kartu } from '@/components/dasar/kartu';
 import { KotakCentangLayanan } from '@/components/dasar/kotak-centang-layanan';
-import { SheetBawah } from '@/components/dasar/sheet-bawah';
 import { Tombol } from '@/components/dasar/tombol';
 import { DetailDuaKolom } from '@/components/detail-dua-kolom';
 import { useDaftarLayarAnak } from '@/hooks/use-layar-anak';
@@ -32,7 +30,6 @@ type Isian = {
     vitamin_a: string;
     obat_cacing: boolean;
     catatan_pelayanan: string;
-    catatan_penyuluhan: string;
 };
 
 type Props = {
@@ -50,8 +47,8 @@ type Props = {
         nama: string;
         keterangan: string;
     } | null;
+    /** Satu kunjungan imunisasi sebelumnya saja (FR-31). */
     riwayatTerakhir: RiwayatImunisasi[];
-    semuaRiwayat: RiwayatImunisasi[];
     nilaiAwal: Partial<Isian> | null;
 };
 
@@ -80,7 +77,6 @@ function isianAwal({
             obat_cacing:
                 Boolean(obatCacing?.boleh) && Boolean(nilaiAwal.obat_cacing),
             catatan_pelayanan: nilaiAwal.catatan_pelayanan ?? '',
-            catatan_penyuluhan: nilaiAwal.catatan_penyuluhan ?? '',
         };
     }
 
@@ -92,14 +88,14 @@ function isianAwal({
         vitamin_a: kodeVitaminA,
         obat_cacing: false,
         catatan_pelayanan: '',
-        catatan_penyuluhan: '',
     };
 }
 
 /**
  * S11 Meja 4 Pelayanan (FR-30 sampai FR-36; DESIGN 5.6, 6.3, Gambar 5):
  * layanan jatuh tempo sudah tercentang, kader menghapus centang yang tidak
- * jadi diberikan lalu menyimpan ke Meja 5.
+ * jadi diberikan lalu menyimpan ke Meja 5. Layar hanya mencatat pelayanan —
+ * tidak ada lagi pencatatan penyuluhan.
  */
 export default function Pelayanan(props: Props) {
     const {
@@ -110,11 +106,9 @@ export default function Pelayanan(props: Props) {
         vitaminA,
         obatCacing,
         riwayatTerakhir,
-        semuaRiwayat,
     } = props;
     const { errors } = usePage().props;
     const form = useForm<Isian>(isianAwal(props));
-    const [sheetRiwayat, setSheetRiwayat] = useState(false);
 
     // Kolom antrean (bab 9) menanyakan isian ini sebelum pindah anak.
     useDaftarLayarAnak({
@@ -176,6 +170,28 @@ export default function Pelayanan(props: Props) {
 
     const adaLayananLain = vitaminA !== null || obatCacing !== null;
 
+    // "Anak mendapat apa hari ini": dibaca langsung dari centang kader.
+    const imunisasiDipilih = jatuhTempo.filter((satu) =>
+        form.data.imunisasi.some((pilih) => pilih.kode === satu.kode),
+    );
+    const obatCacingDipilih =
+        obatCacing !== null && obatCacing.boleh && form.data.obat_cacing;
+    const vitaminADipilih =
+        vitaminA?.pilihan != null && form.data.vitamin_a !== ''
+            ? vitaminA.pilihan.nama
+            : null;
+    const daftarDidapat = [
+        ...imunisasiDipilih.map((satu) => satu.nama),
+        ...(vitaminADipilih ? [vitaminADipilih] : []),
+        ...(obatCacingDipilih ? [obatCacing.nama] : []),
+    ];
+
+    // Belum dicentang: alasan mengapa layanan belum bisa diberikan hari ini.
+    const belumDiberikan = jatuhTempo.filter(
+        (satu) =>
+            !form.data.imunisasi.some((pilih) => pilih.kode === satu.kode),
+    );
+
     return (
         <>
             <Head title={`Meja 4 · ${anak.nama}`} />
@@ -211,9 +227,9 @@ export default function Pelayanan(props: Props) {
                                 >
                                     <h2
                                         id="judul-jatuh-tempo"
-                                        className="text-label-seksi text-ink-600 uppercase"
+                                        className="text-label-seksi text-brand-700 uppercase"
                                     >
-                                        Jatuh tempo hari ini
+                                        Yang harus didapat anak hari ini
                                     </h2>
                                     {jatuhTempo.length === 0 && (
                                         <p className="text-teks text-ink-700">
@@ -265,7 +281,7 @@ export default function Pelayanan(props: Props) {
                                     >
                                         <h2
                                             id="judul-vitamin-obat"
-                                            className="text-label-seksi text-ink-600 uppercase"
+                                            className="text-label-seksi text-brand-700 uppercase"
                                         >
                                             Vitamin A dan obat cacing
                                         </h2>
@@ -343,53 +359,104 @@ export default function Pelayanan(props: Props) {
                         }
                         kanan={
                             <>
+                                <Kartu
+                                    labelSeksi="Anak mendapat hari ini"
+                                    aria-live="polite"
+                                >
+                                    <div className="flex flex-col gap-3 py-1">
+                                        {daftarDidapat.length === 0 ? (
+                                            <p className="text-teks text-ink-700">
+                                                Belum ada layanan dicentang.
+                                                Centang layanan di kolom
+                                                sebelah.
+                                            </p>
+                                        ) : (
+                                            <ul className="flex flex-col gap-2">
+                                                {daftarDidapat.map((satu) => (
+                                                    <li
+                                                        key={satu}
+                                                        className="flex items-center gap-2 text-teks text-ink-900"
+                                                    >
+                                                        <ChipStatus varian="normal">
+                                                            Diberikan
+                                                        </ChipStatus>
+                                                        <span className="font-bold">
+                                                            {satu}
+                                                        </span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+
+                                        {belumDiberikan.length > 0 && (
+                                            <div className="border-t border-ink-200 pt-3">
+                                                <p className="text-kecil font-bold text-ink-900">
+                                                    Belum diberikan / perlu
+                                                    dikejar
+                                                </p>
+                                                <ul className="mt-1 flex flex-col gap-1">
+                                                    {belumDiberikan.map(
+                                                        (satu) => (
+                                                            <li
+                                                                key={satu.kode}
+                                                                className="text-teks text-ink-900"
+                                                            >
+                                                                <span className="font-bold">
+                                                                    {satu.nama}
+                                                                </span>
+                                                                <span className="text-ink-700">
+                                                                    {' '}
+                                                                    ·{' '}
+                                                                    {
+                                                                        satu.alasan
+                                                                    }
+                                                                </span>
+                                                            </li>
+                                                        ),
+                                                    )}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                </Kartu>
+
                                 <section
                                     aria-labelledby="judul-riwayat"
                                     className="flex flex-col gap-1"
                                 >
                                     <h2
                                         id="judul-riwayat"
-                                        className="mb-1 text-label-seksi text-ink-600 uppercase"
+                                        className="mb-1 text-label-seksi text-brand-700 uppercase"
                                     >
-                                        Riwayat terakhir
+                                        Riwayat imunisasi sebelumnya
                                     </h2>
                                     {riwayatTerakhir.length === 0 ? (
                                         <p className="text-teks text-ink-700">
-                                            Belum ada imunisasi tercatat.
+                                            Belum ada imunisasi tercatat pada
+                                            kunjungan sebelumnya.
                                         </p>
                                     ) : (
-                                        <>
-                                            <ul className="flex flex-col gap-1">
-                                                {riwayatTerakhir.map((satu) => (
-                                                    <li
-                                                        key={satu.tanggal}
-                                                        className="text-teks text-ink-900"
-                                                    >
-                                                        <span className="font-bold">
-                                                            {satu.vaksin}
-                                                        </span>{' '}
-                                                        · {satu.tanggal}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                            <div>
-                                                <Tombol
-                                                    varian="tersier"
-                                                    className="-ml-2"
-                                                    onClick={() =>
-                                                        setSheetRiwayat(true)
-                                                    }
+                                        <ul className="flex flex-col gap-2">
+                                            {riwayatTerakhir.map((satu) => (
+                                                <li
+                                                    key={satu.tanggal}
+                                                    className="rounded-md border border-ink-200 bg-white px-3 py-2 text-teks"
                                                 >
-                                                    Semua riwayat
-                                                </Tombol>
-                                            </div>
-                                        </>
+                                                    <span className="block text-kecil text-ink-600">
+                                                        {satu.tanggal}
+                                                    </span>
+                                                    <span className="font-bold text-ink-900">
+                                                        {satu.vaksin}
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
                                     )}
                                 </section>
 
                                 <AreaTeks
                                     label="Catatan pelayanan"
-                                    rows={2}
+                                    rows={3}
                                     name="catatan_pelayanan"
                                     maxLength={500}
                                     value={form.data.catatan_pelayanan}
@@ -399,24 +466,9 @@ export default function Pelayanan(props: Props) {
                                             event.target.value,
                                         )
                                     }
-                                    petunjuk="Opsional."
+                                    petunjuk="Tulis alasan bila ada imunisasi yang belum diberikan, contoh: anak demam."
+                                    placeholder="Contoh: anak demam, imunisasi ditunda bulan depan"
                                     galat={form.errors.catatan_pelayanan}
-                                />
-                                <AreaTeks
-                                    label="Catatan untuk penyuluhan"
-                                    rows={2}
-                                    name="catatan_penyuluhan"
-                                    maxLength={500}
-                                    value={form.data.catatan_penyuluhan}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'catatan_penyuluhan',
-                                            event.target.value,
-                                        )
-                                    }
-                                    petunjuk="Opsional. Dibaca kader Meja 5."
-                                    galat={form.errors.catatan_penyuluhan}
-                                    placeholder="Contoh: anak sedikit demam setelah imunisasi bulan lalu"
                                 />
 
                                 <KakiTombol denganNavigasi={false}>
@@ -444,26 +496,6 @@ export default function Pelayanan(props: Props) {
                     />
                 </div>
             </form>
-
-            <SheetBawah
-                terbuka={sheetRiwayat}
-                onTutup={() => setSheetRiwayat(false)}
-                judul="Semua riwayat imunisasi"
-            >
-                <ul className="flex flex-col divide-y divide-ink-200">
-                    {semuaRiwayat.map((satu) => (
-                        <li
-                            key={satu.tanggal}
-                            className="flex flex-col py-3 text-teks text-ink-900"
-                        >
-                            <span className="font-bold">{satu.vaksin}</span>
-                            <span className="text-kecil text-ink-700">
-                                {satu.tanggal}
-                            </span>
-                        </li>
-                    ))}
-                </ul>
-            </SheetBawah>
         </>
     );
 }

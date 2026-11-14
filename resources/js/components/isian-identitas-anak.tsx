@@ -113,6 +113,9 @@ export function IsianIdentitasAnak({
                     nilai={data.jenis_kelamin || null}
                     onUbah={(nilai) => ubah('jenis_kelamin', nilai)}
                     galat={galat.jenis_kelamin}
+                    kelasTerpilih={(nilai) =>
+                        nilai === 'L' ? 'bg-boy-700' : 'bg-girl-700'
+                    }
                 />
                 <IsianTeks label="Tempat lahir" {...teks('tempat_lahir')} />
                 <IsianTeks

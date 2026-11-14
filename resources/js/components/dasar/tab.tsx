@@ -100,7 +100,7 @@ export function Tab<T extends string>({
                                 ? [
                                       'rounded-pill border-2 text-kecil font-bold',
                                       terpilih
-                                          ? 'border-ink-900 bg-ink-900 text-white'
+                                          ? 'border-brand-700 bg-brand-700 text-white'
                                           : 'border-ink-300 bg-white text-ink-900',
                                   ]
                                 : [
@@ -108,7 +108,7 @@ export function Tab<T extends string>({
                                       // memotong cincin di luar tab.
                                       'border-b-4 text-teks focus-visible:-outline-offset-3',
                                       terpilih
-                                          ? 'border-ink-900 font-bold text-ink-900'
+                                          ? 'border-brand-700 font-bold text-brand-700'
                                           : 'border-transparent text-ink-700',
                                   ],
                         )}

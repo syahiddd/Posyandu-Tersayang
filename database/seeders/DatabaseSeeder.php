@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
         }
 
         Posyandu::factory()->create([
-            'nama' => 'Posyandu Melati',
+            'nama' => 'Posyandu Tersayang',
             'desa_kelurahan' => 'Desa Sukamaju',
             'kecamatan' => 'Kecamatan Sukasari',
             'puskesmas_pembina' => 'Puskesmas Sukasari',

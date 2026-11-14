@@ -75,13 +75,13 @@ export default function TataLetakMeja({ children }: { children: ReactNode }) {
 
     return (
         <KonteksLayarAnak.Provider value={infoLayar}>
-            <div className="flex min-h-dvh flex-col panel:grid panel:grid-cols-[320px_minmax(0,1fr)] desktop:grid-cols-[300px_minmax(0,1fr)]">
+            <div className="flex flex-1 flex-col panel:grid panel:grid-cols-[320px_minmax(0,1fr)] desktop:grid-cols-[300px_minmax(0,1fr)]">
                 <aside
                     aria-label={`Antrean Meja ${props.antreanMeja.nomor}`}
                     className={clsx(
                         layarAnak ? 'hidden panel:flex' : 'flex',
                         'flex-col px-4 pt-5 pb-19 tablet:px-5 tablet:pb-5',
-                        'panel:sticky panel:top-0 panel:h-dvh panel:overflow-y-auto panel:border-r panel:border-ink-200 panel:px-4',
+                        'panel:sticky panel:top-14 panel:h-[calc(100dvh-3.5rem)] panel:overflow-y-auto panel:border-r panel:border-ink-200 panel:px-4 desktop:top-16 desktop:h-[calc(100dvh-4rem)]',
                     )}
                 >
                     <PanelAntrean

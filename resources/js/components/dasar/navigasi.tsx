@@ -10,6 +10,8 @@ import type { ReactNode } from 'react';
  * - Desktop ≥ 1024 px: sidebar 232 px (Gambar 10), juga dengan ikon dan teks
  *   (Tabel komponen "Navigasi") dan transisi warna 150 ms (token motion).
  * Semua memakai nav aria-label "Menu utama" dan aria-current="page".
+ * Tujuan aktif ditandai warna merek (plum), bukan biru atau merah muda
+ * yang khusus identitas anak.
  */
 export type ItemNavigasi = {
     label: string;
@@ -31,21 +33,19 @@ export function NavigasiBawah({ item }: { item: ItemNavigasi[] }) {
                             href={href}
                             aria-current={aktif ? 'page' : undefined}
                             className={clsx(
-                                'flex h-full min-h-target-min flex-col items-center justify-center gap-1 px-1 text-keterangan',
+                                'relative flex h-full min-h-target-min flex-col items-center justify-center gap-1 px-1 text-keterangan transition-colors',
                                 aktif
-                                    ? 'font-bold text-ink-900'
+                                    ? 'font-bold text-brand-700'
                                     : 'text-ink-600',
                             )}
                         >
-                            <span
-                                aria-hidden="true"
-                                className={clsx(
-                                    'flex h-8 w-12 items-center justify-center rounded-md',
-                                    aktif && 'bg-ink-900 text-white',
-                                )}
-                            >
-                                <Ikon className="size-5" />
-                            </span>
+                            {aktif && (
+                                <span
+                                    aria-hidden="true"
+                                    className="absolute top-0 left-1/2 h-1 w-10 -translate-x-1/2 rounded-b-pill bg-brand-600"
+                                />
+                            )}
+                            <Ikon aria-hidden="true" className="size-5" />
                             {label}
                         </Link>
                     </li>
@@ -68,21 +68,19 @@ export function NavigasiRel({ item }: { item: ItemNavigasi[] }) {
                             href={href}
                             aria-current={aktif ? 'page' : undefined}
                             className={clsx(
-                                'flex min-h-target-min flex-col items-center justify-center gap-1 px-1 py-2 text-center text-keterangan',
+                                'relative flex min-h-target-min flex-col items-center justify-center gap-1 px-1 py-2 text-center text-keterangan transition-colors',
                                 aktif
-                                    ? 'font-bold text-ink-900'
+                                    ? 'font-bold text-brand-700'
                                     : 'text-ink-600',
                             )}
                         >
-                            <span
-                                aria-hidden="true"
-                                className={clsx(
-                                    'flex h-8 w-12 items-center justify-center rounded-md',
-                                    aktif && 'bg-ink-900 text-white',
-                                )}
-                            >
-                                <Ikon className="size-5" />
-                            </span>
+                            {aktif && (
+                                <span
+                                    aria-hidden="true"
+                                    className="absolute top-1/2 left-0 h-8 w-1 -translate-y-1/2 rounded-r-pill bg-brand-600"
+                                />
+                            )}
+                            <Ikon aria-hidden="true" className="size-5" />
                             {label}
                         </Link>
                     </li>
@@ -117,8 +115,8 @@ export function Sidebar({
                             className={clsx(
                                 'flex min-h-target-min items-center gap-3 rounded-md px-3 py-2 text-teks font-bold transition-colors',
                                 aktif
-                                    ? 'bg-ink-900 text-white'
-                                    : 'text-ink-700 hover:bg-ink-100 hover:text-ink-900 active:bg-ink-200',
+                                    ? 'bg-brand-700 text-white'
+                                    : 'text-ink-700 hover:bg-brand-50 hover:text-brand-700 active:bg-brand-100',
                             )}
                         >
                             <Ikon

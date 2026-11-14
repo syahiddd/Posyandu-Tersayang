@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
@@ -105,6 +106,20 @@ class Anak extends Model
     public function pengukuran(): HasMany
     {
         return $this->hasMany(Pengukuran::class);
+    }
+
+    /**
+     * Hasil ukur terbaru anak, untuk kartu daftar Data Anak. Ties pada
+     * tanggal yang sama dipecah oleh id terbesar.
+     *
+     * @return HasOne<Pengukuran, $this>
+     */
+    public function pengukuranTerakhir(): HasOne
+    {
+        return $this->hasOne(Pengukuran::class)->ofMany([
+            'tanggal_ukur' => 'max',
+            'id' => 'max',
+        ]);
     }
 
     /** @return HasMany<Layanan, $this> */

@@ -57,7 +57,6 @@ function isian_meja4(array $ubah = []): array
         'vitamin_a' => '',
         'obat_cacing' => false,
         'catatan_pelayanan' => '',
-        'catatan_penyuluhan' => '',
         ...$ubah,
     ];
 }
@@ -188,7 +187,7 @@ test('obat cacing tidak dapat dicatat lagi setelah dua kali dalam setahun (FR-34
         ->assertSessionHasErrors('obat_cacing');
 });
 
-test('riwayat menampilkan dua tanggal imunisasi terakhir (FR-31)', function () {
+test('riwayat menampilkan satu kunjungan imunisasi sebelumnya saja (FR-31)', function () {
     $k = buka_di_meja4(18);
     $anak = $k->anak;
 
@@ -198,10 +197,9 @@ test('riwayat menampilkan dua tanggal imunisasi terakhir (FR-31)', function () {
     Layanan::factory()->for($anak)->create(['detail' => 'BCG', 'tanggal' => today()->subMonths(17)->toDateString()]);
 
     $this->get(route('kunjungan.layar', $k))->assertInertia(fn ($page) => $page
-        ->has('riwayatTerakhir', 2)
+        ->has('riwayatTerakhir', 1)
         ->where('riwayatTerakhir.0.vaksin', 'PCV 3')
-        ->where('riwayatTerakhir.1.vaksin', 'IPV 2, MR 1')
-        ->has('semuaRiwayat', 3));
+        ->missing('semuaRiwayat'));
 });
 
 test('simpan mencatat layanan dan catatan lalu mengirim anak ke antrean Meja 5 (FR-32, FR-35, FR-36)', function () {
@@ -216,7 +214,6 @@ test('simpan mencatat layanan dan catatan lalu mengirim anak ke antrean Meja 5 (
         'vitamin_a' => 'Kapsul merah',
         'obat_cacing' => true,
         'catatan_pelayanan' => 'Imunisasi di paha kiri',
-        'catatan_penyuluhan' => 'Anak sedikit demam',
     ]))->assertRedirect(route('meja', 4))->assertSessionHasNoErrors();
 
     $k->refresh();
@@ -224,8 +221,7 @@ test('simpan mencatat layanan dan catatan lalu mengirim anak ke antrean Meja 5 (
     expect($k->meja_saat_ini)->toBe(Meja::Penyuluhan)
         ->and($k->status)->toBe(StatusAntrean::Menunggu)
         ->and($k->selesai_meja_4_pada)->not->toBeNull()
-        ->and($k->catatan_pelayanan)->toBe('Imunisasi di paha kiri')
-        ->and($k->catatan_penyuluhan)->toBe('Anak sedikit demam');
+        ->and($k->catatan_pelayanan)->toBe('Imunisasi di paha kiri');
 
     $layanan = $k->layanan()->orderBy('id')->get();
 
@@ -286,7 +282,7 @@ test('Tunda di Meja 4 menyimpan isian sebagai draf (FR-47, FR-48)', function () 
     $k = buka_di_meja4(18, dosis_sampai_12_bulan());
     $draf = isian_meja4([
         'imunisasi' => [['kode' => 'MR 2', 'batch' => 'B7']],
-        'catatan_penyuluhan' => 'Ibu minta jadwal ulang',
+        'catatan_pelayanan' => 'Ibu minta jadwal ulang',
     ]);
 
     $this->post(route('kunjungan.tunda', $k), ['draf' => $draf]);
@@ -296,7 +292,7 @@ test('Tunda di Meja 4 menyimpan isian sebagai draf (FR-47, FR-48)', function () 
     $this->get(route('kunjungan.layar', $k))->assertInertia(fn ($page) => $page
         ->where('nilaiAwal.imunisasi.0.kode', 'MR 2')
         ->where('nilaiAwal.imunisasi.0.batch', 'B7')
-        ->where('nilaiAwal.catatan_penyuluhan', 'Ibu minta jadwal ulang'));
+        ->where('nilaiAwal.catatan_pelayanan', 'Ibu minta jadwal ulang'));
 });
 
 test('kader yang tidak memegang anak tidak dapat menyimpan pelayanan', function () {

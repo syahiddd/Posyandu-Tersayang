@@ -4,17 +4,17 @@ import type { ComponentProps, ReactNode } from 'react';
 
 /**
  * Tombol (DESIGN bab 7, Tabel 31): tinggi 52 px, teks berupa kata kerja,
- * satu tombol utama per layar. Tinta untuk aksi, bukan biru atau hijau.
+ * satu tombol utama per layar. Warna merek (plum) untuk aksi, bukan biru
+ * atau merah muda identitas anak.
  */
 export type VarianTombol = 'utama' | 'sekunder' | 'tersier' | 'bahaya';
 
 const kelasVarian: Record<VarianTombol, string> = {
-    // Ditekan memakai ink-700: mockup "ditekan" berwarna hitam di luar token.
-    utama: 'bg-ink-900 text-white active:bg-ink-700 disabled:bg-ink-200 disabled:text-ink-500',
+    utama: 'bg-brand-700 text-white active:bg-brand-800 disabled:bg-ink-200 disabled:text-ink-500',
     sekunder:
-        'border-2 border-ink-900 bg-white text-ink-900 active:bg-ink-100 disabled:border-ink-300 disabled:text-ink-500',
+        'border-2 border-brand-700 bg-white text-brand-700 active:bg-brand-50 disabled:border-ink-300 disabled:text-ink-500',
     tersier:
-        'bg-transparent px-2 text-ink-900 underline underline-offset-4 active:text-ink-700 disabled:text-ink-500',
+        'bg-transparent px-2 text-brand-700 underline underline-offset-4 active:text-brand-800 disabled:text-ink-500',
     bahaya: 'border-2 border-status-bahaya-teks bg-white text-status-bahaya-teks active:bg-status-bahaya-latar disabled:border-ink-300 disabled:text-ink-500',
 };
 
@@ -68,7 +68,7 @@ export function Tombol({
                 // Saat memuat, warna tetap seperti tombol aktif (DESIGN Gambar 7).
                 memuat &&
                     varian === 'utama' &&
-                    'disabled:bg-ink-900 disabled:text-white',
+                    'disabled:bg-brand-700 disabled:text-white',
                 className,
             )}
             {...props}

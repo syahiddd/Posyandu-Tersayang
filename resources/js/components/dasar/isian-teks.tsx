@@ -143,7 +143,7 @@ export function AreaTeks({
                 aria-invalid={galat ? true : undefined}
                 aria-describedby={deskripsiIsian(idIsian, { petunjuk, galat })}
                 className={clsx(
-                    kelasBingkai({ galat, bacaSaja }),
+                    kelasBingkai({ galat, bacaSaja, bulat: false }),
                     'min-h-32 px-4 py-3 text-teks',
                 )}
                 {...props}

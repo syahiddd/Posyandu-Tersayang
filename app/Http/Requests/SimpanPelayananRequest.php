@@ -47,7 +47,6 @@ class SimpanPelayananRequest extends FormRequest
             'vitamin_a' => ['nullable', Rule::in($vitaminA === null ? [] : [$vitaminA])],
             'obat_cacing' => $obatCacing ? ['boolean'] : ['boolean', 'declined'],
             'catatan_pelayanan' => ['nullable', 'string', 'max:'.self::MAKS_CATATAN],
-            'catatan_penyuluhan' => ['nullable', 'string', 'max:'.self::MAKS_CATATAN],
         ];
     }
 
@@ -65,7 +64,6 @@ class SimpanPelayananRequest extends FormRequest
             'vitamin_a.in' => 'Vitamin A belum waktunya untuk anak ini.',
             'obat_cacing.declined' => 'Obat cacing belum waktunya untuk anak ini.',
             'catatan_pelayanan.max' => 'Catatan pelayanan paling banyak '.self::MAKS_CATATAN.' huruf.',
-            'catatan_penyuluhan.max' => 'Catatan untuk penyuluhan paling banyak '.self::MAKS_CATATAN.' huruf.',
         ];
     }
 

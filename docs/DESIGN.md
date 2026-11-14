@@ -114,12 +114,12 @@ Tabel 1. Enam keputusan desain utama
 
 | Keputusan | Alasan singkat |
 |---|---|
-| Tombol utama berwarna tinta (#1B2333), bukan biru atau hijau | Biru sudah berarti anak laki-laki dan hijau berarti status normal. Warna aksi tidak boleh bentrok dengan makna data. |
-| Font Atkinson Hyperlegible untuk seluruh antarmuka | Dirancang agar huruf dan angka yang mirip (1, l, I, 0, O, 8, B) mudah dibedakan. Penting untuk NIK 16 digit dan angka ukur. |
+| Tombol utama berwarna merek plum (#6B3B52), bukan biru atau hijau | Biru sudah berarti anak laki-laki dan hijau berarti status normal. Warna aksi tidak boleh bentrok dengan makna data. |
+| Font Plus Jakarta Sans untuk seluruh antarmuka | Bentuk huruf geometris yang lembut dan bersih, angka tegas dan mudah dibedakan, sejalan dengan bahasa visual prototipe "Posya App". Nyaman dibaca kader untuk NIK 16 digit dan angka ukur. |
 | Latar kertas hangat #FAFAF7, bukan putih murni | Mengurangi silau di layar murah bertingkat kecerahan tinggi, dan permukaan kartu putih tetap terpisah tanpa bayangan tebal. |
 | Satu layar meja, satu tombol utama di zona jempol | Kader bekerja cepat dengan satu tangan. Tombol Simpan selalu di posisi yang sama di bagian bawah. |
 | Biru dan merah muda hanya untuk identitas jenis kelamin anak | Mengikuti Buku KIA sehingga kader langsung mengenali grafik dan kartu yang benar, tanpa belajar kode warna baru. |
-| Grafik pertumbuhan dengan zona berwarna di belakang garis z-score | Kader membaca posisi anak dari warna zona dalam sekali lihat, lalu memastikan dengan teks kategori. |
+| Grafik pertumbuhan dengan dua zona warna di belakang garis z-score | Kader membaca posisi anak dalam sekali lihat: hijau berarti aman, merah berarti tidak aman. Kategori rinci tetap ada di teks. |
 
 # 1. Prinsip Desain
 
@@ -127,11 +127,11 @@ Tiga prinsip berikut wajib dipatuhi. Jika sebuah usulan layar melanggar salah sa
 
 ## Prinsip 1. Satu meja, satu tugas, satu tombol utama
 
-Setiap layar kerja meja hanya memiliki satu tombol utama berwarna tinta, menempel di bagian bawah layar dalam jangkauan jempol. Tombol sekunder (biasanya Tunda) selalu berada di kiri tombol utama dengan ukuran lebih kecil. Kader tidak pernah perlu menggulir untuk menyimpan.
+Setiap layar kerja meja hanya memiliki satu tombol utama berwarna merek (plum), menempel di bagian bawah layar dalam jangkauan jempol. Tombol sekunder (biasanya Tunda) selalu berada di kiri tombol utama dengan ukuran lebih kecil. Kader tidak pernah perlu menggulir untuk menyimpan.
 
 Alasannya: antrean posyandu bisa mencapai puluhan anak dalam dua sampai tiga jam. Posisi tombol yang selalu sama membuat gerakan kader menjadi kebiasaan, sehingga perhatiannya tetap pada anak dan angka, bukan mencari tombol.
 
-- Uji cepat: jika satu layar memiliki dua tombol berwarna tinta, desainnya salah.
+- Uji cepat: jika satu layar memiliki dua tombol berwarna merek, desainnya salah.
 
 - Dialog konfirmasi hanya dipakai untuk tindakan yang tidak bisa dibatalkan (hapus data). Tindakan lain memakai notifikasi dengan tombol Batal selama 5 detik.
 
@@ -143,7 +143,7 @@ Alasannya: kesalahan membaca 8,5 sebagai 6,5 atau 13,2 sebagai 18,2 langsung men
 
 ## Prinsip 3. Warna adalah makna, bukan hiasan
 
-Aplikasi memiliki anggaran warna yang tegas: biru dan merah muda hanya untuk identitas jenis kelamin anak, hijau, oranye, dan merah hanya untuk status gizi, serta warna tinta untuk aksi dan teks. Tidak ada warna lain. Setiap warna selalu disertai teks atau ikon, misalnya label "Perempuan" dan teks kategori "Pendek".
+Aplikasi memiliki anggaran warna yang tegas: biru dan merah muda hanya untuk identitas jenis kelamin anak, hijau, oranye, dan merah hanya untuk status gizi, warna merek plum hanya untuk aksi dan penanda aktif, serta warna tinta untuk teks dan data netral. Tidak ada warna lain. Setiap warna selalu disertai teks atau ikon, misalnya label "Perempuan" dan teks kategori "Pendek".
 
 Alasannya: jika hijau juga dipakai sebagai warna tombol, kader bisa salah mengira anak berstatus normal. Teks pendamping memastikan informasi tetap terbaca oleh pengguna dengan buta warna dan pada hasil cetak hitam putih.
 
@@ -172,6 +172,7 @@ Tabel 3. Referensi visual dan yang diambil
 | Referensi | Yang diambil |
 |---|---|
 | Buku KIA 2024 (halaman grafik pertumbuhan) | Kode warna biru untuk laki-laki dan merah muda untuk perempuan, warna garis z-score, istilah kategori status gizi. Kader tidak perlu mempelajari dua bahasa visual. |
+| Prototipe "Posya App by OregonTeam" (Figma) | Kepala aplikasi plum yang menempel, kartu membulat, bilah navigasi bawah dengan penanda aktif, dan tombol utama besar. Bahasa visualnya disesuaikan; konsep Posyandu Lima Meja tidak berubah. |
 | GOV.UK Design System | Pola formulir satu kolom, label di atas isian, pesan kesalahan tepat di bawah isian disertai ringkasan di atas, serta tombol berteks jelas. |
 | Kartu register dan KMS kertas | Baris data bergaris tipis, label di kiri dan angka di kanan, sehingga mudah disalin ke buku. |
 
@@ -216,6 +217,23 @@ Tabel 4. Token warna netral
 
 Kenapa tinta, bukan hitam murni? Hitam #000000 di atas latar terang terasa keras dan memantulkan silau. Tinta biru keabu-abuan #1B2333 tetap memberi kontras di atas 15 : 1, tetapi lebih nyaman dibaca lama.
 
+## 3.1.1 Warna Merek
+
+Warna merek adalah plum hangat dari acuan prototipe "Posya App". Warnanya dipakai untuk aksi dan penanda aktif saja, tidak pernah untuk data. Ronanya sengaja dijauhkan dari merah muda identitas anak (girl-700 #B4245F) dan merah status bahaya (#B3261E) agar makna data tetap utuh.
+
+Tabel 4b. Token warna merek
+
+| Token | Hex | Pemakaian | Kontras |
+|---|---|---|---|
+| brand-900 | #3B1F2B | Teks merek di latar terang, aksen tergelap | 12,4 : 1 di putih |
+| brand-800 | #4C2A3A | Tombol utama ditekan | 10,2 : 1 di putih |
+| brand-700 | #6B3B52 | Tombol utama, kepala aplikasi, teks tab aktif | Putih: 8,8 : 1 |
+| brand-600 | #8B4F69 | Penanda aktif navigasi bawah | 6,2 : 1 di putih |
+| brand-300 | #D9A8BD | Garis dekoratif pada latar merek | Dekoratif |
+| brand-200 | #E9CCD9 | Garis tepi lembut pada latar merek | Dekoratif |
+| brand-100 | #F7E9EF | Latar kartu merek lembut | brand-700: 7,5 : 1 |
+| brand-50 | #FCF6F9 | Latar sorot saat kursor di menu | Dekoratif |
+
 ## 3.2 Warna Identitas Anak
 
 Tabel 5. Token warna jenis kelamin
@@ -253,27 +271,24 @@ Tabel 7. Token warna garis dan zona grafik
 | Garis ±1 | #B86200 |  | Tebal 1,6 px; hanya grafik BB/PB, BB/TB, IMT/U, LK | 4,4 : 1 di putih |
 | Garis ±2 | #D33A2C |  | Tebal 1,6 px | 4,8 : 1 di putih |
 | Garis ±3 | #1B2333 |  | Tebal 1,6 px | 15,7 : 1 di putih |
-| Zona normal | #D9EFDF |  | Area di antara batas normal | Latar |
-| Zona waspada | #FFF0C7 |  | Risiko lebih / berisiko gizi lebih | Latar |
-| Zona kurang | #FDE3C2 |  | Antara −3 SD dan −2 SD | Latar |
-| Zona sangat kurang | #F6C7C2 |  | Di bawah −3 SD atau di atas +3 SD (obesitas) | Latar |
-| Zona tinggi | #DCE8F7 |  | Di atas +3 SD pada TB/U | Latar |
+| Zona aman | #D9EFDF |  | Area di dalam batas normal (hijau) | Latar |
+| Zona tidak aman | #F6C7C2 |  | Area di luar batas normal (merah) | Latar |
 
-Warna garis mengikuti Buku KIA (hijau, oranye, merah, hitam) dan semuanya memenuhi kontras grafis minimal 3 : 1. Zona digambar dengan opasitas 55 % agar garis dan titik anak tetap menjadi elemen paling menonjol.
+Warna garis mengikuti Buku KIA (hijau, oranye, merah, hitam) dan semuanya memenuhi kontras grafis minimal 3 : 1. Zona hanya memakai dua warna, hijau untuk aman dan merah untuk tidak aman, agar kader membaca posisi anak dalam sekali lihat. Nama kategori tetap ditulis di keterangan titik dan tabel, jadi warna bukan satu-satunya penanda. Zona digambar dengan opasitas 55 % agar garis dan titik anak tetap menjadi elemen paling menonjol.
 
 ## 3.5 Tipografi
 
-Font: Atkinson Hyperlegible (Braille Institute, lisensi SIL Open Font License, tersedia di Google Fonts), dipakai untuk seluruh antarmuka.
+Font: Plus Jakarta Sans (variable 200–800, lisensi SIL Open Font License, tersedia di Google Fonts), dipakai untuk seluruh antarmuka dan di-self-host sebagai subset Latin.
 
-- Dirancang untuk keterbacaan. Font ini dibuat untuk pembaca berpenglihatan rendah. Huruf dan angka yang sering tertukar (I, l, 1, 0, O, 5, S, 8, B) memiliki bentuk yang jelas berbeda. Ini penting bagi kader berusia 35 sampai 60 tahun yang banyak mengalami rabun dekat.
+- Bentuk huruf geometris yang lembut dan bersih, sejalan dengan prototipe "Posya App". Sudut dan terminal huruf membulat sehingga antarmuka terasa ramah tanpa mengurangi ketegasan data.
 
-- Cocok untuk data angka. NIK 16 digit dan angka ukur seperti 8,5 atau 13,2 harus disalin tanpa salah ke Buku KIA.
+- Jelas untuk data angka. Angka pada Plus Jakarta Sans memiliki tinggi dan bentuk yang tegas, sehingga NIK 16 digit dan angka ukur seperti 8,5 atau 13,2 mudah dibaca dan disalin ke Buku KIA.
 
-- Ringan. Hanya dua bobot yang dipakai, Regular 400 dan Bold 700. Berkas woff2 subset Latin masing-masing sekitar 17 KB, sehingga cepat dimuat di jaringan seluler.
+- Ringan. Satu berkas variable woff2 subset Latin sekitar 27 KB sudah mencakup bobot 200 sampai 800, sehingga cepat dimuat di jaringan seluler.
 
-- Kenapa bukan Inter atau Roboto? Keduanya sangat umum dan rapi, tetapi tidak menambah keterbacaan angka. Roboto juga membuat aplikasi terasa seperti aplikasi bawaan Android tanpa identitas.
+- Kenapa bukan Inter atau Roboto? Keduanya sangat umum dan rapi, tetapi tidak memberi identitas visual seperti yang diminta prototipe. Plus Jakarta Sans juga dirancang untuk antarmuka digital dan terbaca baik pada ukuran kecil.
 
-Urutan font cadangan: Atkinson Hyperlegible, system-ui, "Segoe UI", Roboto, sans-serif. Ukuran dasar 16 px; tidak ada teks penting di bawah 13 px, kecuali label sumbu grafik yang minimal 12 px.
+Urutan font cadangan: Plus Jakarta Sans, system-ui, "Segoe UI", Roboto, sans-serif. Ukuran dasar 16 px; tidak ada teks penting di bawah 13 px, kecuali label sumbu grafik yang minimal 12 px.
 
 Tabel 8. Skala tipografi
 
@@ -291,7 +306,7 @@ Tabel 8. Skala tipografi
 
 ![gambar-01](img/gambar-01.png)
 
-Gambar 1. Spesimen skala tipografi dengan Atkinson Hyperlegible
+Gambar 1. Spesimen skala tipografi dengan Plus Jakarta Sans
 
 ## 3.6 Spasi, Ukuran Sentuh, Radius, dan Bayangan
 
@@ -313,12 +328,12 @@ Tabel 10. Ukuran, radius, dan bayangan
 |---|---|---|
 | target-min | 48 × 48 px | Area sentuh minimal, lebih besar dari anjuran 44 px karena kader sering memakai ibu jari sambil berdiri. |
 | control-h | 52 px | Tinggi tombol utama dan isian. |
-| radius-sm | 6 px | Isian, kontrol segmen. |
-| radius-md | 10 px | Tombol, kartu, banner, lencana meja. |
-| radius-lg | 16 px | Bottom sheet dan dialog. |
-| radius-pill | 999 px | Chip status dan tab grafik. |
-| shadow-1 | 0 1px 2px rgba(27,35,51,0,08) | Kartu. Sangat tipis karena pemisahan utama memakai garis tepi ink-200. |
-| shadow-2 | 0 6px 16px rgba(27,35,51,0,14) | Bottom sheet, notifikasi melayang. |
+| radius-sm | 8 px | Isian, kontrol segmen. |
+| radius-md | 14 px | Tombol, banner, lencana meja, bilah navigasi. |
+| radius-lg | 20 px | Kartu, bottom sheet, dan dialog. |
+| radius-pill | 999 px | Chip status, tab pil, penanda aktif. |
+| shadow-1 | 0 1px 2px rgba(59,31,43,0,06), 0 2px 6px rgba(59,31,43,0,06) | Kartu. Sangat tipis karena pemisahan utama memakai garis tepi ink-200. |
+| shadow-2 | 0 8px 24px rgba(59,31,43,0,16) | Kepala aplikasi, bottom sheet, notifikasi melayang. |
 | motion | 150 ms ease-out; 250 ms untuk sheet | Hanya untuk perubahan keadaan. Dimatikan jika pengguna memilih kurangi gerak. |
 
 | KENAPA BAYANGAN NYARIS TIDAK DIPAKAI <br> Di bawah sinar matahari, bayangan halus tidak terlihat. Pemisahan permukaan memakai kombinasi latar kertas, kartu putih, dan garis tepi 1 px, yang tetap terbaca dalam kondisi terang. |
@@ -467,7 +482,7 @@ Tabel 21. Alur unduh dan akun
 
 # 6. Tata Letak per Layar
 
-Setiap layar dijelaskan dari atas ke bawah. Mockup berikut dibuat ulang memakai token pada bab 3 dan data fiktif.
+Setiap layar dijelaskan dari atas ke bawah. Mockup berikut dibuat ulang memakai token pada bab 3 dan data fiktif. Setiap layar setelah masuk diawali kepala aplikasi plum yang menempel (nama aplikasi dan meja yang dipegang).
 
 ## 6.1 Masuk, Pilih Meja, dan Beranda
 
@@ -483,7 +498,7 @@ Tabel 22. Susunan Masuk
 
 | No | Bagian | Isi dan komponen |
 |---|---|---|
-| 1 | Identitas | Lencana meja 1–5 dan nama aplikasi; teks "Khusus kader posyandu". |
+| 1 | Identitas | Logo merek dan nama aplikasi; teks "Khusus kader posyandu". |
 | 2 | Formulir | Isian nama pengguna; isian kata sandi dengan tautan Tampilkan. |
 | 3 | Aksi | Tombol utama Masuk, lebar penuh. |
 | 4 | Bantuan | Banner info: akun dibuat oleh Ketua Kader. Tidak ada tautan daftar akun. |
@@ -508,10 +523,10 @@ Tabel 24. Susunan Beranda
 
 | No | Bagian | Isi dan komponen |
 |---|---|---|
-| 1 | Header | Nama posyandu, tanggal, dan meja yang dipegang. |
-| 2 | Ringkasan | Tiga tile angka: terdaftar hari ini, sudah ditimbang, selesai dilayani. |
-| 3 | Antrean per meja | Baris per meja: lencana, nama tahap, jumlah menunggu, chip jumlah ditunda. |
-| 4 | Perhatian | Kartu jumlah anak yang perlu tindak lanjut gizi bulan ini. |
+| 1 | Hero | Bilah merek plum "Layanan Posyandu" berisi tanggal hari ini, dengan hiasan ilustrasi samar; mengikuti acuan prototipe "Posya App". |
+| 2 | Identitas | Panel plum dengan tiga baris label dan kotak putih kapsul: kader, meja yang dipegang, dan nama posyandu. |
+| 3 | Ringkasan | Tiga tile angka: terdaftar hari ini, sudah ditimbang, selesai dilayani. |
+| 4 | Antrean per meja | Baris per meja: lencana, nama tahap, jumlah menunggu, chip jumlah ditunda. |
 | 5 | Kaki | Tombol utama Buka antrean Meja N, lalu navigasi bawah: Beranda, Meja, Data Anak, Lainnya. |
 
 ## 6.2 Meja 1 dan Meja 2
@@ -542,7 +557,7 @@ Tabel 26. Susunan Meja 2 Pengukuran
 | No | Bagian | Isi dan komponen |
 |---|---|---|
 | 1 | Header anak | Latar biru atau merah muda, tombol kembali, nama, jenis kelamin, umur, nomor antrean, lencana meja. |
-| 2 | Berat badan | Isian angka dengan satuan kg dan petunjuk "Boleh pakai koma atau titik · Lalu: 13,0 kg". |
+| 2 | Berat badan | Isian angka dengan satuan kg dan petunjuk "Boleh pakai titik atau koma, contoh 8.5 atau 8,5 · Lalu: 13,0 kg". |
 | 3 | Panjang/tinggi | Isian angka cm dan kontrol segmen Telentang/Berdiri. |
 | 4 | LiLA dan LK | Isian angka bertanda Dianjurkan. |
 | 5 | Kaki | Tunda (sekunder) dan Simpan · ke Meja 3 (utama). |
@@ -611,8 +626,8 @@ Tabel 30. Susunan layar menu
 
 | Layar | Susunan dari atas | Aksi utama |
 |---|---|---|
-| S14 Data Anak | Isian cari; chip penyaring jenis kelamin, kelompok umur, dusun; jumlah hasil; daftar kartu anak; tombol Unduh CSV di header. | Membuka detail anak |
-| S15 Detail Anak | Header anak berwarna; tab Ringkasan (identitas, orang tua, alamat), Grafik (komponen grafik penuh), Riwayat (kunjungan dan layanan). | Ubah data |
+| S14 Data Anak | Ringkasan semua anak (total, laki-laki, perempuan, belum ditimbang bulan ini) yang tidak mengikuti penyaring; kartu "Cari & saring" berisi isian cari dan chip penyaring jenis kelamin, kelompok umur, dusun; jumlah hasil; daftar kartu anak dengan hasil ukur terakhir, status imunisasi, dan aksi cepat Lihat grafik & KMS; tombol Unduh CSV di header. | Membuka detail anak |
+| S15 Detail Anak | Header anak berwarna; tab Ringkasan (identitas, orang tua, alamat), Grafik (komponen grafik penuh), Riwayat (kunjungan dan layanan). Tab awal dapat dipesan lewat alamat ?tab=, dipakai aksi cepat Lihat grafik & KMS dari daftar. | Ubah data |
 | S17 Tambah Riwayat | Pilihan Imunisasi atau Pengukuran; isian tanggal dan nilai; daftar entri yang baru ditambahkan. | Simpan entri |
 | S18 Rekap Imunisasi | Penyaring periode, vaksin, dusun; tile cakupan per vaksin; tabel anak × vaksin yang dapat digulir horizontal. | Unduh CSV |
 | S19 Data Posyandu | Kartu profil; tabel SKDN bulan berjalan dengan persentase D/S dan N/D; jumlah per status gizi; daftar kader. | Unduh CSV |
@@ -630,29 +645,32 @@ Tabel 31. Daftar komponen
 
 | Komponen | Varian | State | Aturan |
 |---|---|---|---|
+| Kepala aplikasi | Satu | Tetap | Bilah merek plum (56/64 px) menempel di atas konten; berisi nama aplikasi dan meja yang dipegang. |
+| Kartu | Satu | – | Permukaan putih, garis tepi ink-200, radius 20 px, bayangan tipis; label seksi memakai warna merek. |
 | Tombol | Utama, Sekunder, Tersier (tautan), Bahaya, Ikon kembali | Default, ditekan, fokus, nonaktif, memuat | Tinggi 52 px; satu tombol utama per layar; teks berupa kata kerja; saat memuat teks berganti "Menyimpan…" dan tombol tidak bisa ditekan ulang. |
-| Isian teks | Teks, cari, kata sandi, area teks | Default, fokus, error, nonaktif, baca saja | Label di atas, bukan placeholder; petunjuk dan error di bawah. |
-| Isian angka | Dengan satuan (kg, cm), tanpa satuan (NIK, HP) | Default, fokus, error, peringatan, baca saja | inputmode desimal; menerima koma dan titik; nilai lalu tampil di petunjuk. |
-| Kontrol segmen | 2–3 opsi | Terpilih, tidak terpilih, fokus | Dipakai untuk Telentang/Berdiri, Laki-laki/Perempuan, Ya/Tidak. |
+| Isian teks | Teks, cari, kata sandi, area teks | Default, fokus, error, nonaktif, baca saja | Kotak putih berbentuk kapsul dengan tepi ink-400 dan bayangan tipis; area teks memakai radius 20 px. Label di atas, bukan placeholder; petunjuk dan error di bawah. |
+| Isian angka | Dengan satuan (kg, cm), tanpa satuan (NIK, HP) | Default, fokus, error, peringatan, baca saja | Bingkai kapsul seperti isian teks; inputmode desimal; menerima koma dan titik; nilai lalu tampil di petunjuk. |
+| Kontrol segmen | 2–3 opsi | Terpilih, tidak terpilih, fokus | Bingkai kapsul mengikuti kotak isian. Dipakai untuk Telentang/Berdiri, Laki-laki/Perempuan, Ya/Tidak. Pilihan jenis kelamin memakai warna identitas anak (biru/pink). |
 | Kotak centang layanan | Jatuh tempo, kejar, opsional | Tercentang, kosong, nonaktif | Seluruh kartu dapat diketuk; memuat nama layanan dan alasannya. |
 | Kartu anak | Laki-laki, perempuan | Menunggu, sedang dilayani kader lain, ditunda, belum terkirim | Garis kiri 6 px dan avatar berwarna; jenis kelamin juga ditulis dalam teks; nomor antrean di kanan. |
+| Kartu hasil anak | Laki-laki, perempuan | Sudah diantre, dipilih | Garis kiri 6 px, avatar berwarna, NIK tersamar, kunjungan terakhir. Pada daftar Data Anak dapat ditambah hasil ukur terakhir, chip status imunisasi, dan aksi cepat; seluruh isi identitas menjadi tautan ke detail bila tautan tersedia. |
 | Header anak | Laki-laki, perempuan | – | Latar 700 dengan teks putih; berisi kembali, nama, umur, antrean, lencana meja. |
 | Lencana meja | Besar (44 px), kecil (34 px) | – | Selalu berwarna tinta dengan angka putih. |
 | Chip status | Normal, waspada, bahaya, bahaya berat, info | – | Selalu berisi teks kategori; bukan tombol. |
 | Banner | Bahaya, peringatan, sukses, info, offline | Tetap, dapat ditutup | Judul tebal satu baris dan penjelasan; garis kiri 5 px. |
 | Notifikasi (toast) | Sukses dengan Batal, error dengan Coba lagi | Muncul 5 detik, dapat ditutup | Muncul di atas kaki layar, tidak menutupi tombol utama. |
-| Tile angka | Ringkasan Beranda, cakupan rekap | Normal, memuat | Angka 28 px tebal dan label dua baris maksimal. |
+| Tile angka | Ringkasan Beranda, ringkasan Data Anak, cakupan rekap | Normal, memuat | Angka 28 px tebal dan label dua baris maksimal. |
 | Baris nilai | Dengan perubahan, tanpa perubahan | Ada nilai, kosong (—) | Label kiri, nilai kanan; perubahan memakai ▲ ▼ dan warna ink-600. |
 | Tab grafik | 6 tab sesuai indeks | Aktif, tidak aktif, fokus | Dapat digulir horizontal di ponsel. |
 | Grafik pertumbuhan | Laki-laki, perempuan × 11 jenis grafik | Memuat, satu titik, banyak titik, perlu ukur ulang | Lihat bagian 7.1. |
-| Navigasi | Bawah (ponsel), samping (tablet, desktop) | Aktif, tidak aktif | Empat tujuan dengan ikon dan teks. |
-| Sheet bawah | Daftar ditunda, filter, konfirmasi | Terbuka, tertutup | Radius 16 px; dapat ditutup dengan geser atau tombol Tutup. |
+| Navigasi | Bawah (ponsel), samping (tablet, desktop) | Aktif, tidak aktif | Empat tujuan dengan ikon dan teks; tujuan aktif memakai warna merek dan penanda garis. |
+| Sheet bawah | Daftar ditunda, filter, konfirmasi | Terbuka, tertutup | Radius 20 px; dapat ditutup dengan geser atau tombol Tutup. |
 | Dialog | Konfirmasi hapus | Terbuka | Hanya untuk tindakan permanen; tombol Bahaya di kanan, Batal di kiri. |
 | Kerangka (skeleton) | Kartu, baris, grafik | Memuat | Menggantikan spinner layar penuh. |
 
 ## 7.1 Komponen Grafik Pertumbuhan
 
-Grafik digambar ulang oleh aplikasi dari tabel standar, mengikuti susunan grafik pada PRD dan Buku KIA, tetapi ditambah zona warna agar kader membaca posisi anak dalam sekali lihat.
+Grafik digambar ulang oleh aplikasi dari tabel standar, mengikuti susunan grafik pada PRD dan Buku KIA, dengan dua zona warna (hijau aman, merah tidak aman) agar kader membaca posisi anak dalam sekali lihat.
 
 ![gambar-08](img/gambar-08.png)
 
@@ -664,13 +682,13 @@ Tabel 32. Anatomi grafik pertumbuhan
 |---|---|
 | Kepala kartu | Garis atas 6 px warna jenis kelamin, nama anak, indeks dan rentang umur, lencana jenis kelamin. |
 | Tab indeks | KMS, BB/U, PB/U atau TB/U, BB/PB atau BB/TB, IMT/U, LK. Label PB atau TB mengikuti umur anak. |
-| Zona latar | Area di antara garis z-score diwarnai sesuai kategori indeks (token 3.4), opasitas 55 %. |
+| Zona latar | Dua warna sesuai token 3.4: hijau untuk area di dalam batas normal, merah untuk di luar batas normal, opasitas 55 %. |
 | Garis z-score | Warna Buku KIA; BB/U dan PB/U atau TB/U memakai garis −3, −2, 0, +2, +3; indeks lain menambah ±1. |
 | Label garis | Pil kecil di ujung kanan berisi 0, +2, −3, dan seterusnya dengan warna garisnya. |
 | Titik anak | Kunjungan lalu: lingkaran putih bergaris warna jenis kelamin. Hari ini: lingkaran penuh dengan halo. Dihubungkan garis 2 px. |
 | Keterangan | Kotak tinta berisi umur, nilai, z-score, dan kategori; muncul untuk titik hari ini dan saat titik lain disentuh. |
 | Sumbu | Rentang sama dengan grafik Buku KIA; label minimal 12 px; satuan di atas sumbu Y. |
-| Legenda | Di bawah grafik: kotak warna zona dan nama kategori. |
+| Legenda | Di bawah grafik: dua kotak warna, "Aman" (hijau) dan "Tidak aman" (merah), disertai catatan batas mengikuti Buku KIA. |
 | Alternatif tabel | Tombol "Lihat sebagai tabel" menampilkan tanggal, umur, nilai, z-score, dan kategori setiap kunjungan. |
 
 # 8. State Layar
@@ -714,6 +732,7 @@ Tabel 33. State layar kunci
 |  | Offline | Grafik dihitung di perangkat dari tabel standar yang tersimpan |
 | Data Anak | Memuat | Kartu kerangka |
 |  | Kosong | "Belum ada anak terdaftar" dan tautan ke Meja 1 |
+|  | Tanpa hasil | "Tidak ditemukan. Ubah pencarian atau penyaring."; ringkasan semua anak tetap tampil utuh |
 |  | Error | Banner error dengan Coba lagi |
 |  | Offline | Data terakhir tampil, Unduh CSV nonaktif |
 | Unduh CSV | Memuat | Tombol "Menyiapkan berkas…" |
@@ -730,6 +749,7 @@ Tabel 34. Titik henti dan perilaku tata letak
 |---|---|---|---|
 | Target utama | 360–430 px, potret | Tablet di meja, lanskap atau potret | Laptop ketua kader atau rekap |
 | Navigasi | Navigasi bawah 4 tujuan | Rel samping ikon dan teks | Sidebar 232 px |
+| Kepala aplikasi | 56 px, menempel | 56 px, menempel | 64 px, menempel |
 | Layar meja | Satu kolom: antrean dan formulir bergantian | Dua panel: antrean 320 px dan formulir | Tiga area: sidebar, antrean 300 px, detail dua kolom |
 | Tombol utama | Kaki menempel, lebar penuh | Kaki menempel di panel kanan | Di kolom kanan detail, lebar kolom |
 | Grafik | Lebar penuh kartu (minimal 320 px), tinggi 230 px | Lebar panel, tinggi 300 px | Lebar 480–640 px berdampingan dengan status gizi |

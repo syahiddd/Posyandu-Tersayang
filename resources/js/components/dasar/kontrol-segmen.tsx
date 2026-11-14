@@ -17,6 +17,7 @@ export function KontrolSegmen<T extends string>({
     wajib = false,
     galat,
     id,
+    kelasTerpilih,
 }: {
     label: string;
     nama: string;
@@ -26,6 +27,11 @@ export function KontrolSegmen<T extends string>({
     wajib?: boolean;
     galat?: string;
     id?: string;
+    /**
+     * Kelas latar opsi terpilih, mis. warna jenis kelamin (biru/pink).
+     * Bila tidak diisi, opsi terpilih memakai tinta.
+     */
+    kelasTerpilih?: (nilai: T) => string;
 }) {
     const idOtomatis = useId();
     const idGrup = id ?? idOtomatis;
@@ -57,12 +63,12 @@ export function KontrolSegmen<T extends string>({
                 role="radiogroup"
                 aria-invalid={galat ? true : undefined}
                 className={clsx(
-                    'grid min-h-control-h overflow-hidden rounded-sm border',
+                    'grid min-h-control-h overflow-hidden rounded-pill border shadow-1',
                     // Cincin fokus 3 px tinta di bingkai grup (bab 10.3).
                     'has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-ink-900',
                     galat
-                        ? 'border-2 border-status-bahaya-teks'
-                        : 'border-ink-900',
+                        ? 'border-2 border-status-bahaya-teks shadow-none'
+                        : 'border-ink-400',
                 )}
                 style={{
                     gridTemplateColumns: `repeat(${opsi.length}, minmax(0, 1fr))`,
@@ -77,7 +83,11 @@ export function KontrolSegmen<T extends string>({
                             className={clsx(
                                 'flex cursor-pointer items-center justify-center px-2 py-1 text-center text-teks leading-tight font-bold',
                                 dipilih
-                                    ? 'bg-ink-900 text-white'
+                                    ? clsx(
+                                          'text-white',
+                                          kelasTerpilih?.(item.nilai) ??
+                                              'bg-ink-900',
+                                      )
                                     : 'bg-white text-ink-900',
                             )}
                         >

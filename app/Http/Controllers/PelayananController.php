@@ -23,8 +23,8 @@ use Inertia\Inertia;
  */
 class PelayananController extends Controller
 {
-    /** Riwayat imunisasi singkat di layar (FR-31). */
-    public const JUMLAH_RIWAYAT = 2;
+    /** Riwayat imunisasi di layar: satu kunjungan sebelumnya saja (FR-31). */
+    public const JUMLAH_RIWAYAT = 1;
 
     public function __construct(private LayananAntrean $antrean) {}
 
@@ -46,7 +46,6 @@ class PelayananController extends Controller
             'vitaminA' => $rekomendasi->vitaminA(),
             'obatCacing' => $rekomendasi->obatCacing(),
             'riwayatTerakhir' => array_slice($riwayat, 0, self::JUMLAH_RIWAYAT),
-            'semuaRiwayat' => $riwayat,
             'nilaiAwal' => self::nilaiAwal($kunjungan),
         ];
     }
@@ -75,7 +74,6 @@ class PelayananController extends Controller
             'vitamin_a' => $tersimpan->firstWhere('jenis', JenisLayanan::VitaminA)->detail ?? '',
             'obat_cacing' => $tersimpan->contains('jenis', JenisLayanan::ObatCacing),
             'catatan_pelayanan' => $kunjungan->catatan_pelayanan ?? '',
-            'catatan_penyuluhan' => $kunjungan->catatan_penyuluhan ?? '',
         ];
     }
 
@@ -128,7 +126,6 @@ class PelayananController extends Controller
 
             $kunjungan->update([
                 'catatan_pelayanan' => filled($data['catatan_pelayanan'] ?? null) ? trim($data['catatan_pelayanan']) : null,
-                'catatan_penyuluhan' => filled($data['catatan_penyuluhan'] ?? null) ? trim($data['catatan_penyuluhan']) : null,
             ]);
 
             $this->antrean->teruskan($kunjungan, $request->user());
