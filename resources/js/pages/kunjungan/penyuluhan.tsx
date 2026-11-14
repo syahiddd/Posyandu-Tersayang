@@ -166,6 +166,7 @@ export default function Penyuluhan(props: Props) {
 
     const wajib = alasanWajib.length > 0;
     const catatanKosong = form.data.catatan_tindak_lanjut.trim() === '';
+    const belumBolehSelesai = wajib && catatanKosong;
 
     const keterangan = [
         anak.jenisKelamin === 'L' ? 'Laki-laki' : 'Perempuan',
@@ -251,6 +252,17 @@ export default function Penyuluhan(props: Props) {
 
     function kirim(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+
+        if (belumBolehSelesai) {
+            document
+                .querySelector<HTMLTextAreaElement>(
+                    '[name="catatan_tindak_lanjut"]',
+                )
+                ?.focus();
+
+            return;
+        }
+
         form.post(selesai.url(anak.id));
     }
 
@@ -861,7 +873,23 @@ export default function Penyuluhan(props: Props) {
                                     placeholder="Contoh: rujuk ke puskesmas, kontrol ulang bulan depan"
                                 />
 
-                                <KakiTombol denganNavigasi={false}>
+                                {/* Petunjuk ikut menempel bersama tombol, dan
+                                    tombol tetap bisa difokus (aria-disabled)
+                                    agar alasannya terbaca (DESIGN 5.7). */}
+                                <KakiTombol
+                                    denganNavigasi={false}
+                                    petunjuk={
+                                        belumBolehSelesai && (
+                                            <p
+                                                id="petunjuk-selesai"
+                                                className="pb-2 text-keterangan font-bold text-status-bahaya-teks"
+                                            >
+                                                Isi catatan tindak lanjut dulu
+                                                sebelum menekan Selesai.
+                                            </p>
+                                        )
+                                    }
+                                >
                                     <Tombol
                                         varian="sekunder"
                                         className="shrink-0"
@@ -877,25 +905,19 @@ export default function Penyuluhan(props: Props) {
                                         type="submit"
                                         lebarPenuh
                                         memuat={form.processing}
-                                        disabled={wajib && catatanKosong}
+                                        aria-disabled={
+                                            belumBolehSelesai || undefined
+                                        }
                                         aria-describedby={
-                                            wajib && catatanKosong
+                                            belumBolehSelesai
                                                 ? 'petunjuk-selesai'
                                                 : undefined
                                         }
+                                        className="aria-disabled:cursor-not-allowed aria-disabled:bg-ink-200 aria-disabled:text-ink-500"
                                     >
                                         Selesai
                                     </Tombol>
                                 </KakiTombol>
-                                {wajib && catatanKosong && (
-                                    <p
-                                        id="petunjuk-selesai"
-                                        className="-mt-2 text-keterangan font-bold text-status-bahaya-teks"
-                                    >
-                                        Isi catatan tindak lanjut dulu sebelum
-                                        menekan Selesai.
-                                    </p>
-                                )}
                             </>
                         }
                     />
