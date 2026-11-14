@@ -1,4 +1,12 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import {
+    Building2,
+    CircleCheck,
+    Scale,
+    Syringe,
+    UserPlus,
+    Users,
+} from 'lucide-react';
 import { ChipStatus } from '@/components/dasar/chip-status';
 import { KakiTombol } from '@/components/dasar/kaki-tombol';
 import { Kartu } from '@/components/dasar/kartu';
@@ -47,14 +55,17 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
                         <TileAngka
                             angka={ringkasan.terdaftar}
                             label="Terdaftar hari ini"
+                            ikon={UserPlus}
                         />
                         <TileAngka
                             angka={ringkasan.sudahDitimbang}
                             label="Sudah ditimbang"
+                            ikon={Scale}
                         />
                         <TileAngka
                             angka={ringkasan.selesai}
                             label="Selesai dilayani"
+                            ikon={CircleCheck}
                         />
                     </div>
                     {ringkasan.terdaftar === 0 && (
@@ -78,22 +89,34 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
                     <Kartu labelSeksi="Menu lain">
                         <ul className="divide-y divide-ink-200">
                             {[
-                                { label: 'Data Anak', href: dataAnak().url },
+                                {
+                                    label: 'Data Anak',
+                                    href: dataAnak().url,
+                                    ikon: Users,
+                                },
                                 {
                                     label: 'Rekap Imunisasi',
                                     href: rekapImunisasi().url,
+                                    ikon: Syringe,
                                 },
                                 {
                                     label: 'Data Posyandu',
                                     href: dataPosyandu().url,
+                                    ikon: Building2,
                                 },
-                            ].map((menu) => (
-                                <li key={menu.label}>
+                            ].map(({ label, href, ikon: Ikon }) => (
+                                <li key={label}>
                                     <Link
-                                        href={menu.href}
-                                        className="flex min-h-target-min items-center py-2 text-teks font-bold text-ink-900 underline underline-offset-4"
+                                        href={href}
+                                        className="flex min-h-target-min items-center gap-3 py-2 text-teks font-bold text-ink-900"
                                     >
-                                        {menu.label}
+                                        <Ikon
+                                            aria-hidden="true"
+                                            className="size-5 shrink-0"
+                                        />
+                                        <span className="underline underline-offset-4">
+                                            {label}
+                                        </span>
                                     </Link>
                                 </li>
                             ))}

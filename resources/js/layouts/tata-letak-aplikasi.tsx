@@ -1,5 +1,15 @@
 import { Link, usePage } from '@inertiajs/react';
-import { ClipboardList, House, LayoutGrid, Users } from 'lucide-react';
+import {
+    ArrowLeftRight,
+    Building2,
+    ClipboardList,
+    House,
+    LayoutGrid,
+    LogOut,
+    Syringe,
+    UserCog,
+    Users,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import {
     NavigasiBawah,
@@ -78,28 +88,37 @@ export default function TataLetakAplikasi({
         },
     ];
 
-    const itemSidebar = [
-        { label: 'Beranda', href: beranda().url, aktif: aktif(beranda().url) },
+    const itemSidebar: ItemNavigasi[] = [
+        {
+            label: 'Beranda',
+            href: beranda().url,
+            ikon: House,
+            aktif: aktif(beranda().url),
+        },
         {
             label: mejaAktif
                 ? `Meja ${mejaAktif.nomor} · ${mejaAktif.tahap}`
                 : 'Meja',
             href: urlMeja,
+            ikon: ClipboardList,
             aktif: diMeja,
         },
         {
             label: 'Data Anak',
             href: dataAnak().url,
+            ikon: Users,
             aktif: diBawah(dataAnak().url),
         },
         {
             label: 'Rekap Imunisasi',
             href: rekapImunisasi().url,
+            ikon: Syringe,
             aktif: aktif(rekapImunisasi().url),
         },
         {
             label: 'Data Posyandu',
             href: dataPosyandu().url,
+            ikon: Building2,
             aktif: diBawah(dataPosyandu().url),
         },
         ...(bolehKelolaAkun
@@ -107,6 +126,7 @@ export default function TataLetakAplikasi({
                   {
                       label: 'Pengaturan Akun',
                       href: pengaturanAkun().url,
+                      ikon: UserCog,
                       aktif: diBawah(pengaturanAkun().url),
                   },
               ]
@@ -114,7 +134,7 @@ export default function TataLetakAplikasi({
     ];
 
     const kelasAksiSidebar =
-        'flex min-h-target-min w-full cursor-pointer items-center rounded-md px-3 text-left text-teks text-ink-700 hover:bg-ink-100';
+        'flex min-h-target-min w-full cursor-pointer items-center gap-3 rounded-md px-3 text-left text-teks text-ink-700 transition-colors hover:bg-ink-100 hover:text-ink-900 active:bg-ink-200';
 
     return (
         <div className="toast-di-atas-navigasi min-h-dvh bg-paper">
@@ -131,6 +151,10 @@ export default function TataLetakAplikasi({
                 kaki={
                     <>
                         <Link href={pilihMeja()} className={kelasAksiSidebar}>
+                            <ArrowLeftRight
+                                aria-hidden="true"
+                                className="size-5 shrink-0"
+                            />
                             Ganti meja
                         </Link>
                         <Link
@@ -138,6 +162,10 @@ export default function TataLetakAplikasi({
                             as="button"
                             className={kelasAksiSidebar}
                         >
+                            <LogOut
+                                aria-hidden="true"
+                                className="size-5 shrink-0"
+                            />
                             Keluar
                         </Link>
                     </>

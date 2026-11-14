@@ -1,4 +1,5 @@
 import { clsx } from 'clsx';
+import { Eye, EyeOff } from 'lucide-react';
 import { useId, useState } from 'react';
 import type { ComponentProps } from 'react';
 import { Bidang, deskripsiIsian, kelasBingkai } from './bidang';
@@ -40,18 +41,7 @@ export function IsianTeks({
     const idIsian = id ?? idOtomatis;
     const [tampilkanSandi, setTampilkanSandi] = useState(false);
 
-    const tombolTampilkan =
-        jenis === 'kata-sandi' ? (
-            <button
-                type="button"
-                aria-controls={idIsian}
-                aria-pressed={tampilkanSandi}
-                onClick={() => setTampilkanSandi((nilai) => !nilai)}
-                className="-my-3 inline-flex min-h-target-min cursor-pointer items-center px-1 text-kecil text-ink-900 underline underline-offset-4"
-            >
-                {tampilkanSandi ? 'Sembunyikan' : 'Tampilkan'}
-            </button>
-        ) : null;
+    const IkonSandi = tampilkanSandi ? EyeOff : Eye;
 
     const type = {
         'kata-sandi': tampilkanSandi ? 'text' : 'password',
@@ -68,7 +58,6 @@ export function IsianTeks({
             id={idIsian}
             label={label}
             wajib={wajib}
-            kananLabel={tombolTampilkan}
             petunjuk={petunjuk}
             galat={galat}
             className={className}
@@ -90,9 +79,24 @@ export function IsianTeks({
                         kelasBingkai({ galat, bacaSaja }),
                         'h-control-h px-4 text-teks',
                         jenis === 'cari' && onHapus && adaIsi && 'pr-20',
+                        jenis === 'kata-sandi' && 'pr-7',
                     )}
                     {...props}
                 />
+                {/* Ikon mata tanpa teks atas permintaan pemilik produk;
+                    nama tombol tetap terbaca pembaca layar. */}
+                {jenis === 'kata-sandi' && (
+                    <button
+                        type="button"
+                        aria-label="Tampilkan kata sandi"
+                        aria-controls={idIsian}
+                        aria-pressed={tampilkanSandi}
+                        onClick={() => setTampilkanSandi((nilai) => !nilai)}
+                        className="absolute inset-y-0 right-0 inline-flex min-w-target-min cursor-pointer items-center justify-center text-ink-900"
+                    >
+                        <IkonSandi aria-hidden="true" className="size-6" />
+                    </button>
+                )}
                 {jenis === 'cari' && onHapus && adaIsi && (
                     <button
                         type="button"
