@@ -235,9 +235,10 @@ export default function DataPosyandu({
                     </Kartu>
 
                     <Kartu labelSeksi="Status gizi dan risiko stunting">
-                        <Banner varian="info" judul="Belum dapat dihitung">
+                        <Banner varian="info" judul="Belum tersedia">
                             Jumlah anak per status gizi dan risiko stunting
-                            tampil setelah tabel standar WHO dipasang.
+                            belum dihitung di versi ini. Status gizi tiap anak
+                            tampil di Meja 5 dan di Detail Anak.
                         </Banner>
                     </Kartu>
                 </section>
