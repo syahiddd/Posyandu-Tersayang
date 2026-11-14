@@ -45,7 +45,9 @@ function parameter(penyaring: PenyaringDataAnak) {
  * S14 Data Anak (FR-50, DESIGN 6.5): ringkasan seluruh anak di atas daftar
  * (FR-69), pencarian dan penyaring dalam satu kartu, lalu daftar kartu anak
  * dengan NIK tersamar (NFR-05), hasil ukur terakhir, status imunisasi
- * (FR-70), dan aksi cepat ke grafik/KMS (FR-71).
+ * (FR-70), dan aksi cepat ke grafik/KMS (FR-71). Penyaring berupa pilihan
+ * tarik-turun, bukan chip seperti di DESIGN 6.5, atas permintaan pemilik
+ * produk.
  */
 export default function DaftarDataAnak({
     penyaring,
@@ -105,112 +107,95 @@ export default function DaftarDataAnak({
                     )}
                 </header>
 
-                <IsianTeks
-                    ref={refCari}
-                    jenis="cari"
-                    label="Cari anak"
-                    petunjuk="Nama anak, nama ibu, atau NIK (minimal 3 huruf atau 4 angka)"
-                    value={kata}
-                    onChange={(event) => setKata(event.target.value)}
-                    onHapus={() => {
-                        setKata('');
-                        refCari.current?.focus();
-                    }}
-                    autoComplete="off"
-                    enterKeyHint="search"
-                />
+                {adaAnak && (
+                    <section aria-labelledby="judul-statistik">
+                        <h2
+                            id="judul-statistik"
+                            className="mb-2 text-label-seksi text-ink-600 uppercase"
+                        >
+                            Ringkasan semua anak
+                        </h2>
+                        <div className="grid grid-cols-2 gap-3 max-[359px]:gap-2 desktop:grid-cols-4">
+                            <TileAngka
+                                angka={statistik.total}
+                                label="Total anak"
+                                ikon={Users}
+                                className="min-h-[60px]"
+                            />
+                            <TileAngka
+                                angka={statistik.lakiLaki}
+                                label="Laki-laki"
+                                ikon={User}
+                                className="min-h-[60px]"
+                            />
+                            <TileAngka
+                                angka={statistik.perempuan}
+                                label="Perempuan"
+                                ikon={User}
+                                className="min-h-[60px]"
+                            />
+                            <TileAngka
+                                angka={statistik.belumDitimbangBulanIni}
+                                label="Belum ditimbang bulan ini"
+                                ikon={Scale}
+                                className="min-h-[60px]"
+                            />
+                        </div>
+                        <p className="mt-2 text-keterangan text-ink-600">
+                            Untuk seluruh anak posyandu; tidak mengikuti
+                            pencarian dan penyaring di bawah.
+                        </p>
+                    </section>
+                )}
 
-                <div className="grid gap-3 tablet:grid-cols-3">
-                    <PilihPenyaring
-                        id="penyaring-jk"
-                        label="Jenis kelamin"
-                        nilai={penyaring.jk}
-                        onUbah={(jk) =>
-                            saring({ jk: jk as JenisKelamin | null })
-                        }
-                        opsi={[
-                            { nilai: 'L', label: 'Laki-laki' },
-                            { nilai: 'P', label: 'Perempuan' },
-                        ]}
-                    />
-                    <PilihPenyaring
-                        id="penyaring-umur"
-                        label="Kelompok umur"
-                        nilai={penyaring.umur}
-                        onUbah={(umur) => saring({ umur })}
-                        opsi={daftarKelompokUmur}
-                    />
-                    {daftarDusun.length > 1 && (
-                        <PilihPenyaring
-                            id="penyaring-dusun"
-                            label="Dusun"
-                            nilai={penyaring.dusun}
-                            onUbah={(dusun) => saring({ dusun })}
-                            opsi={daftarDusun.map((dusun) => ({
-                                nilai: dusun,
-                                label: dusun,
-                            }))}
+                <Kartu labelSeksi="Cari & saring">
+                    <div className="flex flex-col gap-3">
+                        <IsianTeks
+                            ref={refCari}
+                            jenis="cari"
+                            label="Cari anak"
+                            petunjuk="Nama anak, nama ibu, atau NIK (minimal 3 huruf atau 4 angka)"
+                            value={kata}
+                            onChange={(event) => setKata(event.target.value)}
+                            onHapus={() => {
+                                setKata('');
+                                refCari.current?.focus();
+                            }}
+                            autoComplete="off"
+                            enterKeyHint="search"
                         />
 
-                        <div className="flex flex-col gap-3">
-                            {/* Jenis Kelamin - menggunakan select dropdown */}
-                            <select
-                                className="h-control-h w-full rounded-pill border border-ink-300 bg-white px-4 text-teks text-ink-900 placeholder:text-ink-500 focus:border-brand-700 focus:outline-none"
-                                value={penyaring.jk ?? ''}
-                                onChange={(e) =>
-                                    saring({
-                                        jk: e.target
-                                            .value as JenisKelamin | null,
-                                    })
+                        <div className="grid gap-3 tablet:grid-cols-3">
+                            <PilihPenyaring
+                                id="penyaring-jk"
+                                label="Jenis kelamin"
+                                nilai={penyaring.jk}
+                                onUbah={(jk) =>
+                                    saring({ jk: jk as JenisKelamin | null })
                                 }
-                            >
-                                <option value="">Semua</option>
-                                <option
-                                    value="L"
-                                    className="font-bold text-ink-900"
-                                >
-                                    Laki-laki
-                                </option>
-                                <option
-                                    value="P"
-                                    className="font-bold text-ink-900"
-                                >
-                                    Perempuan
-                                </option>
-                            </select>
-
-                            {/* Kelompok Umur - menggunakan select dropdown */}
-                            <select
-                                className="h-control-h w-full rounded-pill border border-ink-300 bg-white px-4 text-teks text-ink-900 placeholder:text-ink-500 focus:border-brand-700 focus:outline-none"
-                                value={penyaring.umur ?? ''}
-                                onChange={(e) =>
-                                    saring({ umur: e.target.value })
-                                }
-                            >
-                                <option value="">Semua</option>
-                                {daftarKelompokUmur.map((satu) => (
-                                    <option key={satu.nilai} value={satu.nilai}>
-                                        {satu.label}
-                                    </option>
-                                ))}
-                            </select>
-
-                            {/* Dusun - menggunakan select dropdown (hanya muncul > 1 dusun) */}
+                                opsi={[
+                                    { nilai: 'L', label: 'Laki-laki' },
+                                    { nilai: 'P', label: 'Perempuan' },
+                                ]}
+                            />
+                            <PilihPenyaring
+                                id="penyaring-umur"
+                                label="Kelompok umur"
+                                nilai={penyaring.umur}
+                                onUbah={(umur) => saring({ umur })}
+                                opsi={daftarKelompokUmur}
+                            />
                             {daftarDusun.length > 1 && (
-                                <select
-                                    className="h-control-h w-full rounded-pill border border-ink-300 bg-white px-4 text-teks text-ink-900 placeholder:text-ink-500 focus:border-brand-700 focus:outline-none"
-                                    value={penyaring.dusun ?? ''}
-                                    onChange={(e) =>
-                                        saring({ dusun: e.target.value })
-                                    }
-                                >
-                                    <option value="">Semua</option>
-                                    {daftarDusun.map((dusun) => (
-                                        <option key={dusun} value={dusun}>
-                                            {dusun}
-                                        </option>
-                                    ))}
-                                </select>
+                                <PilihPenyaring
+                                    id="penyaring-dusun"
+                                    label="Dusun"
+                                    nilai={penyaring.dusun}
+                                    onUbah={(dusun) => saring({ dusun })}
+                                    opsi={daftarDusun.map((dusun) => ({
+                                        nilai: dusun,
+                                        label: dusun,
+                                    }))}
+                                />
                             )}
                         </div>
                     </div>
