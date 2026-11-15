@@ -80,6 +80,9 @@
     --color-garis-z3: #1b2333;
     --color-zona-aman: #d9efdf;
     --color-zona-tidak-aman: #f6c7c2;
+    /* Versi lembut untuk latar area grafik agar garis z tetap terbaca. */
+    --color-zona-aman-lembut: #eef8f1;
+    --color-zona-tidak-aman-lembut: #fdf0ee;
 
     /* 3.5 Tipografi (Tabel 8) */
     --font-*: initial;

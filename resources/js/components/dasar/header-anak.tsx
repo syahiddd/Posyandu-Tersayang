@@ -8,6 +8,9 @@ import { LencanaMeja } from './lencana-meja';
  * Header anak (DESIGN bab 7): latar 700 sesuai jenis kelamin (FR-67) dengan
  * teks putih, tombol kembali bertulisan, nama, keterangan, lencana meja.
  * Sebelum jenis kelamin dipilih (formulir Tambah Anak) header netral.
+ *
+ * Gradien dibuat dua arah (pink → plum untuk perempuan, biru → navy untuk
+ * laki-laki) dengan pendar lembut di sudut agar tidak terlihat datar.
  */
 export function HeaderAnak({
     nama,
@@ -34,7 +37,7 @@ export function HeaderAnak({
     return (
         <header
             className={clsx(
-                'transition-colors',
+                'relative isolate overflow-hidden transition-colors',
                 jenisKelamin === 'L' &&
                     'bg-gradient-to-br from-boy-700 via-boy-700 to-ink-900 text-white',
                 jenisKelamin === 'P' &&
@@ -42,9 +45,27 @@ export function HeaderAnak({
                 !berwarna && 'border-b border-ink-200 bg-white text-ink-900',
             )}
         >
+            {berwarna && (
+                <>
+                    <span
+                        aria-hidden="true"
+                        className={clsx(
+                            'pointer-events-none absolute -top-16 -right-10 size-44 rounded-pill blur-3xl',
+                            jenisKelamin === 'L'
+                                ? 'bg-boy-100/25'
+                                : 'bg-girl-100/25',
+                        )}
+                    />
+                    <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -bottom-20 -left-14 size-40 rounded-pill bg-brand-600/25 blur-3xl"
+                    />
+                </>
+            )}
             <div
                 className={clsx(
                     'mx-auto flex w-full max-w-2xl flex-col gap-2 px-4 pt-2 pb-4 tablet:px-5',
+                    berwarna && 'relative',
                     selebarPanel && 'panel:mx-0 panel:max-w-none panel:px-6',
                 )}
             >
@@ -71,7 +92,19 @@ export function HeaderAnak({
                 </div>
                 <div>
                     <h1 className="text-judul-1">{nama}</h1>
-                    {keterangan && <p className="text-teks">{keterangan}</p>}
+                    {keterangan && (
+                        <p
+                            className={clsx(
+                                'text-teks',
+                                berwarna &&
+                                    (jenisKelamin === 'L'
+                                        ? 'text-boy-100'
+                                        : 'text-girl-100'),
+                            )}
+                        >
+                            {keterangan}
+                        </p>
+                    )}
                 </div>
             </div>
         </header>
