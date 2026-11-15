@@ -79,7 +79,7 @@ export function IsianTeks({
                         kelasBingkai({ galat, bacaSaja }),
                         'h-control-h px-4 text-teks',
                         jenis === 'cari' && onHapus && adaIsi && 'pr-20',
-                        jenis === 'kata-sandi' && 'pr-7',
+                        jenis === 'kata-sandi' && 'pr-14',
                     )}
                     {...props}
                 />
