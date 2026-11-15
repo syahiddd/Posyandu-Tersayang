@@ -1,4 +1,5 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { CalendarClock, Ruler, Scale, Stethoscope } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Banner } from '@/components/dasar/banner';
@@ -6,11 +7,10 @@ import { ChipStatus } from '@/components/dasar/chip-status';
 import { HeaderAnak } from '@/components/dasar/header-anak';
 import { IsianAngka } from '@/components/dasar/isian-angka';
 import { KakiTombol } from '@/components/dasar/kaki-tombol';
-import { Kartu } from '@/components/dasar/kartu';
 import { KontrolSegmen } from '@/components/dasar/kontrol-segmen';
 import { RingkasanGalat } from '@/components/dasar/ringkasan-galat';
+import { Seksi } from '@/components/dasar/seksi';
 import { Tombol } from '@/components/dasar/tombol';
-import { DetailDuaKolom } from '@/components/detail-dua-kolom';
 import { useDaftarLayarAnak } from '@/hooks/use-layar-anak';
 import { formatDesimal } from '@/lib/desimal';
 import { periksaUkur, peringatanPerubahan } from '@/lib/pengukuran';
@@ -47,6 +47,11 @@ type Props = {
 
 /**
  * S09 Meja 2 Pengukuran (FR-18 sampai FR-23; DESIGN 5.4, 6.2, Gambar 4).
+ *
+ * Susunan: kepala anak berwarna jenis kelamin, kartu riwayat kunjungan
+ * sebelumnya sebagai pembanding, lalu dua kartu seksi berisi isian ukur.
+ * Isian pendek berpasangan dua kolom di tablet agar tidak perlu banyak
+ * menggulir; tombol simpan tetap menempel di kaki layar.
  */
 export default function Pengukuran({
     anak,
@@ -176,7 +181,7 @@ export default function Pengukuran({
                     selebarPanel
                 />
 
-                <div className="@container mx-auto flex w-full max-w-2xl flex-1 flex-col gap-5 px-4 pt-5 tablet:px-5 panel:mx-0 panel:max-w-5xl panel:px-6">
+                <div className="@container mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-4 pb-2 tablet:px-5 panel:mx-0 panel:max-w-5xl panel:px-6">
                     {galatServer.kunjungan && (
                         <Banner varian="bahaya">{galatServer.kunjungan}</Banner>
                     )}
@@ -203,62 +208,94 @@ export default function Pengukuran({
                             {peringatan.join(' ')} Tetap boleh disimpan.
                         </Banner>
                     )}
-                    {sebelumnya ? (
-                        <Kartu
-                            labelSeksi="1 kunjungan sebelumnya"
-                            aria-label="Riwayat penimbangan kunjungan sebelumnya"
-                        >
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                <p className="text-teks font-bold text-ink-900">
-                                    {sebelumnya.tanggalLengkap}
-                                </p>
-                                <ChipStatus varian="info">
-                                    {sebelumnya.sumber === 'buku_kia'
-                                        ? 'Buku KIA'
-                                        : 'Posyandu'}
-                                </ChipStatus>
-                            </div>
-                            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 tablet:grid-cols-4">
-                                {(
-                                    [
-                                        ['Berat badan', sebelumnya.bb, 'kg'],
-                                        [
-                                            'Panjang/tinggi badan',
-                                            sebelumnya.pb_tb,
-                                            'cm',
-                                        ],
-                                        [
-                                            'Lingkar lengan atas',
-                                            sebelumnya.lila,
-                                            'cm',
-                                        ],
-                                        ['Lingkar kepala', sebelumnya.lk, 'cm'],
-                                    ] as const
-                                ).map(([label, nilai, satuan]) => (
-                                    <div
-                                        key={label}
-                                        className="flex flex-col rounded-md bg-brand-50 px-3 py-2"
-                                    >
-                                        <dt className="text-kecil text-ink-700">
-                                            {label}
-                                        </dt>
-                                        <dd className="text-judul-2 text-ink-900 tabular-nums">
-                                            {nilaiTampil(nilai, satuan)}
-                                        </dd>
-                                    </div>
-                                ))}
-                            </dl>
-                        </Kartu>
-                    ) : (
-                        <p className="text-kecil text-ink-700">
-                            Kunjungan pertama, belum ada nilai pembanding.
-                        </p>
-                    )}
 
-                    <DetailDuaKolom
-                        className="gap-5"
-                        kiri={
+                    <p className="flex items-start gap-2 rounded-md border border-brand-100 bg-brand-50 px-3 py-2.5 text-keterangan leading-relaxed text-ink-700">
+                        <Scale
+                            aria-hidden="true"
+                            className="mt-0.5 size-4 shrink-0 text-brand-600"
+                        />
+                        <span>
+                            Ukur anak dengan alat yang sudah dikalibrasi, lalu
+                            tulis hasilnya. Berat badan dan{' '}
+                            {labelPbTb.toLowerCase()} wajib diisi.
+                        </span>
+                    </p>
+
+                    <Seksi
+                        judul={
+                            sebelumnya
+                                ? 'Kunjungan sebelumnya'
+                                : 'Kunjungan pertama'
+                        }
+                        ikon={CalendarClock}
+                        isiClassName="px-3.5 py-3"
+                    >
+                        {sebelumnya ? (
                             <>
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <p className="text-kecil font-bold text-ink-900">
+                                        {sebelumnya.tanggalLengkap}
+                                    </p>
+                                    <ChipStatus varian="info">
+                                        {sebelumnya.sumber === 'buku_kia'
+                                            ? 'Buku KIA'
+                                            : 'Posyandu'}
+                                    </ChipStatus>
+                                </div>
+                                <dl className="mt-2.5 grid grid-cols-2 gap-2 tablet:grid-cols-4">
+                                    {(
+                                        [
+                                            [
+                                                'Berat badan',
+                                                sebelumnya.bb,
+                                                'kg',
+                                            ],
+                                            [
+                                                'Panjang/tinggi badan',
+                                                sebelumnya.pb_tb,
+                                                'cm',
+                                            ],
+                                            [
+                                                'Lingkar lengan atas',
+                                                sebelumnya.lila,
+                                                'cm',
+                                            ],
+                                            [
+                                                'Lingkar kepala',
+                                                sebelumnya.lk,
+                                                'cm',
+                                            ],
+                                        ] as const
+                                    ).map(([label, nilai, satuan]) => (
+                                        <div
+                                            key={label}
+                                            className="flex flex-col rounded-md border border-brand-100 bg-brand-50/70 px-2.5 py-2"
+                                        >
+                                            <dt className="text-keterangan leading-snug text-ink-600">
+                                                {label}
+                                            </dt>
+                                            <dd className="text-teks font-bold text-ink-900 tabular-nums">
+                                                {nilaiTampil(nilai, satuan)}
+                                            </dd>
+                                        </div>
+                                    ))}
+                                </dl>
+                            </>
+                        ) : (
+                            <p className="text-kecil leading-relaxed text-ink-700">
+                                Belum ada nilai pembanding. Hasil ukur hari ini
+                                akan menjadi acuan kunjungan berikutnya.
+                            </p>
+                        )}
+                    </Seksi>
+
+                    <div className="grid grid-cols-1 gap-4 panel:grid-cols-2">
+                        <Seksi
+                            judul="Ukuran utama"
+                            ikon={Ruler}
+                            isiClassName="px-3.5 py-3.5"
+                        >
+                            <div className="flex flex-col gap-4">
                                 <IsianAngka
                                     id="isian-bb"
                                     name="bb"
@@ -274,46 +311,50 @@ export default function Pengukuran({
                                     galat={galat('bb')}
                                 />
 
-                                <div className="flex flex-col gap-3">
-                                    <IsianAngka
-                                        id="isian-pb_tb"
-                                        name="pb_tb"
-                                        label={labelPbTb}
-                                        satuan="cm"
-                                        wajib
-                                        nilai={form.data.pb_tb}
-                                        onUbah={(nilai) =>
-                                            form.setData('pb_tb', nilai)
-                                        }
-                                        onBlur={() => periksa('pb_tb')}
-                                        nilaiLalu={nilaiLalu('pb_tb', 'cm')}
-                                        galat={galat('pb_tb')}
-                                    />
-                                    <KontrolSegmen
-                                        id="isian-cara_ukur"
-                                        label="Cara ukur"
-                                        nama="cara_ukur"
-                                        opsi={[
-                                            {
-                                                nilai: 'telentang',
-                                                label: 'Telentang',
-                                            },
-                                            {
-                                                nilai: 'berdiri',
-                                                label: 'Berdiri',
-                                            },
-                                        ]}
-                                        nilai={form.data.cara_ukur}
-                                        onUbah={(nilai) =>
-                                            form.setData('cara_ukur', nilai)
-                                        }
-                                        galat={galat('cara_ukur')}
-                                    />
-                                </div>
-                            </>
-                        }
-                        kanan={
-                            <>
+                                <IsianAngka
+                                    id="isian-pb_tb"
+                                    name="pb_tb"
+                                    label={labelPbTb}
+                                    satuan="cm"
+                                    wajib
+                                    nilai={form.data.pb_tb}
+                                    onUbah={(nilai) =>
+                                        form.setData('pb_tb', nilai)
+                                    }
+                                    onBlur={() => periksa('pb_tb')}
+                                    nilaiLalu={nilaiLalu('pb_tb', 'cm')}
+                                    galat={galat('pb_tb')}
+                                />
+
+                                <KontrolSegmen
+                                    id="isian-cara_ukur"
+                                    label="Cara ukur"
+                                    nama="cara_ukur"
+                                    opsi={[
+                                        {
+                                            nilai: 'telentang',
+                                            label: 'Telentang',
+                                        },
+                                        {
+                                            nilai: 'berdiri',
+                                            label: 'Berdiri',
+                                        },
+                                    ]}
+                                    nilai={form.data.cara_ukur}
+                                    onUbah={(nilai) =>
+                                        form.setData('cara_ukur', nilai)
+                                    }
+                                    galat={galat('cara_ukur')}
+                                />
+                            </div>
+                        </Seksi>
+
+                        <Seksi
+                            judul="Ukuran tambahan"
+                            ikon={Stethoscope}
+                            isiClassName="px-3.5 py-3.5"
+                        >
+                            <div className="flex flex-col gap-4">
                                 <IsianAngka
                                     id="isian-lila"
                                     name="lila"
@@ -342,30 +383,34 @@ export default function Pengukuran({
                                     nilaiLalu={nilaiLalu('lk', 'cm')}
                                     galat={galat('lk')}
                                 />
+                                <p className="rounded-md bg-brand-50 px-2.5 py-2 text-keterangan leading-relaxed text-ink-700">
+                                    LiLA dan lingkar kepala dianjurkan agar
+                                    status gizi lebih akurat.
+                                </p>
+                            </div>
+                        </Seksi>
+                    </div>
 
-                                <KakiTombol denganNavigasi={false}>
-                                    <Tombol
-                                        varian="sekunder"
-                                        className="shrink-0"
-                                        onClick={() =>
-                                            router.post(tunda.url(anak.id), {
-                                                draf: form.data,
-                                            })
-                                        }
-                                    >
-                                        Tunda
-                                    </Tombol>
-                                    <Tombol
-                                        type="submit"
-                                        lebarPenuh
-                                        memuat={form.processing}
-                                    >
-                                        Simpan · ke Meja 3
-                                    </Tombol>
-                                </KakiTombol>
-                            </>
-                        }
-                    />
+                    <KakiTombol denganNavigasi={false}>
+                        <Tombol
+                            varian="sekunder"
+                            className="shrink-0"
+                            onClick={() =>
+                                router.post(tunda.url(anak.id), {
+                                    draf: form.data,
+                                })
+                            }
+                        >
+                            Tunda
+                        </Tombol>
+                        <Tombol
+                            type="submit"
+                            lebarPenuh
+                            memuat={form.processing}
+                        >
+                            Simpan · ke Meja 3
+                        </Tombol>
+                    </KakiTombol>
                 </div>
             </form>
         </>

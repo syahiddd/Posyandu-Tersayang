@@ -1,4 +1,24 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
+import {
+    Activity,
+    AlertTriangle,
+    Baby,
+    BookOpen,
+    CalendarDays,
+    ClipboardList,
+    Eye,
+    History,
+    LineChart,
+    ListChecks,
+    MessageSquareText,
+    Ruler,
+    ShieldAlert,
+    Sparkles,
+    Stethoscope,
+    Syringe,
+    TrendingUp,
+    Utensils,
+} from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Banner } from '@/components/dasar/banner';
@@ -7,8 +27,8 @@ import type { VarianChip } from '@/components/dasar/chip-status';
 import { HeaderAnak } from '@/components/dasar/header-anak';
 import { AreaTeks, IsianTeks } from '@/components/dasar/isian-teks';
 import { KakiTombol } from '@/components/dasar/kaki-tombol';
-import { Kartu } from '@/components/dasar/kartu';
 import { KotakCentangLayanan } from '@/components/dasar/kotak-centang-layanan';
+import { Seksi } from '@/components/dasar/seksi';
 import { SheetBawah } from '@/components/dasar/sheet-bawah';
 import { Tab } from '@/components/dasar/tab';
 import { Tombol, TombolTautan } from '@/components/dasar/tombol';
@@ -180,6 +200,13 @@ function tambahSekaliSaja(daftar: string[], nilai: string): string[] {
  * S12 Meja 5 Penyuluhan (FR-37 sampai FR-46; DESIGN 5.7, 6.4, Gambar 6
  * dan 10): banner risiko, status gizi per indeks, grafik, status N/T,
  * layanan, deteksi stunting, materi, Isi Piringku, catatan tindak lanjut.
+ *
+ * Susunan: banner risiko di paling atas, kartu ringkasan sekali lihat, lalu
+ * dua kolom. Kolom kiri memuat hasil hitung dan rujukan Buku KIA (lebar lebih
+ * besar untuk grafik), kolom kanan memuat isian kader: pengamatan, materi,
+ * Isi Piringku, dan catatan tindak lanjut. Semua paragraf panjang dibuat
+ * rata kanan-kiri (justify) agar mudah dibaca, dan seluruh ukuran teks
+ * memakai skala baca biasa — tidak ada judul raksasa.
  */
 export default function Penyuluhan(props: Props) {
     const {
@@ -385,7 +412,7 @@ export default function Penyuluhan(props: Props) {
                     selebarPanel
                 />
 
-                <div className="@container mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-5 tablet:px-5 panel:mx-0 panel:max-w-6xl panel:px-6">
+                <div className="@container mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-4 pb-2 tablet:px-5 panel:mx-0 panel:max-w-6xl panel:px-6">
                     {errors.kunjungan && (
                         <Banner varian="bahaya">{errors.kunjungan}</Banner>
                     )}
@@ -400,32 +427,49 @@ export default function Penyuluhan(props: Props) {
                         </Banner>
                     )}
 
+                    <p className="flex items-start gap-2 rounded-md border border-brand-100 bg-brand-50 px-3 py-2.5 text-keterangan leading-relaxed text-ink-700">
+                        <Stethoscope
+                            aria-hidden="true"
+                            className="mt-0.5 size-4 shrink-0 text-brand-600"
+                        />
+                        <span className="text-justify">
+                            Baca hasil hitung dan rujukan Buku KIA di kolom
+                            kiri, lalu catat pengamatan dan materi yang
+                            disampaikan ke ibu di kolom kanan. Tekan Selesai
+                            untuk menutup kunjungan.
+                        </span>
+                    </p>
+
                     {/* Ringkasan sekali lihat: hasil hitung, yang sudah
                         dilakukan, dan imunisasi yang didapat hari ini. */}
-                    <Kartu labelSeksi="Ringkasan hasil kunjungan">
-                        <div className="grid gap-4 py-1 tablet:grid-cols-3">
-                            <div className="flex flex-col gap-1">
-                                <p className="text-kecil font-bold text-ink-900">
+                    <Seksi
+                        judul="Ringkasan hasil kunjungan"
+                        ikon={ClipboardList}
+                        isiClassName="px-3.5 py-3"
+                    >
+                        <div className="grid gap-3 tablet:grid-cols-3">
+                            <div className="flex flex-col gap-0.5">
+                                <p className="text-label-seksi tracking-[0.08em] text-ink-600 uppercase">
                                     Umur & jenis kelamin
                                 </p>
-                                <p className="text-judul-2 text-ink-900">
+                                <p className="text-teks font-bold text-ink-900">
                                     {formatUmurBulan(anak.umurBulan)}
                                 </p>
-                                <p className="text-teks text-ink-700">
+                                <p className="text-kecil text-ink-700">
                                     {jenisKelaminTeks}
                                 </p>
-                                <p className="text-keterangan text-ink-600">
+                                <p className="text-justify text-keterangan leading-relaxed text-ink-600">
                                     Acuan status gizi dan grafik: standar WHO
                                     sesuai umur dan jenis kelamin (Buku KIA).
                                 </p>
                             </div>
 
-                            <div className="flex flex-col gap-2 border-t border-ink-200 pt-3 tablet:border-t-0 tablet:border-l tablet:pt-0 tablet:pl-4">
-                                <p className="text-kecil font-bold text-ink-900">
+                            <div className="flex flex-col gap-1.5 border-t border-brand-100 pt-3 tablet:border-t-0 tablet:border-l tablet:pt-0 tablet:pl-3.5">
+                                <p className="text-label-seksi tracking-[0.08em] text-ink-600 uppercase">
                                     Hasil perhitungan
                                 </p>
                                 {statusGizi.length === 0 ? (
-                                    <p className="text-teks text-ink-700">
+                                    <p className="text-kecil leading-relaxed text-ink-700">
                                         {perluUkurUlang
                                             ? 'Perlu ukur ulang, status gizi belum dihitung.'
                                             : ringkasan === null
@@ -433,7 +477,7 @@ export default function Penyuluhan(props: Props) {
                                               : 'Belum ada status gizi.'}
                                     </p>
                                 ) : (
-                                    <ul className="flex flex-wrap gap-2">
+                                    <ul className="flex flex-wrap gap-1.5">
                                         {statusGizi.map((satu) => (
                                             <li key={satu.indeks}>
                                                 <ChipStatus
@@ -448,28 +492,32 @@ export default function Penyuluhan(props: Props) {
                                 )}
                             </div>
 
-                            <div className="flex flex-col gap-2 border-t border-ink-200 pt-3 tablet:border-t-0 tablet:border-l tablet:pt-0 tablet:pl-4">
-                                <p className="text-kecil font-bold text-ink-900">
+                            <div className="flex flex-col gap-1.5 border-t border-brand-100 pt-3 tablet:border-t-0 tablet:border-l tablet:pt-0 tablet:pl-3.5">
+                                <p className="text-label-seksi tracking-[0.08em] text-ink-600 uppercase">
                                     Sudah dilakukan hari ini
                                 </p>
-                                <p className="text-teks text-ink-900">
-                                    <span className="font-bold">Diukur:</span>{' '}
+                                <p className="text-kecil leading-relaxed text-ink-700">
+                                    <span className="font-bold text-ink-900">
+                                        Diukur:{' '}
+                                    </span>
                                     {sudahDiukur.length > 0
                                         ? sudahDiukur.join(', ')
                                         : 'belum ada'}
                                 </p>
-                                <p className="text-teks text-ink-900">
-                                    <span className="font-bold">Layanan:</span>{' '}
+                                <p className="text-kecil leading-relaxed text-ink-700">
+                                    <span className="font-bold text-ink-900">
+                                        Layanan:{' '}
+                                    </span>
                                     {layananHariIni.length > 0
                                         ? layananHariIni
                                               .map((satu) => satu.detail)
                                               .join(', ')
                                         : 'belum ada'}
                                 </p>
-                                <p className="text-teks text-ink-900">
-                                    <span className="font-bold">
-                                        Imunisasi didapat:
-                                    </span>{' '}
+                                <p className="text-kecil leading-relaxed text-ink-700">
+                                    <span className="font-bold text-ink-900">
+                                        Imunisasi didapat:{' '}
+                                    </span>
                                     {imunisasiHariIni.length > 0
                                         ? imunisasiHariIni
                                               .map((satu) => satu.detail)
@@ -477,16 +525,16 @@ export default function Penyuluhan(props: Props) {
                                         : 'belum ada'}
                                 </p>
                                 {catatanPelayanan && (
-                                    <p className="text-teks text-ink-700">
+                                    <p className="text-justify text-kecil leading-relaxed text-ink-700">
                                         <span className="font-bold text-ink-900">
-                                            Catatan pelayanan:
-                                        </span>{' '}
+                                            Catatan pelayanan:{' '}
+                                        </span>
                                         {catatanPelayanan}
                                     </p>
                                 )}
                             </div>
                         </div>
-                    </Kartu>
+                    </Seksi>
 
                     <DetailDuaKolom
                         kiriLebar
@@ -502,41 +550,55 @@ export default function Penyuluhan(props: Props) {
                                         anak diukur di Meja 2.
                                     </Banner>
                                 ) : (
-                                    <Kartu labelSeksi="Hasil ukur hari ini">
-                                        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 py-1 tablet:grid-cols-3">
-                                            {[
+                                    <Seksi
+                                        judul="Hasil ukur hari ini"
+                                        ikon={Ruler}
+                                        isiClassName="px-3.5 py-3"
+                                    >
+                                        <dl className="grid grid-cols-2 gap-2 tablet:grid-cols-3">
+                                            {(
                                                 [
-                                                    'Berat badan',
-                                                    ringkasan.bb,
-                                                    'kg',
-                                                ],
-                                                [
-                                                    ringkasan.caraUkur ===
-                                                    'telentang'
-                                                        ? 'Panjang badan'
-                                                        : ringkasan.caraUkur ===
-                                                            'berdiri'
-                                                          ? 'Tinggi badan'
-                                                          : 'PB/TB',
-                                                    ringkasan.pbTb,
-                                                    'cm',
-                                                ],
-                                                ['IMT', ringkasan.imt, 'kg/m²'],
-                                                ['LiLA', ringkasan.lila, 'cm'],
-                                                [
-                                                    'Lingkar kepala',
-                                                    ringkasan.lk,
-                                                    'cm',
-                                                ],
-                                            ].map(([label, nilai, satuan]) => (
+                                                    [
+                                                        'Berat badan',
+                                                        ringkasan.bb,
+                                                        'kg',
+                                                    ],
+                                                    [
+                                                        ringkasan.caraUkur ===
+                                                        'telentang'
+                                                            ? 'Panjang badan'
+                                                            : ringkasan.caraUkur ===
+                                                                'berdiri'
+                                                              ? 'Tinggi badan'
+                                                              : 'PB/TB',
+                                                        ringkasan.pbTb,
+                                                        'cm',
+                                                    ],
+                                                    [
+                                                        'IMT',
+                                                        ringkasan.imt,
+                                                        'kg/m²',
+                                                    ],
+                                                    [
+                                                        'LiLA',
+                                                        ringkasan.lila,
+                                                        'cm',
+                                                    ],
+                                                    [
+                                                        'Lingkar kepala',
+                                                        ringkasan.lk,
+                                                        'cm',
+                                                    ],
+                                                ] as const
+                                            ).map(([label, nilai, satuan]) => (
                                                 <div
-                                                    key={label as string}
-                                                    className="flex flex-col"
+                                                    key={label}
+                                                    className="flex flex-col rounded-md border border-brand-100 bg-brand-50/60 px-2.5 py-2"
                                                 >
-                                                    <dt className="text-kecil text-ink-700">
+                                                    <dt className="text-keterangan leading-snug text-ink-600">
                                                         {label}
                                                     </dt>
-                                                    <dd className="text-judul-2 text-ink-900 tabular-nums">
+                                                    <dd className="text-teks font-bold text-ink-900 tabular-nums">
                                                         {nilai === null ? (
                                                             <>
                                                                 <span aria-hidden="true">
@@ -551,7 +613,7 @@ export default function Penyuluhan(props: Props) {
                                                                 {formatSatuDesimal(
                                                                     nilai as number,
                                                                 )}{' '}
-                                                                <span className="text-kecil font-bold">
+                                                                <span className="text-keterangan font-bold">
                                                                     {satuan}
                                                                 </span>
                                                             </>
@@ -560,18 +622,22 @@ export default function Penyuluhan(props: Props) {
                                                 </div>
                                             ))}
                                         </dl>
-                                    </Kartu>
+                                    </Seksi>
                                 )}
 
                                 {statusGizi.length > 0 && (
-                                    <Kartu aria-label="Status gizi">
-                                        <ul className="divide-y divide-ink-200">
+                                    <Seksi
+                                        judul="Status gizi per indeks"
+                                        ikon={Activity}
+                                        isiClassName="px-3.5 py-0.5"
+                                    >
+                                        <ul className="divide-y divide-brand-100">
                                             {statusGizi.map((satu) => (
                                                 <li
                                                     key={satu.indeks}
-                                                    className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-3"
+                                                    className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2.5"
                                                 >
-                                                    <span className="text-teks text-ink-900">
+                                                    <span className="text-kecil font-bold text-ink-900">
                                                         {satu.label}
                                                     </span>
                                                     <ChipStatus
@@ -589,13 +655,14 @@ export default function Penyuluhan(props: Props) {
                                                 </li>
                                             ))}
                                         </ul>
-                                    </Kartu>
+                                    </Seksi>
                                 )}
 
                                 {grafik && !perluUkurUlang && (
-                                    <Kartu
-                                        aria-label="Grafik pertumbuhan"
-                                        className="flex flex-col gap-3"
+                                    <Seksi
+                                        judul="Grafik pertumbuhan"
+                                        ikon={LineChart}
+                                        isiClassName="flex flex-col gap-2.5 px-3.5 py-3"
                                     >
                                         <Tab
                                             label="Jenis grafik"
@@ -620,22 +687,26 @@ export default function Penyuluhan(props: Props) {
                                                 }
                                             />
                                         </div>
-                                    </Kartu>
+                                    </Seksi>
                                 )}
 
                                 {riwayatPenimbangan.length > 0 && (
-                                    <Kartu labelSeksi="Riwayat penimbangan sebelumnya">
-                                        <ul className="-mx-1 mt-1 flex gap-2 overflow-x-auto px-1 pb-1">
+                                    <Seksi
+                                        judul="Riwayat penimbangan"
+                                        ikon={History}
+                                        isiClassName="px-3.5 py-3"
+                                    >
+                                        <ul className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
                                             {riwayatPenimbangan.map((satu) => (
                                                 <li
                                                     key={`${satu.tanggal}-${satu.umurBulan}`}
-                                                    className="min-w-44 shrink-0 rounded-md bg-brand-50 px-3 py-2"
+                                                    className="min-w-40 shrink-0 rounded-md border border-brand-100 bg-brand-50/60 px-2.5 py-2"
                                                 >
-                                                    <p className="text-kecil text-ink-700">
+                                                    <p className="text-keterangan text-ink-600 tabular-nums">
                                                         {satu.tanggal} ·{' '}
                                                         {satu.umurBulan} bln
                                                     </p>
-                                                    <p className="text-teks font-bold text-ink-900 tabular-nums">
+                                                    <p className="text-kecil font-bold text-ink-900 tabular-nums">
                                                         BB{' '}
                                                         {formatSatuDesimal(
                                                             satu.bb,
@@ -646,7 +717,7 @@ export default function Penyuluhan(props: Props) {
                                                         )}{' '}
                                                         cm
                                                     </p>
-                                                    <p className="text-kecil text-ink-700 tabular-nums">
+                                                    <p className="text-keterangan text-ink-600 tabular-nums">
                                                         LiLA{' '}
                                                         {formatSatuDesimal(
                                                             satu.lila,
@@ -658,26 +729,30 @@ export default function Penyuluhan(props: Props) {
                                                         cm
                                                     </p>
                                                     {satu.dariBukuKia && (
-                                                        <p className="text-keterangan text-ink-600">
+                                                        <p className="text-keterangan text-brand-700">
                                                             Dari Buku KIA
                                                         </p>
                                                     )}
                                                 </li>
                                             ))}
                                         </ul>
-                                    </Kartu>
+                                    </Seksi>
                                 )}
 
-                                <Kartu labelSeksi="Status penimbangan (KMS)">
+                                <Seksi
+                                    judul="Status penimbangan (KMS)"
+                                    ikon={TrendingUp}
+                                    isiClassName="px-3.5 py-3"
+                                >
                                     {status ? (
-                                        <div className="flex flex-wrap items-center gap-3 py-1">
+                                        <div className="flex flex-wrap items-center gap-2">
                                             <ChipStatus varian={status.varian}>
                                                 {status.teks}
                                             </ChipStatus>
                                             {penimbangan?.kenaikanGram !=
                                                 null &&
                                                 penimbangan.kbmGram != null && (
-                                                    <span className="text-teks text-ink-900">
+                                                    <span className="text-kecil leading-snug text-ink-700">
                                                         {teksKbm(
                                                             penimbangan.kenaikanGram,
                                                             penimbangan.kbmGram,
@@ -686,28 +761,38 @@ export default function Penyuluhan(props: Props) {
                                                 )}
                                         </div>
                                     ) : (
-                                        <p className="py-1 text-teks text-ink-700">
+                                        <p className="text-kecil text-ink-700">
                                             Belum ada penimbangan hari ini.
                                         </p>
                                     )}
                                     {rujukanKms.length > 0 && (
-                                        <p className="pt-2 text-teks font-bold text-status-bahaya-teks">
-                                            Rujuk:{' '}
-                                            {rujukanKms
-                                                .join(', ')
-                                                .toLowerCase()}
-                                            .
+                                        <p className="mt-2 flex items-start gap-1.5 rounded-md bg-status-bahaya-latar px-2.5 py-2 text-kecil leading-relaxed font-bold text-status-bahaya-teks">
+                                            <AlertTriangle
+                                                aria-hidden="true"
+                                                className="mt-0.5 size-3.5 shrink-0"
+                                            />
+                                            <span>
+                                                Rujuk:{' '}
+                                                {rujukanKms
+                                                    .join(', ')
+                                                    .toLowerCase()}
+                                                .
+                                            </span>
                                         </p>
                                     )}
-                                    <p className="pt-2 text-keterangan text-ink-600">
+                                    <p className="mt-2 text-justify text-keterangan leading-relaxed text-ink-600">
                                         Buku KIA: rujuk bila berat badan tidak
                                         naik (T), di bawah garis merah, atau di
                                         atas garis oranye.
                                     </p>
-                                </Kartu>
+                                </Seksi>
 
-                                <Kartu labelSeksi="Deteksi risiko stunting">
-                                    <div className="flex flex-col gap-2 py-1">
+                                <Seksi
+                                    judul="Deteksi risiko stunting"
+                                    ikon={ShieldAlert}
+                                    isiClassName="px-3.5 py-3"
+                                >
+                                    <div className="flex flex-col gap-2">
                                         <div>
                                             <ChipStatus
                                                 varian={
@@ -720,30 +805,34 @@ export default function Penyuluhan(props: Props) {
                                             </ChipStatus>
                                         </div>
                                         {stunting.alasan && (
-                                            <p className="text-teks text-ink-900">
+                                            <p className="text-justify text-kecil leading-relaxed text-ink-900">
                                                 {stunting.alasan}.
                                             </p>
                                         )}
-                                        <p className="text-teks text-ink-900">
+                                        <p className="text-justify text-kecil leading-relaxed text-ink-900">
                                             <span className="font-bold">
-                                                Tindakan:
-                                            </span>{' '}
+                                                Tindakan:{' '}
+                                            </span>
                                             {stunting.tindakan}.
                                         </p>
-                                        <p className="text-keterangan text-ink-600">
+                                        <p className="text-justify text-keterangan leading-relaxed text-ink-600">
                                             Hasil skrining, bukan diagnosis.
                                             Konfirmasi oleh tenaga kesehatan.
                                         </p>
                                     </div>
-                                </Kartu>
+                                </Seksi>
 
                                 {tindakLanjut.length > 0 && (
-                                    <Kartu labelSeksi="Tindak lanjut Buku KIA">
-                                        <div className="flex flex-col gap-4 py-1">
+                                    <Seksi
+                                        judul="Tindak lanjut Buku KIA"
+                                        ikon={ListChecks}
+                                        isiClassName="px-3.5 py-3"
+                                    >
+                                        <div className="flex flex-col gap-3.5">
                                             {tindakLanjut.map((satu) => (
                                                 <div
                                                     key={satu.kode}
-                                                    className="flex flex-col gap-2"
+                                                    className="flex flex-col gap-1.5"
                                                 >
                                                     <div className="flex flex-wrap items-center gap-2">
                                                         <ChipStatus
@@ -760,7 +849,7 @@ export default function Penyuluhan(props: Props) {
                                                             }
                                                         </span>
                                                     </div>
-                                                    <ul className="flex list-disc flex-col gap-1 pl-5 text-teks text-ink-900">
+                                                    <ul className="flex list-disc flex-col gap-1 pl-5 text-justify text-kecil leading-relaxed text-ink-900">
                                                         {satu.tindakan.map(
                                                             (tindakan) => (
                                                                 <li
@@ -776,11 +865,11 @@ export default function Penyuluhan(props: Props) {
                                                     {satu.anjuran.length >
                                                         0 && (
                                                         <div>
-                                                            <p className="text-kecil font-bold text-ink-900">
+                                                            <p className="text-label-seksi tracking-[0.08em] text-ink-600 uppercase">
                                                                 Anjuran sesuai
                                                                 umur
                                                             </p>
-                                                            <ul className="flex list-disc flex-col gap-1 pl-5 text-teks text-ink-900">
+                                                            <ul className="flex list-disc flex-col gap-1 pl-5 text-justify text-kecil leading-relaxed text-ink-900">
                                                                 {satu.anjuran.map(
                                                                     (
                                                                         anjuran,
@@ -799,25 +888,29 @@ export default function Penyuluhan(props: Props) {
                                                             </ul>
                                                         </div>
                                                     )}
-                                                    <p className="text-keterangan text-ink-600">
+                                                    <p className="text-keterangan leading-relaxed text-ink-600">
                                                         {satu.sumber}
                                                         {satu.halamanAnjuran &&
                                                             ` · ${satu.halamanAnjuran}`}
                                                     </p>
                                                 </div>
                                             ))}
-                                            <p className="text-keterangan text-ink-600">
+                                            <p className="border-t border-brand-100 pt-2.5 text-justify text-keterangan leading-relaxed text-ink-600">
                                                 Anjuran Buku KIA, bukan
                                                 diagnosis. Konfirmasi tenaga
                                                 kesehatan untuk tata laksana.
                                             </p>
                                         </div>
-                                    </Kartu>
+                                    </Seksi>
                                 )}
 
-                                <Kartu labelSeksi="Materi untuk ibu">
-                                    <div className="flex flex-col gap-2 py-1">
-                                        <p className="text-teks text-ink-700">
+                                <Seksi
+                                    judul="Materi untuk ibu"
+                                    ikon={BookOpen}
+                                    isiClassName="px-3.5 py-3"
+                                >
+                                    <div className="flex flex-col gap-2.5">
+                                        <p className="text-justify text-kecil leading-relaxed text-ink-700">
                                             Buka materi Buku KIA lengkap sesuai
                                             umur anak: ASI dan MPASI, tanda
                                             bahaya, serta perawatan di rumah.
@@ -834,15 +927,19 @@ export default function Penyuluhan(props: Props) {
                                             Buka Panduan KIA
                                         </TombolTautan>
                                     </div>
-                                </Kartu>
+                                </Seksi>
 
                                 {asiEksklusif.relevan && (
-                                    <Kartu labelSeksi="ASI eksklusif">
-                                        <div className="flex flex-col gap-2 py-1">
-                                            <p className="text-teks font-bold text-ink-900">
+                                    <Seksi
+                                        judul="ASI eksklusif"
+                                        ikon={Baby}
+                                        isiClassName="px-3.5 py-3"
+                                    >
+                                        <div className="flex flex-col gap-1.5">
+                                            <p className="text-kecil font-bold text-ink-900">
                                                 {asiEksklusif.judul}
                                             </p>
-                                            <p className="text-teks text-ink-900">
+                                            <p className="text-justify text-kecil leading-relaxed text-ink-900">
                                                 {asiEksklusif.hariIni === null
                                                     ? asiEksklusif.terakhir ===
                                                       null
@@ -864,27 +961,28 @@ export default function Penyuluhan(props: Props) {
                                                               : 'tidak'
                                                       }.`}
                                             </p>
-                                            <p className="text-teks text-ink-700">
+                                            <p className="text-justify text-kecil leading-relaxed text-ink-700">
                                                 Beri hanya ASI saja sampai usia
                                                 6 bulan, tanpa air putih,
                                                 makanan, atau minuman lain.
                                                 Lanjutkan ASI sampai usia 2
                                                 tahun atau lebih.
                                             </p>
-                                            <p className="text-keterangan text-ink-600">
+                                            <p className="text-keterangan leading-relaxed text-ink-600">
                                                 {asiEksklusif.halaman}
                                             </p>
                                         </div>
-                                    </Kartu>
+                                    </Seksi>
                                 )}
 
                                 {anjuranUmur !== null && (
-                                    <Kartu
-                                        judul={anjuranUmur.label}
-                                        labelSeksi="Anjuran sesuai umur"
+                                    <Seksi
+                                        judul={`Anjuran sesuai umur · ${anjuranUmur.label}`}
+                                        ikon={Sparkles}
+                                        isiClassName="px-3.5 py-3"
                                     >
-                                        <div className="flex flex-col gap-2 py-1">
-                                            <ul className="flex list-disc flex-col gap-1 pl-5 text-teks text-ink-900">
+                                        <div className="flex flex-col gap-1.5">
+                                            <ul className="flex list-disc flex-col gap-1 pl-5 text-justify text-kecil leading-relaxed text-ink-900">
                                                 {anjuranUmur.anjuran.map(
                                                     (satu) => (
                                                         <li key={satu}>
@@ -893,44 +991,49 @@ export default function Penyuluhan(props: Props) {
                                                     ),
                                                 )}
                                             </ul>
-                                            <p className="text-keterangan text-ink-600">
+                                            <p className="text-keterangan leading-relaxed text-ink-600">
                                                 {anjuranUmur.halaman}
                                             </p>
                                         </div>
-                                    </Kartu>
+                                    </Seksi>
                                 )}
 
                                 {tandaBahaya !== null && (
-                                    <Kartu
-                                        judul={tandaBahaya.label}
-                                        labelSeksi="Tanda bahaya"
+                                    <Seksi
+                                        judul={`Tanda bahaya · ${tandaBahaya.label}`}
+                                        ikon={AlertTriangle}
+                                        isiClassName="px-3.5 py-3"
                                     >
-                                        <div className="flex flex-col gap-2 py-1">
-                                            <p className="text-teks text-ink-900">
+                                        <div className="flex flex-col gap-1.5">
+                                            <p className="text-justify text-kecil leading-relaxed text-ink-900">
                                                 {tandaBahaya.daftar.join(' · ')}
                                                 .
                                             </p>
-                                            <p className="text-teks font-bold text-status-bahaya-teks">
+                                            <p className="rounded-md bg-status-bahaya-latar px-2.5 py-2 text-justify text-kecil leading-relaxed font-bold text-status-bahaya-teks">
                                                 Segera periksa ke bidan, dokter,
                                                 atau fasilitas kesehatan bila
                                                 ditemukan.
                                             </p>
-                                            <p className="text-keterangan text-ink-600">
+                                            <p className="text-keterangan leading-relaxed text-ink-600">
                                                 {tandaBahaya.halaman}
                                             </p>
                                         </div>
-                                    </Kartu>
+                                    </Seksi>
                                 )}
 
-                                <Kartu labelSeksi="Layanan">
-                                    <div className="flex flex-col gap-3 py-1">
+                                <Seksi
+                                    judul="Layanan"
+                                    ikon={Syringe}
+                                    isiClassName="px-3.5 py-3"
+                                >
+                                    <div className="flex flex-col gap-3">
                                         <div>
-                                            <p className="text-kecil font-bold text-ink-900">
+                                            <p className="text-label-seksi tracking-[0.08em] text-ink-600 uppercase">
                                                 Imunisasi yang masih harus
                                                 dikejar
                                             </p>
                                             {imunisasiTertunda.length === 0 ? (
-                                                <p className="text-teks text-ink-700">
+                                                <p className="text-kecil text-ink-700">
                                                     Tidak ada.
                                                 </p>
                                             ) : (
@@ -939,14 +1042,13 @@ export default function Penyuluhan(props: Props) {
                                                         (satu) => (
                                                             <li
                                                                 key={satu.kode}
-                                                                className="text-teks text-ink-900"
+                                                                className="text-justify text-kecil leading-relaxed text-ink-900"
                                                             >
                                                                 <span className="font-bold">
                                                                     {satu.nama}
                                                                 </span>
+                                                                {' · '}
                                                                 <span className="text-ink-700">
-                                                                    {' '}
-                                                                    ·{' '}
                                                                     {
                                                                         satu.alasan
                                                                     }
@@ -957,14 +1059,14 @@ export default function Penyuluhan(props: Props) {
                                                 </ul>
                                             )}
                                         </div>
-                                        <div>
-                                            <p className="text-kecil font-bold text-ink-900">
+                                        <div className="border-t border-brand-100 pt-2.5">
+                                            <p className="text-label-seksi tracking-[0.08em] text-ink-600 uppercase">
                                                 {layananHariIni.length > 0
                                                     ? 'Sudah diterima hari ini'
                                                     : 'Layanan terakhir'}
                                             </p>
                                             {layanan.length === 0 ? (
-                                                <p className="text-teks text-ink-700">
+                                                <p className="text-kecil text-ink-700">
                                                     Belum ada layanan tercatat.
                                                 </p>
                                             ) : (
@@ -975,14 +1077,14 @@ export default function Penyuluhan(props: Props) {
                                                     ).map((satu) => (
                                                         <li
                                                             key={satu.id}
-                                                            className="text-teks text-ink-900"
+                                                            className="text-kecil leading-relaxed text-ink-900"
                                                         >
                                                             <span className="font-bold">
                                                                 {satu.detail}
                                                             </span>
                                                             <span className="text-ink-700">
-                                                                {' '}
-                                                                · {
+                                                                {' · '}
+                                                                {
                                                                     satu.jenis
                                                                 } ·{' '}
                                                                 {satu.tanggal}
@@ -994,7 +1096,7 @@ export default function Penyuluhan(props: Props) {
                                             {layanan.length > 0 && (
                                                 <Tombol
                                                     varian="tersier"
-                                                    className="-ml-2"
+                                                    className="mt-1 justify-start"
                                                     onClick={() =>
                                                         setSheetLayanan(true)
                                                     }
@@ -1005,59 +1107,81 @@ export default function Penyuluhan(props: Props) {
                                             )}
                                         </div>
                                     </div>
-                                </Kartu>
+                                </Seksi>
                             </>
                         }
                         kanan={
                             <>
-                                <fieldset className="flex flex-col gap-3">
-                                    <legend className="mb-3 text-label-seksi text-ink-600 uppercase">
-                                        Pengamatan kader
-                                    </legend>
-                                    {pengamatan.fisik.map((satu) => (
-                                        <KotakCentangLayanan
-                                            key={`fisik-${satu.kode}`}
-                                            nama={`fisik-${satu.kode}`}
-                                            label={satu.label}
-                                            alasan="Kondisi fisik"
-                                            dicentang={form.data.pengamatan_fisik.includes(
-                                                satu.kode,
-                                            )}
-                                            onUbah={(dicentang) =>
-                                                ubahPengamatan(
-                                                    'fisik',
+                                <Seksi
+                                    judul="Pengamatan kader"
+                                    ikon={Eye}
+                                    isiClassName="flex flex-col gap-2.5 px-3.5 py-3.5"
+                                >
+                                    <p className="text-justify text-keterangan leading-relaxed text-ink-600">
+                                        Centang bila ditemukan kondisi di bawah.
+                                        Pengamatan pertama otomatis memilih
+                                        materi penyuluhannya.
+                                    </p>
+                                    <fieldset className="flex flex-col gap-2.5">
+                                        <legend className="mb-1 text-label-seksi tracking-[0.08em] text-ink-600 uppercase">
+                                            Kondisi fisik
+                                        </legend>
+                                        {pengamatan.fisik.map((satu) => (
+                                            <KotakCentangLayanan
+                                                key={`fisik-${satu.kode}`}
+                                                nama={`fisik-${satu.kode}`}
+                                                label={satu.label}
+                                                alasan="Kondisi fisik"
+                                                dicentang={form.data.pengamatan_fisik.includes(
                                                     satu.kode,
-                                                    dicentang,
-                                                )
-                                            }
-                                        />
-                                    ))}
-                                    {pengamatan.motorik.map((satu) => (
-                                        <KotakCentangLayanan
-                                            key={`motorik-${satu.kode}`}
-                                            nama={`motorik-${satu.kode}`}
-                                            label={satu.label}
-                                            alasan="Perkembangan motorik"
-                                            dicentang={form.data.pengamatan_motorik.includes(
-                                                satu.kode,
-                                            )}
-                                            onUbah={(dicentang) =>
-                                                ubahPengamatan(
-                                                    'motorik',
+                                                )}
+                                                onUbah={(dicentang) =>
+                                                    ubahPengamatan(
+                                                        'fisik',
+                                                        satu.kode,
+                                                        dicentang,
+                                                    )
+                                                }
+                                            />
+                                        ))}
+                                    </fieldset>
+                                    <fieldset className="flex flex-col gap-2.5">
+                                        <legend className="mb-1 text-label-seksi tracking-[0.08em] text-ink-600 uppercase">
+                                            Perkembangan motorik
+                                        </legend>
+                                        {pengamatan.motorik.map((satu) => (
+                                            <KotakCentangLayanan
+                                                key={`motorik-${satu.kode}`}
+                                                nama={`motorik-${satu.kode}`}
+                                                label={satu.label}
+                                                alasan="Perkembangan motorik"
+                                                dicentang={form.data.pengamatan_motorik.includes(
                                                     satu.kode,
-                                                    dicentang,
-                                                )
-                                            }
-                                        />
-                                    ))}
-                                </fieldset>
+                                                )}
+                                                onUbah={(dicentang) =>
+                                                    ubahPengamatan(
+                                                        'motorik',
+                                                        satu.kode,
+                                                        dicentang,
+                                                    )
+                                                }
+                                            />
+                                        ))}
+                                    </fieldset>
+                                </Seksi>
 
-                                <fieldset className="flex flex-col gap-3">
-                                    <legend className="mb-3 text-label-seksi text-ink-600 uppercase">
-                                        Materi penyuluhan
-                                    </legend>
+                                <Seksi
+                                    judul="Materi penyuluhan"
+                                    ikon={MessageSquareText}
+                                    isiClassName="flex flex-col gap-2.5 px-3.5 py-3.5"
+                                >
+                                    <p className="text-justify text-keterangan leading-relaxed text-ink-600">
+                                        Materi yang direkomendasikan sudah
+                                        tercentang. Hapus centang bila tidak
+                                        disampaikan.
+                                    </p>
                                     {materiDirekomendasikan.length === 0 && (
-                                        <p className="text-teks text-ink-700">
+                                        <p className="text-kecil leading-relaxed text-ink-700">
                                             Tidak ada materi khusus. Pilih atau
                                             tambah materi bila perlu.
                                         </p>
@@ -1096,19 +1220,17 @@ export default function Penyuluhan(props: Props) {
                                         />
                                     ))}
                                     {materiLainTersedia.length > 0 && (
-                                        <div>
-                                            <Tombol
-                                                varian="tersier"
-                                                className="-ml-2"
-                                                onClick={() =>
-                                                    setSheetMateriLain(true)
-                                                }
-                                            >
-                                                Pilih materi lain
-                                            </Tombol>
-                                        </div>
+                                        <Tombol
+                                            varian="tersier"
+                                            className="justify-start"
+                                            onClick={() =>
+                                                setSheetMateriLain(true)
+                                            }
+                                        >
+                                            Pilih materi lain
+                                        </Tombol>
                                     )}
-                                    <div className="flex items-end gap-2">
+                                    <div className="flex items-end gap-2 border-t border-brand-100 pt-3">
                                         <IsianTeks
                                             label="Tambah materi"
                                             name="materi_baru"
@@ -1137,27 +1259,31 @@ export default function Penyuluhan(props: Props) {
                                             Tambah
                                         </Tombol>
                                     </div>
-                                </fieldset>
+                                </Seksi>
 
-                                <Kartu labelSeksi="Isi Piringku ibu menyusui">
+                                <Seksi
+                                    judul="Isi Piringku ibu menyusui"
+                                    ikon={Utensils}
+                                    isiClassName="px-3.5 py-3"
+                                >
                                     {tampilkanPiringku ? (
                                         <>
-                                            <p className="py-1 text-kecil text-ink-700">
+                                            <p className="text-justify text-keterangan leading-relaxed text-ink-600">
                                                 Porsi makan ibu menyusui (0–12
                                                 bulan) untuk sehari, sesuai Buku
                                                 KIA.
                                             </p>
-                                            <div className="-mx-4 overflow-x-auto">
+                                            <div className="-mx-3.5 mt-2 overflow-x-auto">
                                                 <table className="w-full text-left text-kecil">
                                                     <caption className="sr-only">
                                                         Isi Piringku ibu
                                                         menyusui
                                                     </caption>
                                                     <thead>
-                                                        <tr className="border-b border-ink-200 text-ink-700">
+                                                        <tr className="border-b border-brand-100 bg-brand-50/60 text-label-seksi tracking-[0.06em] text-brand-700 uppercase">
                                                             <th
                                                                 scope="col"
-                                                                className="px-4 py-2"
+                                                                className="px-3.5 py-2"
                                                             >
                                                                 Bahan makanan
                                                             </th>
@@ -1169,7 +1295,7 @@ export default function Penyuluhan(props: Props) {
                                                             </th>
                                                             <th
                                                                 scope="col"
-                                                                className="px-4 py-2"
+                                                                className="px-3.5 py-2"
                                                             >
                                                                 Contoh satu
                                                                 porsi
@@ -1183,22 +1309,22 @@ export default function Penyuluhan(props: Props) {
                                                                     key={
                                                                         satu.bahan
                                                                     }
-                                                                    className="border-b border-ink-200 align-top text-ink-900"
+                                                                    className="border-b border-brand-100 align-top text-ink-900"
                                                                 >
                                                                     <th
                                                                         scope="row"
-                                                                        className="px-4 py-2 font-bold"
+                                                                        className="px-3.5 py-2 font-bold"
                                                                     >
                                                                         {
                                                                             satu.bahan
                                                                         }
                                                                     </th>
-                                                                    <td className="px-2 py-2 text-right tabular-nums">
+                                                                    <td className="px-2 py-2 text-right text-ink-700 tabular-nums">
                                                                         {
                                                                             satu.porsi
                                                                         }
                                                                     </td>
-                                                                    <td className="px-4 py-2">
+                                                                    <td className="px-3.5 py-2 text-ink-700">
                                                                         {
                                                                             satu.contoh
                                                                         }
@@ -1212,7 +1338,7 @@ export default function Penyuluhan(props: Props) {
                                             {!isiPiringku.otomatis && (
                                                 <Tombol
                                                     varian="tersier"
-                                                    className="-ml-2"
+                                                    className="mt-1 justify-start"
                                                     onClick={() =>
                                                         setTampilkanPiringku(
                                                             false,
@@ -1224,50 +1350,54 @@ export default function Penyuluhan(props: Props) {
                                             )}
                                         </>
                                     ) : (
-                                        <div className="flex flex-col gap-1 py-1">
-                                            <p className="text-teks text-ink-700">
+                                        <div className="flex flex-col gap-1.5">
+                                            <p className="text-justify text-kecil leading-relaxed text-ink-700">
                                                 Tampil otomatis untuk anak di
                                                 bawah 24 bulan.
                                             </p>
-                                            <div>
-                                                <Tombol
-                                                    varian="tersier"
-                                                    className="-ml-2"
-                                                    onClick={() =>
-                                                        setTampilkanPiringku(
-                                                            true,
-                                                        )
-                                                    }
-                                                >
-                                                    Tampilkan untuk ibu yang
-                                                    masih menyusui
-                                                </Tombol>
-                                            </div>
+                                            <Tombol
+                                                varian="tersier"
+                                                className="justify-start"
+                                                onClick={() =>
+                                                    setTampilkanPiringku(true)
+                                                }
+                                            >
+                                                Tampilkan untuk ibu yang masih
+                                                menyusui
+                                            </Tombol>
                                         </div>
                                     )}
-                                </Kartu>
+                                </Seksi>
 
-                                <AreaTeks
-                                    label="Catatan tindak lanjut"
-                                    wajib={wajib}
-                                    rows={3}
-                                    name="catatan_tindak_lanjut"
-                                    maxLength={500}
-                                    value={form.data.catatan_tindak_lanjut}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'catatan_tindak_lanjut',
-                                            event.target.value,
-                                        )
-                                    }
-                                    petunjuk={
-                                        wajib
-                                            ? `Wajib karena: ${alasanWajib.join('; ')}.`
-                                            : 'Opsional.'
-                                    }
-                                    galat={form.errors.catatan_tindak_lanjut}
-                                    placeholder="Contoh: rujuk ke puskesmas, kontrol ulang bulan depan"
-                                />
+                                <Seksi
+                                    judul="Catatan tindak lanjut"
+                                    ikon={CalendarDays}
+                                    isiClassName="px-3.5 py-3.5"
+                                >
+                                    <AreaTeks
+                                        label="Catatan tindak lanjut"
+                                        wajib={wajib}
+                                        rows={3}
+                                        name="catatan_tindak_lanjut"
+                                        maxLength={500}
+                                        value={form.data.catatan_tindak_lanjut}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'catatan_tindak_lanjut',
+                                                event.target.value,
+                                            )
+                                        }
+                                        petunjuk={
+                                            wajib
+                                                ? `Wajib karena: ${alasanWajib.join('; ')}.`
+                                                : 'Opsional.'
+                                        }
+                                        galat={
+                                            form.errors.catatan_tindak_lanjut
+                                        }
+                                        placeholder="Contoh: rujuk ke puskesmas, kontrol ulang bulan depan"
+                                    />
+                                </Seksi>
 
                                 {/* Petunjuk ikut menempel bersama tombol, dan
                                     tombol tetap bisa difokus (aria-disabled)
@@ -1325,14 +1455,14 @@ export default function Penyuluhan(props: Props) {
                 onTutup={() => setSheetLayanan(false)}
                 judul="Semua layanan"
             >
-                <ul className="flex flex-col divide-y divide-ink-200">
+                <ul className="flex flex-col divide-y divide-brand-100">
                     {layanan.map((satu) => (
                         <li
                             key={satu.id}
-                            className="flex flex-col py-3 text-teks text-ink-900"
+                            className="flex flex-col py-2.5 text-kecil text-ink-900"
                         >
                             <span className="font-bold">{satu.detail}</span>
-                            <span className="text-kecil text-ink-700">
+                            <span className="text-keterangan text-ink-600">
                                 {satu.jenis} · {satu.tanggal}
                                 {satu.nomorBatch &&
                                     ` · batch ${satu.nomorBatch}`}
@@ -1348,7 +1478,7 @@ export default function Penyuluhan(props: Props) {
                 onTutup={() => setSheetMateriLain(false)}
                 judul="Pilih materi lain"
             >
-                <ul className="flex flex-col gap-3">
+                <ul className="flex flex-col gap-2.5">
                     {materiLainTersedia.map((satu) => (
                         <li key={satu.kode}>
                             <Tombol

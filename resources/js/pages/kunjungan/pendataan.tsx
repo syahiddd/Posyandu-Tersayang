@@ -1,4 +1,5 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Baby, ClipboardCheck, RotateCcw, Scale } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Banner } from '@/components/dasar/banner';
@@ -8,8 +9,8 @@ import type { VarianChip } from '@/components/dasar/chip-status';
 import { HeaderAnak } from '@/components/dasar/header-anak';
 import { AreaTeks } from '@/components/dasar/isian-teks';
 import { KakiTombol } from '@/components/dasar/kaki-tombol';
-import { Kartu } from '@/components/dasar/kartu';
 import { KontrolSegmen } from '@/components/dasar/kontrol-segmen';
+import { Seksi } from '@/components/dasar/seksi';
 import { SheetBawah } from '@/components/dasar/sheet-bawah';
 import { Tombol } from '@/components/dasar/tombol';
 import { DetailDuaKolom } from '@/components/detail-dua-kolom';
@@ -51,6 +52,10 @@ const STATUS_NT: Record<string, { teks: string; varian: VarianChip }> = {
 /**
  * S10 Meja 3 Pendataan (FR-24 sampai FR-29; DESIGN 5.5, 6.3, Gambar 5):
  * nilai ukur hanya dibaca untuk disalin ke Buku KIA.
+ *
+ * Susunan: kepala anak, kartu hasil ukur hari ini (angka 24 px agar mudah
+ * dibaca saat menyalin), kartu status penimbangan dan ASI eksklusif, lalu
+ * tombol simpan menempel di kaki layar.
  */
 export default function Pendataan({
     anak,
@@ -149,78 +154,96 @@ export default function Pendataan({
                     selebarPanel
                 />
 
-                <div className="@container mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-5 tablet:px-5 panel:mx-0 panel:max-w-5xl panel:px-6">
+                <div className="@container mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-4 pb-2 tablet:px-5 panel:mx-0 panel:max-w-5xl panel:px-6">
                     {errors.kunjungan && (
                         <Banner varian="bahaya">{errors.kunjungan}</Banner>
                     )}
-                    <Banner varian="info">
-                        Hanya untuk dibaca. Salin ke Buku KIA.
-                    </Banner>
+
+                    <p className="flex items-start gap-2 rounded-md border border-brand-100 bg-brand-50 px-3 py-2.5 text-keterangan leading-relaxed text-ink-700">
+                        <ClipboardCheck
+                            aria-hidden="true"
+                            className="mt-0.5 size-4 shrink-0 text-brand-600"
+                        />
+                        <span>
+                            Hanya untuk dibaca. Salin angka di bawah ke Buku
+                            KIA, lalu tekan{' '}
+                            <span className="font-bold text-ink-900">
+                                Sudah disalin ke KIA
+                            </span>
+                            .
+                        </span>
+                    </p>
 
                     <DetailDuaKolom
                         className="gap-4"
                         kiri={
-                            <>
-                                <Kartu aria-label="Hasil ukur hari ini">
-                                    <dl className="divide-y divide-ink-200">
-                                        {baris.map(
-                                            ({
-                                                kunci,
-                                                label,
-                                                satuan,
-                                                namaSatuan,
-                                            }) => {
-                                                const hasil = perubahan(
-                                                    sekarang?.[kunci] ?? null,
-                                                    sebelumnya?.[kunci] ?? null,
-                                                );
-                                                const teks =
-                                                    hasil && sebelumnya
-                                                        ? teksPerubahan(
-                                                              hasil,
-                                                              satuan,
-                                                              sebelumnya.tanggal,
-                                                          )
-                                                        : undefined;
+                            <Seksi
+                                judul="Hasil ukur hari ini"
+                                ikon={Scale}
+                                isiClassName="px-3.5 py-1"
+                            >
+                                <dl className="divide-y divide-brand-100">
+                                    {baris.map(
+                                        ({
+                                            kunci,
+                                            label,
+                                            satuan,
+                                            namaSatuan,
+                                        }) => {
+                                            const hasil = perubahan(
+                                                sekarang?.[kunci] ?? null,
+                                                sebelumnya?.[kunci] ?? null,
+                                            );
+                                            const teks =
+                                                hasil && sebelumnya
+                                                    ? teksPerubahan(
+                                                          hasil,
+                                                          satuan,
+                                                          sebelumnya.tanggal,
+                                                      )
+                                                    : undefined;
 
-                                                return (
-                                                    <BarisNilai
-                                                        key={kunci}
-                                                        label={label}
-                                                        nilai={
-                                                            sekarang?.[kunci] ??
-                                                            null
-                                                        }
-                                                        satuan={satuan}
-                                                        namaSatuan={namaSatuan}
-                                                        perubahan={teks}
-                                                        perubahanSr={
-                                                            hasil && sebelumnya
-                                                                ? hasil.arah ===
-                                                                  'tetap'
-                                                                    ? `tetap sejak ${sebelumnya.tanggal}`
-                                                                    : `${hasil.arah} ${String(hasil.selisih).replace('.', ',')} ${namaSatuan} dari ${sebelumnya.tanggal}`
-                                                                : undefined
-                                                        }
-                                                    />
-                                                );
-                                            },
-                                        )}
-                                    </dl>
-                                    {!sebelumnya && (
-                                        <p className="pb-2 text-kecil text-ink-700">
-                                            Kunjungan pertama, belum ada
-                                            perbandingan.
-                                        </p>
+                                            return (
+                                                <BarisNilai
+                                                    key={kunci}
+                                                    label={label}
+                                                    nilai={
+                                                        sekarang?.[kunci] ??
+                                                        null
+                                                    }
+                                                    satuan={satuan}
+                                                    namaSatuan={namaSatuan}
+                                                    perubahan={teks}
+                                                    perubahanSr={
+                                                        hasil && sebelumnya
+                                                            ? hasil.arah ===
+                                                              'tetap'
+                                                                ? `tetap sejak ${sebelumnya.tanggal}`
+                                                                : `${hasil.arah} ${String(hasil.selisih).replace('.', ',')} ${namaSatuan} dari ${sebelumnya.tanggal}`
+                                                            : undefined
+                                                    }
+                                                />
+                                            );
+                                        },
                                     )}
-                                </Kartu>
-                            </>
+                                </dl>
+                                {!sebelumnya && (
+                                    <p className="border-t border-brand-100 py-2.5 text-keterangan leading-relaxed text-ink-600">
+                                        Kunjungan pertama, belum ada
+                                        perbandingan dengan bulan lalu.
+                                    </p>
+                                )}
+                            </Seksi>
                         }
                         kanan={
                             <>
                                 {status && penimbangan && (
-                                    <Kartu aria-label="Status penimbangan">
-                                        <div className="flex flex-wrap items-center gap-3">
+                                    <Seksi
+                                        judul="Status penimbangan"
+                                        ikon={ClipboardCheck}
+                                        isiClassName="px-3.5 py-3"
+                                    >
+                                        <div className="flex flex-wrap items-center gap-2.5">
                                             <ChipStatus varian={status.varian}>
                                                 {status.teks}
                                             </ChipStatus>
@@ -228,7 +251,7 @@ export default function Pendataan({
                                                 null &&
                                                 penimbangan.kbmGram !==
                                                     null && (
-                                                    <span className="text-teks text-ink-900">
+                                                    <span className="text-kecil leading-snug text-ink-700">
                                                         {teksKbm(
                                                             penimbangan.kenaikanGram,
                                                             penimbangan.kbmGram,
@@ -236,44 +259,59 @@ export default function Pendataan({
                                                     </span>
                                                 )}
                                         </div>
-                                    </Kartu>
+                                    </Seksi>
                                 )}
 
-                                {asi.isian ? (
-                                    <KontrolSegmen
-                                        label="ASI eksklusif"
-                                        nama="asi_eksklusif"
-                                        opsi={[
-                                            { nilai: 'ya', label: 'Ya' },
-                                            { nilai: 'tidak', label: 'Tidak' },
-                                        ]}
-                                        nilai={form.data.asi_eksklusif || null}
-                                        onUbah={(nilai) =>
-                                            form.setData('asi_eksklusif', nilai)
-                                        }
-                                        galat={form.errors.asi_eksklusif}
-                                    />
-                                ) : (
-                                    <Kartu>
-                                        <p className="text-teks text-ink-900">
-                                            <span className="font-bold">
-                                                ASI eksklusif:
-                                            </span>{' '}
+                                <Seksi
+                                    judul="ASI eksklusif"
+                                    ikon={Baby}
+                                    isiClassName="px-3.5 py-3"
+                                >
+                                    {asi.isian ? (
+                                        <KontrolSegmen
+                                            label="ASI eksklusif"
+                                            nama="asi_eksklusif"
+                                            opsi={[
+                                                { nilai: 'ya', label: 'Ya' },
+                                                {
+                                                    nilai: 'tidak',
+                                                    label: 'Tidak',
+                                                },
+                                            ]}
+                                            nilai={
+                                                form.data.asi_eksklusif || null
+                                            }
+                                            onUbah={(nilai) =>
+                                                form.setData(
+                                                    'asi_eksklusif',
+                                                    nilai,
+                                                )
+                                            }
+                                            galat={form.errors.asi_eksklusif}
+                                        />
+                                    ) : (
+                                        <p className="text-kecil leading-relaxed text-ink-700">
+                                            <span className="font-bold text-ink-900">
+                                                Tercatat:{' '}
+                                            </span>
                                             {asi.terakhir
-                                                ? `${asi.terakhir.nilai ? 'Ya' : 'Tidak'} (tercatat ${asi.terakhir.tanggal}, saat 0–6 bulan)`
+                                                ? `${asi.terakhir.nilai ? 'Ya' : 'Tidak'} (${asi.terakhir.tanggal}, saat 0–6 bulan)`
                                                 : 'Belum tercatat'}
                                         </p>
-                                    </Kartu>
-                                )}
+                                    )}
+                                </Seksi>
 
-                                <div className="flex justify-center">
-                                    <Tombol
-                                        varian="tersier"
-                                        onClick={() => setSheetKembali(true)}
-                                    >
-                                        Data keliru? Kembalikan ke Meja 2
-                                    </Tombol>
-                                </div>
+                                <Tombol
+                                    varian="tersier"
+                                    className="justify-start gap-1.5"
+                                    onClick={() => setSheetKembali(true)}
+                                >
+                                    <RotateCcw
+                                        aria-hidden="true"
+                                        className="size-4"
+                                    />
+                                    Data keliru? Kembalikan ke Meja 2
+                                </Tombol>
 
                                 <KakiTombol denganNavigasi={false}>
                                     <Tombol
@@ -311,7 +349,7 @@ export default function Pendataan({
                     onSubmit={kirimKembali}
                     className="flex flex-col gap-4"
                 >
-                    <p className="text-teks text-ink-700">
+                    <p className="text-kecil leading-relaxed text-ink-700">
                         Anak masuk lagi ke antrean Meja 2 dengan tanda "Perlu
                         ukur ulang".
                     </p>
