@@ -1,3 +1,4 @@
+import { Download } from 'lucide-react';
 import { useState } from 'react';
 import { Tombol } from '@/components/dasar/tombol';
 import { useToast } from '@/components/dasar/toast';
@@ -12,10 +13,13 @@ import { unduhBerkas } from '@/lib/unduh';
 export function TombolUnduhCsv({
     url,
     kosong = false,
+    tampilan = 'biasa',
 }: {
     /** Alamat unduh beserta penyaring aktif. */
     url: string;
     kosong?: boolean;
+    /** "header" dipakai di atas latar gradien: kapsul kaca yang ringkas. */
+    tampilan?: 'biasa' | 'header';
 }) {
     const toast = useToast();
     const [memuat, setMemuat] = useState(false);
@@ -40,6 +44,28 @@ export function TombolUnduhCsv({
         } else {
             toast.error('Berkas gagal diunduh', () => void unduh());
         }
+    }
+
+    if (tampilan === 'header') {
+        return (
+            <div className="flex flex-col items-start gap-1">
+                <Tombol
+                    memuat={memuat}
+                    teksMemuat="Menyiapkan…"
+                    disabled={keterangan !== null}
+                    onClick={() => void unduh()}
+                    className="h-10 min-h-10 border border-white/25 bg-white/15 px-3 text-kecil text-white backdrop-blur-sm active:bg-white/25 disabled:border-white/15 disabled:bg-white/10 disabled:text-white/60"
+                >
+                    <Download aria-hidden="true" className="size-4" />
+                    Unduh CSV
+                </Tombol>
+                {keterangan && (
+                    <p className="text-keterangan text-brand-100">
+                        {keterangan}
+                    </p>
+                )}
+            </div>
+        );
     }
 
     return (
