@@ -1,4 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
+import { ChevronDown, ClipboardList, Ruler, UserPlus } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { Banner } from '@/components/dasar/banner';
 import { HeaderAnak } from '@/components/dasar/header-anak';
@@ -44,6 +45,10 @@ const ISIAN_UKUR = [
 /**
  * S05 Tambah Anak (FR-10 sampai FR-12, FR-67; DESIGN 5.2): satu halaman
  * dengan empat seksi; ukuran terakhir dari Buku KIA terlipat.
+ *
+ * Isian dikelompokkan menjadi kartu berjudul (identitas anak, orang tua,
+ * alamat) agar kader mudah memindai dan tidak kehilangan posisi saat
+ * menggulir. Isian pendek berpasangan dua kolom di tablet.
  */
 export default function TambahAnak({
     hariIni,
@@ -104,9 +109,9 @@ export default function TambahAnak({
                     nama="Tambah anak baru"
                     keterangan={
                         data.jenis_kelamin === 'L'
-                            ? 'Laki-laki'
+                            ? 'Laki-laki · Meja 1 Pendaftaran'
                             : data.jenis_kelamin === 'P'
-                              ? 'Perempuan'
+                              ? 'Perempuan · Meja 1 Pendaftaran'
                               : 'Meja 1 · Pendaftaran'
                     }
                     jenisKelamin={data.jenis_kelamin || null}
@@ -115,8 +120,25 @@ export default function TambahAnak({
                     kembaliLewatPost={false}
                 />
 
-                <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 pt-5 tablet:px-5">
+                <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-4 pb-2 tablet:px-5">
                     <RingkasanGalat galat={errors} labelIsian={labelIsian} />
+
+                    <p className="flex items-start gap-2 rounded-md border border-brand-100 bg-brand-50 px-3 py-2.5 text-keterangan leading-relaxed text-ink-700">
+                        <UserPlus
+                            aria-hidden="true"
+                            className="mt-0.5 size-4 shrink-0 text-brand-600"
+                        />
+                        <span>
+                            Isi data anak sesuai Buku KIA. Tanda{' '}
+                            <span
+                                aria-hidden="true"
+                                className="font-bold text-status-bahaya-teks"
+                            >
+                                *
+                            </span>{' '}
+                            berarti wajib diisi.
+                        </span>
+                    </p>
 
                     {anakSamaNik && (
                         <Banner varian="bahaya" judul="NIK sudah terdaftar">
@@ -179,45 +201,72 @@ export default function TambahAnak({
 
                     <details
                         open={adaGalatUkur || undefined}
-                        className="rounded-md border border-ink-200 bg-white px-4 shadow-1"
+                        className="group overflow-hidden rounded-lg border border-brand-100 bg-white shadow-1"
                     >
-                        {/* list-item (bawaan) agar segitiga buka-tutup tampil. */}
-                        <summary className="min-h-target-min cursor-pointer py-3 text-teks font-bold text-ink-900">
-                            Ukuran terakhir dari Buku KIA (opsional)
+                        <summary className="flex min-h-target-min cursor-pointer list-none items-center gap-2.5 px-3.5 py-2.5 transition-colors hover:bg-brand-50/70">
+                            <span className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-brand-50 text-brand-700 group-open:bg-gradient-to-br group-open:from-brand-800 group-open:to-brand-600 group-open:text-white">
+                                <Ruler
+                                    aria-hidden="true"
+                                    className="size-4"
+                                    strokeWidth={2.4}
+                                />
+                            </span>
+                            <span className="flex min-w-0 flex-1 flex-col">
+                                <span className="text-kecil font-bold text-ink-900">
+                                    Ukuran terakhir dari Buku KIA
+                                </span>
+                                <span className="text-keterangan text-ink-500">
+                                    Opsional · dipakai sebagai pembanding pada
+                                    kunjungan pertama
+                                </span>
+                            </span>
+                            <ChevronDown
+                                aria-hidden="true"
+                                className="size-4 shrink-0 text-brand-700 transition-transform group-open:rotate-180"
+                            />
                         </summary>
-                        <div className="flex flex-col gap-4 pt-2 pb-4">
-                            <p className="text-kecil text-ink-700">
-                                Dipakai sebagai pembanding pada kunjungan
-                                pertama.
-                            </p>
+                        <div className="flex flex-col gap-4 border-t border-brand-100 bg-brand-50/30 px-3.5 py-3.5">
                             <IsianTeks
                                 jenis="tanggal"
                                 label="Tanggal pengukuran"
                                 max={hariIni}
                                 {...teks('ukur_tanggal')}
                             />
-                            <IsianAngka
-                                label="Berat badan"
-                                satuan="kg"
-                                {...angka('ukur_bb')}
-                            />
-                            <IsianAngka
-                                label="Panjang/tinggi badan"
-                                satuan="cm"
-                                {...angka('ukur_pb_tb')}
-                            />
-                            <IsianAngka
-                                label="Lingkar lengan atas"
-                                satuan="cm"
-                                {...angka('ukur_lila')}
-                            />
-                            <IsianAngka
-                                label="Lingkar kepala"
-                                satuan="cm"
-                                {...angka('ukur_lk')}
-                            />
+                            <div className="grid grid-cols-1 gap-4 tablet:grid-cols-2">
+                                <IsianAngka
+                                    label="Berat badan"
+                                    satuan="kg"
+                                    {...angka('ukur_bb')}
+                                />
+                                <IsianAngka
+                                    label="Panjang/tinggi badan"
+                                    satuan="cm"
+                                    {...angka('ukur_pb_tb')}
+                                />
+                            </div>
+                            <div className="grid grid-cols-1 gap-4 tablet:grid-cols-2">
+                                <IsianAngka
+                                    label="Lingkar lengan atas"
+                                    satuan="cm"
+                                    {...angka('ukur_lila')}
+                                />
+                                <IsianAngka
+                                    label="Lingkar kepala"
+                                    satuan="cm"
+                                    {...angka('ukur_lk')}
+                                />
+                            </div>
                         </div>
                     </details>
+
+                    <p className="flex items-start gap-2 rounded-md border border-brand-100 bg-white px-3 py-2.5 text-keterangan leading-relaxed text-ink-600">
+                        <ClipboardList
+                            aria-hidden="true"
+                            className="mt-0.5 size-4 shrink-0 text-brand-600"
+                        />
+                        Setelah disimpan, anak dapat langsung dikirim ke antrean
+                        Meja 2 untuk diukur.
+                    </p>
 
                     <KakiTombol denganNavigasi={false}>
                         <TombolTautan
