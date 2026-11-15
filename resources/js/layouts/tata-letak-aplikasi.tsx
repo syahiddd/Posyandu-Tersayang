@@ -185,7 +185,10 @@ export default function TataLetakAplikasi({
             {!layarAnak && <NavigasiBawah item={itemUtama} />}
 
             <div className="flex min-h-dvh flex-col tablet:pl-24 desktop:pl-sidebar">
-                <KepalaAplikasi judul={name} mejaNomor={mejaAktif?.nomor} />
+                <KepalaAplikasi
+                    judul={namaPosyandu ?? name}
+                    mejaNomor={mejaAktif?.nomor}
+                />
 
                 <main
                     id="konten"
