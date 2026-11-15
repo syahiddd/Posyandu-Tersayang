@@ -1,5 +1,7 @@
 import { clsx } from 'clsx';
+import { CalendarDays, Ruler, Scale, Sprout } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
+import { ChipStatus } from '@/components/dasar/chip-status';
 import { Tombol } from '@/components/dasar/tombol';
 import {
     formatSatuDesimal,
@@ -18,11 +20,13 @@ import type {
     TitikAnak,
     WarnaZona,
 } from '@/lib/grafik';
+import { formatUmurLengkap } from '@/lib/umur';
+import type { VarianChip } from '@/components/dasar/chip-status';
 import type { JenisKelamin } from '@/types';
 
 const WARNA_ZONA: Record<WarnaZona, string> = {
-    aman: 'var(--color-zona-aman)',
-    'tidak-aman': 'var(--color-zona-tidak-aman)',
+    aman: 'var(--color-zona-aman-lembut)',
+    'tidak-aman': 'var(--color-zona-tidak-aman-lembut)',
 };
 
 const KELAS_ZONA: Record<WarnaZona, string> = {
@@ -61,6 +65,44 @@ function tanggalPendek(tanggal: string): string {
     return `${hari} ${BULAN[bulan - 1]} ${tahun}`;
 }
 
+/** Warna chip kategori agar ibu langsung paham aman/tidak. */
+function varianKategori(kategori: string): VarianChip {
+    const teks = kategori.toLowerCase();
+
+    if (
+        teks.includes('normal') ||
+        teks.includes('baik') ||
+        teks.includes('tinggi')
+    ) {
+        return 'normal';
+    }
+
+    if (teks.includes('lebih') || teks.includes('risiko')) {
+        return 'waspada';
+    }
+
+    return 'bahaya';
+}
+
+/** Label manusiawi untuk nilai sumbu Y per jenis grafik. */
+function labelNilai(indeks: IndeksGrafik, data: DataGrafik): string {
+    switch (indeks) {
+        case 'bb_u':
+        case 'kms':
+            return 'Berat badan';
+        case 'pb_tb_u':
+            return 'Panjang/tinggi';
+        case 'bb_pb_tb':
+            return 'Berat';
+        case 'imt_u':
+            return 'IMT';
+        case 'lk_u':
+            return 'Lingkar kepala';
+        default:
+            return data.sumbuY;
+    }
+}
+
 function satuanNilai(data: DataGrafik): string {
     return data.sumbuY;
 }
@@ -73,11 +115,18 @@ function teksTitik(data: DataGrafik, titik: TitikAnak, indeks: IndeksGrafik) {
             ? `${formatSatuDesimal(titik.y)} kg pada ${formatSatuDesimal(titik.x)} cm`
             : `${formatSatuDesimal(titik.y)} ${satuanNilai(data)}`;
     const z = titik.zScore === null ? null : `z ${formatZ(titik.zScore)}`;
+    const umur = formatUmurLengkap(titik.umurBulan);
 
     return {
-        baris1: `${waktu} · ${titik.umurBulan} bln`,
+        baris1: `${waktu} · ${umur}`,
         baris2: [nilai, z].filter(Boolean).join(' · '),
         baris3: `${titik.kategori}${titik.dariBukuKia ? ' · dari Buku KIA' : ''}`,
+        waktu,
+        umur,
+        nilai,
+        z,
+        kategori: titik.kategori,
+        dariBukuKia: titik.dariBukuKia,
     };
 }
 
@@ -212,17 +261,13 @@ export function GrafikPertumbuhan({
                                 </clipPath>
                             </defs>
 
-                            {/* Latar sesuai jenis kelamin (PRD 5.7). */}
+                            {/* Latar netral hangat agar warna zona tetap lembut. */}
                             <rect
                                 x={TEPI.kiri}
                                 y={TEPI.atas}
                                 width={lebarPlot}
                                 height={tinggiPlot}
-                                fill={
-                                    jenisKelamin === 'L'
-                                        ? 'var(--color-boy-50)'
-                                        : 'var(--color-girl-50)'
-                                }
+                                fill="var(--color-white)"
                             />
 
                             <g clipPath={`url(#${idKlip})`}>
@@ -234,7 +279,7 @@ export function GrafikPertumbuhan({
                                             satu.atas,
                                         )}
                                         fill={WARNA_ZONA[satu.warna]}
-                                        fillOpacity={0.55}
+                                        fillOpacity={1}
                                     />
                                 ))}
 
@@ -453,21 +498,69 @@ export function GrafikPertumbuhan({
                 {keterangan && posisiKeterangan && lebar > 0 && (
                     <div
                         aria-hidden="true"
-                        className="pointer-events-none absolute z-10 w-max max-w-56 rounded-sm bg-ink-900 px-3 py-2 text-kecil text-white shadow-2"
+                        className="pointer-events-none absolute z-10 w-56 overflow-hidden rounded-md border border-brand-200 bg-white text-ink-900 shadow-2"
                         style={{
                             left: Math.min(
                                 Math.max(posisiKeterangan.x + 12, 4),
-                                lebar - 220,
+                                Math.max(lebar - 228, 4),
                             ),
                             top:
                                 posisiKeterangan.y > tinggi / 2
-                                    ? Math.max(posisiKeterangan.y - 84, 0)
-                                    : posisiKeterangan.y + 12,
+                                    ? Math.max(posisiKeterangan.y - 132, 0)
+                                    : Math.min(
+                                          posisiKeterangan.y + 12,
+                                          tinggi - 132,
+                                      ),
                         }}
                     >
-                        <p>{keterangan.baris1}</p>
-                        <p className="font-bold">{keterangan.baris2}</p>
-                        <p className="font-bold">{keterangan.baris3}</p>
+                        <div className="bg-gradient-to-r from-brand-800 via-brand-700 to-brand-600 px-3 py-1.5 text-white">
+                            <p className="text-kecil leading-tight font-bold">
+                                {keterangan.waktu}
+                            </p>
+                            <p className="text-keterangan leading-tight text-brand-100">
+                                Umur {keterangan.umur}
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-1 px-3 py-2">
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="inline-flex items-center gap-1.5 text-keterangan text-ink-600">
+                                    <Scale
+                                        aria-hidden="true"
+                                        className="size-3.5 shrink-0 text-brand-700"
+                                    />
+                                    Hasil ukur
+                                </span>
+                                <span className="text-kecil font-bold text-ink-900 tabular-nums">
+                                    {keterangan.nilai}
+                                </span>
+                            </div>
+                            {keterangan.z && (
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="inline-flex items-center gap-1.5 text-keterangan text-ink-600">
+                                        <Ruler
+                                            aria-hidden="true"
+                                            className="size-3.5 shrink-0 text-brand-700"
+                                        />
+                                        z-score
+                                    </span>
+                                    <span className="text-kecil font-bold text-ink-900 tabular-nums">
+                                        {keterangan.z}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1.5 border-t border-brand-100 bg-brand-50/60 px-3 py-1.5">
+                            <ChipStatus
+                                varian={varianKategori(keterangan.kategori)}
+                            >
+                                {keterangan.kategori}
+                            </ChipStatus>
+                            {keterangan.dariBukuKia && (
+                                <span className="text-keterangan text-ink-600">
+                                    Buku KIA
+                                </span>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>
@@ -480,25 +573,113 @@ export function GrafikPertumbuhan({
                 </p>
             )}
 
+            {/* Ringkasan titik terpilih: mudah dibaca tanpa harus menebak warna. */}
+            {pilihan && (
+                <div className="rounded-md border border-brand-100 bg-gradient-to-br from-white via-brand-50/60 to-brand-100 p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                            <span
+                                aria-hidden="true"
+                                className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-gradient-to-br from-brand-600 to-brand-900 text-white shadow-1"
+                            >
+                                <CalendarDays className="size-4" />
+                            </span>
+                            <div className="min-w-0">
+                                <p className="text-kecil font-bold text-ink-900">
+                                    {pilihan.hariIni
+                                        ? 'Pengukuran hari ini'
+                                        : tanggalPendek(pilihan.tanggal)}
+                                </p>
+                                <p className="text-keterangan text-ink-600">
+                                    Umur {formatUmurLengkap(pilihan.umurBulan)}
+                                </p>
+                            </div>
+                        </div>
+                        <ChipStatus varian={varianKategori(pilihan.kategori)}>
+                            {pilihan.kategori}
+                        </ChipStatus>
+                    </div>
+
+                    <dl className="mt-2.5 grid grid-cols-2 gap-2">
+                        <div className="rounded-sm border border-brand-100 bg-white/80 px-2.5 py-1.5">
+                            <dt className="flex items-center gap-1 text-keterangan text-ink-500">
+                                <Scale
+                                    aria-hidden="true"
+                                    className="size-3.5 text-brand-700"
+                                />
+                                {indeks === 'bb_pb_tb'
+                                    ? 'Berat'
+                                    : labelNilai(indeks, data)}
+                            </dt>
+                            <dd className="text-teks font-bold text-ink-900 tabular-nums">
+                                {indeks === 'bb_pb_tb'
+                                    ? `${formatSatuDesimal(pilihan.y)} kg`
+                                    : `${formatSatuDesimal(pilihan.y)} ${data.sumbuY}`}
+                            </dd>
+                        </div>
+                        <div className="rounded-sm border border-brand-100 bg-white/80 px-2.5 py-1.5">
+                            <dt className="flex items-center gap-1 text-keterangan text-ink-500">
+                                <Ruler
+                                    aria-hidden="true"
+                                    className="size-3.5 text-brand-700"
+                                />
+                                {indeks === 'bb_pb_tb' ? 'Panjang' : 'z-score'}
+                            </dt>
+                            <dd className="text-teks font-bold text-ink-900 tabular-nums">
+                                {indeks === 'bb_pb_tb'
+                                    ? `${formatSatuDesimal(pilihan.x)} cm`
+                                    : pilihan.zScore === null
+                                      ? '—'
+                                      : formatZ(pilihan.zScore)}
+                            </dd>
+                        </div>
+                    </dl>
+
+                    {pilihan.dariBukuKia && (
+                        <p className="mt-2 inline-flex items-center gap-1.5 text-keterangan text-ink-600">
+                            <Sprout
+                                aria-hidden="true"
+                                className="size-3.5 text-brand-700"
+                            />
+                            Dicatat dari Buku KIA
+                        </p>
+                    )}
+                </div>
+            )}
+
             {/* Legenda zona (DESIGN 7.1): dua warna saja agar cepat dibaca. */}
-            <ul className="flex flex-wrap gap-x-5 gap-y-1 text-kecil text-ink-900">
-                {LEGENDA_ZONA.map((satu) => (
-                    <li key={satu.warna} className="flex items-center gap-2">
-                        <span
-                            aria-hidden="true"
-                            className={clsx(
-                                'size-3.5 rounded-sm border border-ink-300',
-                                KELAS_ZONA[satu.warna],
-                            )}
-                        />
-                        {satu.label}
-                    </li>
-                ))}
-            </ul>
+            <div className="rounded-md border border-brand-100 bg-white/70 px-3 py-2">
+                <p className="text-label-seksi tracking-[0.12em] text-brand-700 uppercase">
+                    Keterangan warna
+                </p>
+                <ul className="mt-1.5 flex flex-wrap gap-x-5 gap-y-1 text-kecil text-ink-900">
+                    {LEGENDA_ZONA.map((satu) => (
+                        <li
+                            key={satu.warna}
+                            className="flex items-center gap-2"
+                        >
+                            <span
+                                aria-hidden="true"
+                                className={clsx(
+                                    'size-3.5 rounded-sm border border-ink-300',
+                                    KELAS_ZONA[satu.warna],
+                                )}
+                            />
+                            <span className="font-bold">
+                                {satu.warna === 'aman' ? 'Aman' : 'Tidak aman'}
+                            </span>
+                            <span className="text-keterangan text-ink-600">
+                                {satu.warna === 'aman'
+                                    ? 'sesuai umur'
+                                    : 'perlu perhatian'}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
             <p className="text-keterangan text-ink-600">
-                Hijau = aman, tidak perlu tindak lanjut khusus; merah = tidak
-                aman, perlu perhatian. Batas mengikuti Buku KIA; sumber standar
-                WHO, Permenkes Nomor 2 Tahun 2020.
+                Batas kategori mengikuti Buku KIA; sumber standar WHO, Permenkes
+                Nomor 2 Tahun 2020.
             </p>
 
             <div>

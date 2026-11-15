@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { formatUmurBulan, formatUmurTahunBulan } from './umur';
+import {
+    formatUmurBulan,
+    formatUmurLengkap,
+    formatUmurTahunBulan,
+    pecahUmur,
+} from './umur';
 import { inisial, lamaSejak } from './waktu';
 
 describe('format umur (PRD 5.6, DESIGN Gambar 4)', () => {
@@ -12,6 +17,16 @@ describe('format umur (PRD 5.6, DESIGN Gambar 4)', () => {
         expect(formatUmurTahunBulan(39)).toBe('3 th 3 bln');
         expect(formatUmurTahunBulan(24)).toBe('2 th 0 bln');
         expect(formatUmurTahunBulan(9)).toBe('9 bln');
+    });
+
+    it('menulis umur lengkap dengan bulan bila lebih dari setahun', () => {
+        expect(formatUmurLengkap(0)).toBe('0 bulan');
+        expect(formatUmurLengkap(9)).toBe('9 bulan');
+        expect(formatUmurLengkap(12)).toBe('1 tahun 0 bulan (12 bulan)');
+        expect(formatUmurLengkap(39)).toBe('3 tahun 3 bulan (39 bulan)');
+        expect(pecahUmur(39).teks).toBe('3 tahun 3 bulan');
+        expect(pecahUmur(39).teksBulan).toBe('39 bulan');
+        expect(pecahUmur(9).teks).toBe('9 bulan');
     });
 });
 
