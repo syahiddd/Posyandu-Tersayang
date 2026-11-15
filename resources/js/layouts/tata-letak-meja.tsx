@@ -80,7 +80,7 @@ export default function TataLetakMeja({ children }: { children: ReactNode }) {
                     aria-label={`Antrean Meja ${props.antreanMeja.nomor}`}
                     className={clsx(
                         layarAnak ? 'hidden panel:flex' : 'flex',
-                        'flex-col px-4 pt-5 pb-19 tablet:px-5 tablet:pb-5',
+                        'flex-1 flex-col bg-gradient-to-b from-brand-50 via-paper to-paper px-4 pt-5 pb-19 tablet:px-5 tablet:pb-5',
                         'panel:sticky panel:top-14 panel:h-[calc(100dvh-3.5rem)] panel:overflow-y-auto panel:border-r panel:border-ink-200 panel:px-4 desktop:top-16 desktop:h-[calc(100dvh-4rem)]',
                     )}
                 >

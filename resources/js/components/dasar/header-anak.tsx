@@ -62,7 +62,11 @@ export function HeaderAnak({
                         <span aria-hidden="true">‹</span> Kembali
                     </Link>
                     {meja !== undefined && (
-                        <LencanaMeja nomor={meja} ukuran="kecil" />
+                        <LencanaMeja
+                            nomor={meja}
+                            ukuran="kecil"
+                            varian={berwarna ? 'terang' : 'plum'}
+                        />
                     )}
                 </div>
                 <div>

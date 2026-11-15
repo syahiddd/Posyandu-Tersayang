@@ -139,10 +139,10 @@ export default function PilihMeja({ tanggal, meja, terpilih }: Props) {
                                                 nomor={item.nomor}
                                                 denganLabel
                                                 className={clsx(
-                                                    'relative shadow-1 transition-transform group-active:scale-95',
+                                                    'relative transition-transform group-active:scale-95',
                                                     dipilih
-                                                        ? 'bg-gradient-to-br from-brand-600 to-brand-900'
-                                                        : 'bg-gradient-to-br from-brand-800 to-brand-900',
+                                                        ? 'from-brand-600 to-brand-900 ring-2 ring-brand-300 ring-inset'
+                                                        : 'from-brand-800 to-brand-900',
                                                 )}
                                             />
 

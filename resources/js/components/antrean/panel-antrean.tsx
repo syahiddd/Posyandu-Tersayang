@@ -1,4 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
+import { clsx } from 'clsx';
 import { Check } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Banner } from '@/components/dasar/banner';
@@ -72,26 +73,77 @@ export function PanelAntrean({
 
     return (
         <>
-            <div className="flex flex-col gap-4">
-                <header className="flex items-center gap-4">
-                    <LencanaMeja
-                        nomor={nomor}
-                        denganLabel={!diLayarAnak}
-                        ukuran={diLayarAnak ? 'kecil' : undefined}
+            <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4">
+                <header
+                    className={clsx(
+                        'relative isolate overflow-hidden bg-gradient-to-br from-brand-900 via-brand-800 to-brand-600 text-white shadow-2',
+                        diLayarAnak ? 'rounded-md p-3' : 'rounded-lg p-4',
+                    )}
+                >
+                    <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -top-12 -right-10 size-32 rounded-pill bg-brand-300/25 blur-2xl"
                     />
-                    <div className="min-w-0 flex-1">
-                        <Judul
-                            className={
-                                diLayarAnak
-                                    ? 'text-judul-2 text-ink-900'
-                                    : 'text-judul-2 text-ink-900 desktop:text-judul-1'
-                            }
-                        >
-                            Antrean Meja {nomor}
-                            {diLayarAnak && ` · ${antrean.length}`}
-                        </Judul>
-                        <p className="text-teks text-ink-700">{tahap}</p>
+                    <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -bottom-14 -left-12 size-36 rounded-pill bg-brand-600/30 blur-2xl"
+                    />
+
+                    <div className="relative flex items-center gap-3">
+                        <LencanaMeja
+                            nomor={nomor}
+                            denganLabel={!diLayarAnak}
+                            ukuran={diLayarAnak ? 'kecil' : undefined}
+                            varian="terang"
+                        />
+                        <div className="min-w-0 flex-1">
+                            <p className="text-label-seksi tracking-[0.16em] text-brand-200 uppercase">
+                                Meja pelayanan
+                            </p>
+                            <Judul
+                                className={clsx(
+                                    'mt-1 text-white',
+                                    diLayarAnak
+                                        ? 'text-judul-2'
+                                        : 'text-judul-2 desktop:text-judul-1',
+                                )}
+                            >
+                                {diLayarAnak
+                                    ? `Meja ${nomor} · ${antrean.length} anak`
+                                    : `Antrean Meja ${nomor}`}
+                            </Judul>
+                            <p className="mt-0.5 text-kecil text-brand-100">
+                                {tahap}
+                            </p>
+                        </div>
                     </div>
+
+                    {!diLayarAnak && (
+                        <div className="relative mt-3 flex flex-wrap items-center gap-2">
+                            <span className="inline-flex min-h-7 items-center gap-1.5 rounded-pill border border-white/15 bg-white/10 px-2.5 text-keterangan font-bold text-white backdrop-blur-sm">
+                                <span
+                                    aria-hidden="true"
+                                    className="size-1.5 rounded-pill bg-brand-200"
+                                />
+                                {antrean.length} menunggu
+                            </span>
+                            {ditunda.length > 0 && (
+                                <span className="inline-flex min-h-7 items-center gap-1.5 rounded-pill border border-white/20 bg-status-waspada-latar px-2.5 text-keterangan font-bold text-status-waspada-teks">
+                                    {ditunda.length} ditunda
+                                </span>
+                            )}
+                            {tersedia && (
+                                <span className="inline-flex min-h-7 items-center gap-1.5 rounded-pill border border-white/15 bg-white/10 px-2.5 text-keterangan font-bold text-brand-100 backdrop-blur-sm">
+                                    <Check
+                                        aria-hidden="true"
+                                        className="size-3.5"
+                                        strokeWidth={3}
+                                    />
+                                    Siap melayani
+                                </span>
+                            )}
+                        </div>
+                    )}
                 </header>
 
                 {!diLayarAnak && errors.kunjungan && (
@@ -109,22 +161,72 @@ export function PanelAntrean({
                 )}
 
                 {antrean.length === 0 ? (
-                    <div className="flex flex-col items-center gap-3 py-7 text-center">
-                        <span
-                            aria-hidden="true"
-                            className="flex size-14 items-center justify-center rounded-pill bg-ink-100 text-ink-900"
-                        >
-                            <Check className="size-6" />
-                        </span>
-                        <p className="text-judul-2 text-ink-900">
-                            Antrean kosong
-                        </p>
-                        <p className="max-w-xs text-teks text-ink-700">
-                            Anak dari meja sebelumnya akan muncul di sini
-                            otomatis. Tidak perlu memuat ulang.
-                        </p>
-                        {tombolDitunda}
-                    </div>
+                    <>
+                        <div className="flex flex-1 items-center justify-center py-1 panel:hidden">
+                            <div className="relative isolate w-full overflow-hidden rounded-lg border border-brand-100 bg-gradient-to-br from-white via-brand-50/80 to-brand-100 px-5 py-8 text-center shadow-1">
+                                <span
+                                    aria-hidden="true"
+                                    className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-800 via-brand-600 to-brand-300"
+                                />
+                                <span
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute -top-16 left-1/2 size-48 -translate-x-1/2 rounded-pill bg-brand-200/50 blur-3xl"
+                                />
+
+                                <div className="relative mx-auto flex max-w-[19rem] flex-col items-center">
+                                    <span
+                                        aria-hidden="true"
+                                        className="relative flex size-16 items-center justify-center"
+                                    >
+                                        <span className="absolute inset-0 rounded-pill bg-brand-200/60 blur-md" />
+                                        <span className="relative flex size-14 items-center justify-center rounded-pill bg-gradient-to-br from-brand-600 to-brand-900 text-white shadow-2">
+                                            <Check
+                                                className="size-6"
+                                                strokeWidth={2.5}
+                                            />
+                                        </span>
+                                    </span>
+
+                                    <p className="mt-4 text-judul-2 text-brand-900">
+                                        Antrean masih kosong
+                                    </p>
+                                    <p className="mt-1.5 text-kecil leading-relaxed text-ink-600">
+                                        Anak dari meja sebelumnya akan muncul di
+                                        sini otomatis. Tidak perlu memuat ulang
+                                        halaman.
+                                    </p>
+                                    <span className="mt-4 inline-flex items-center gap-2 rounded-pill border border-brand-100 bg-white/80 px-3 py-1.5 text-keterangan font-bold text-brand-700">
+                                        <span
+                                            aria-hidden="true"
+                                            className="size-2 animate-pulse rounded-pill bg-brand-600"
+                                        />
+                                        Menunggu anak berikutnya
+                                    </span>
+                                    {tombolDitunda && (
+                                        <div className="mt-3">
+                                            {tombolDitunda}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="hidden flex-1 flex-col items-center justify-center gap-2 px-2 py-6 text-center panel:flex">
+                            <span
+                                aria-hidden="true"
+                                className="flex size-10 items-center justify-center rounded-pill border border-brand-100 bg-brand-50 text-brand-700"
+                            >
+                                <Check className="size-5" strokeWidth={2.5} />
+                            </span>
+                            <p className="text-kecil font-bold text-brand-900">
+                                Antrean masih kosong
+                            </p>
+                            <p className="text-keterangan leading-relaxed text-ink-600">
+                                Anak akan muncul otomatis di sini.
+                            </p>
+                            {tombolDitunda && <div>{tombolDitunda}</div>}
+                        </div>
+                    </>
                 ) : (
                     <ul className="flex flex-col gap-3">
                         {antrean.map((anak) => {
