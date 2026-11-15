@@ -38,7 +38,8 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
             ? 'Posyandu Tersayang'
             : namaPosyanduTersimpan;
     const namaKader = auth.user?.name ?? '—';
-    const labelKader = auth.user?.role === 'ketua' ? 'Ketua Kader' : 'Kader';
+    const labelKader =
+        auth.user?.role === 'ketua' ? 'Ketua Kader' : 'Kader';
     const tujuanLayanan = mejaAktif
         ? meja(mejaAktif.nomor).url
         : pilihMeja().url;
@@ -184,7 +185,7 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
                         <h2
                             id="judul-ringkasan"
                             className="mt-1 text-judul-2 text-ink-900"
-                        >
+                            >
                             Ringkasan pelayanan
                         </h2>
                     </div>
@@ -210,7 +211,7 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
                     </div>
                     {ringkasan.terdaftar === 0 && (
                         <p className="mt-3 text-teks text-ink-700">
-                            <strong>Belum ada kunjungan hari ini.</strong>
+                            Belum ada kunjungan hari ini.
                         </p>
                     )}
                 </section>
@@ -319,7 +320,7 @@ function PintasanBeranda({
                 <Ikon aria-hidden="true" className="size-6" />
             </span>
             <span className="relative z-10 min-w-0 flex-1">
-                <span className="block text-teks leading-tight font-bold">
+                <span className="block text-teks font-bold leading-tight">
                     {judul}
                 </span>
                 <span className="mt-1 block text-keterangan text-white/85">
@@ -328,7 +329,7 @@ function PintasanBeranda({
             </span>
             <ArrowUpRight
                 aria-hidden="true"
-                className="relative z-10 size-5 shrink-0 text-white/85 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                className="relative z-10 size-5 shrink-0 text-white/85 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
             />
             <Ikon
                 aria-hidden="true"
@@ -385,11 +386,7 @@ function KartuRingkasan({
                 <span
                     className={`flex size-11 items-center justify-center rounded-md ring-1 ${tema.ikon}`}
                 >
-                    <Ikon
-                        aria-hidden="true"
-                        className="size-6"
-                        strokeWidth={2.2}
-                    />
+                    <Ikon aria-hidden="true" className="size-6" strokeWidth={2.2} />
                 </span>
                 <span className="rounded-pill bg-white/80 px-2 py-1 text-label-seksi text-ink-500 uppercase">
                     Hari ini
@@ -399,7 +396,7 @@ function KartuRingkasan({
                 <p className="text-display text-ink-900 tabular-nums">
                     {angka.toLocaleString('id-ID')}
                 </p>
-                <p className="mt-1 text-keterangan leading-tight font-bold text-ink-600">
+                <p className="mt-1 text-keterangan font-bold leading-tight text-ink-600">
                     {label}
                 </p>
             </div>
@@ -458,13 +455,13 @@ function BarisAntrean({ item }: { item: AntreanMeja }) {
         <Link
             href={meja(item.nomor)}
             aria-label={`Meja ${item.nomor} ${item.tahap}, ${keterangan}`}
-            className={`group flex min-h-[76px] items-center gap-3 rounded-lg border border-l-4 border-ink-200 px-3 py-2 shadow-1 transition-all hover:-translate-y-0.5 hover:shadow-2 focus-visible:outline-brand-700 ${tema.garis} ${tema.latar}`}
+            className={`group flex min-h-[76px] items-center gap-3 rounded-lg border border-ink-200 border-l-4 px-3 py-2 shadow-1 transition-all hover:-translate-y-0.5 hover:shadow-2 focus-visible:outline-brand-700 ${tema.garis} ${tema.latar}`}
         >
             <span
                 aria-hidden="true"
                 className={`flex size-11 shrink-0 flex-col items-center justify-center rounded-md ${tema.lencana}`}
             >
-                <span className="text-label-seksi leading-none font-bold tracking-wide">
+                <span className="text-label-seksi font-bold leading-none tracking-wide">
                     MEJA
                 </span>
                 <span className="mt-0.5 text-judul-2 leading-none">
