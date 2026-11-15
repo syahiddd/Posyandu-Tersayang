@@ -1,19 +1,38 @@
 import { Head, useForm } from '@inertiajs/react';
 import { clsx } from 'clsx';
+import {
+    Activity,
+    Baby,
+    CalendarDays,
+    History,
+    IdCard,
+    LineChart,
+    MapPin,
+    NotebookText,
+    Phone,
+    Plus,
+    Ruler,
+    Scale,
+    Stethoscope,
+    Syringe,
+    User,
+    Users,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Banner } from '@/components/dasar/banner';
+import { ChipStatus } from '@/components/dasar/chip-status';
 import { Dialog } from '@/components/dasar/dialog';
 import { HeaderAnak } from '@/components/dasar/header-anak';
 import { IsianTeks } from '@/components/dasar/isian-teks';
 import { KakiTombol } from '@/components/dasar/kaki-tombol';
-import { Kartu } from '@/components/dasar/kartu';
 import { propsPanel, Tab } from '@/components/dasar/tab';
 import { Tombol, TombolTautan } from '@/components/dasar/tombol';
 import { GrafikPertumbuhan } from '@/components/grafik-pertumbuhan';
 import { formatDesimal } from '@/lib/desimal';
 import type { DataGrafik, IndeksGrafik } from '@/lib/grafik';
-import { formatUmurTahunBulan } from '@/lib/umur';
+import { formatUmurLengkap, pecahUmur } from '@/lib/umur';
 import { dataAnak, riwayatBukuKia } from '@/routes';
 import { hapus as hapusAnak, ubah } from '@/routes/data-anak';
 import type {
@@ -44,29 +63,128 @@ type IdTab = 'ringkasan' | 'grafik' | 'riwayat';
 
 const KOSONG = '—';
 
-function Baris({ label, nilai }: { label: string; nilai: ReactNode }) {
-    return (
-        <div className="flex flex-col gap-0.5 py-3 tablet:flex-row tablet:justify-between tablet:gap-4">
-            <dt className="text-kecil text-ink-700">{label}</dt>
-            <dd className="text-teks font-bold break-words text-ink-900 tablet:text-right">
-                {nilai === null || nilai === '' ? KOSONG : nilai}
-            </dd>
-        </div>
-    );
-}
-
 function nilaiUkur(nilai: string | null, satuan: string): string {
     return nilai === null
         ? KOSONG
         : `${formatDesimal(Number(nilai))} ${satuan}`;
 }
 
+/** Satu baris label–nilai; dua kolom di tablet agar tidak memanjang. */
+function Baris({
+    label,
+    nilai,
+    ikon: Ikon,
+}: {
+    label: string;
+    nilai: ReactNode;
+    ikon?: LucideIcon;
+}) {
+    return (
+        <div className="flex flex-col gap-0.5 py-2.5">
+            <dt className="flex items-center gap-1.5 text-keterangan text-ink-500">
+                {Ikon && (
+                    <Ikon
+                        aria-hidden="true"
+                        className="size-3.5 shrink-0 text-brand-600"
+                    />
+                )}
+                {label}
+            </dt>
+            <dd className="text-teks font-bold break-words text-ink-900">
+                {nilai === null || nilai === '' ? KOSONG : nilai}
+            </dd>
+        </div>
+    );
+}
+
+/** Kartu seksi dengan kepala bergradasi dan ikon di tile plum. */
+function Seksi({
+    judul,
+    ikon: Ikon,
+    aksi,
+    children,
+    className,
+}: {
+    judul: string;
+    ikon: LucideIcon;
+    aksi?: ReactNode;
+    children: ReactNode;
+    className?: string;
+}) {
+    return (
+        <section
+            className={clsx(
+                'overflow-hidden rounded-lg border border-brand-100 bg-white shadow-1',
+                className,
+            )}
+        >
+            <div className="flex items-center gap-2.5 border-b border-brand-100 bg-gradient-to-r from-brand-50 via-white to-brand-50 px-3.5 py-2.5">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-gradient-to-br from-brand-600 to-brand-900 text-white shadow-1">
+                    <Ikon
+                        aria-hidden="true"
+                        className="size-4"
+                        strokeWidth={2.4}
+                    />
+                </span>
+                <h2 className="min-w-0 flex-1 text-label-seksi tracking-[0.12em] text-brand-700 uppercase">
+                    {judul}
+                </h2>
+                {aksi}
+            </div>
+            <div className="px-3.5 py-1">{children}</div>
+        </section>
+    );
+}
+
+/** Petak kecil nilai ukur di kartu riwayat pengukuran. */
+function PetakUkur({
+    label,
+    nilai,
+    ikon: Ikon,
+}: {
+    label: string;
+    nilai: string;
+    ikon: LucideIcon;
+}) {
+    return (
+        <div className="rounded-sm border border-brand-100 bg-white/85 px-2.5 py-1.5">
+            <dt className="flex items-center gap-1 text-keterangan text-ink-500">
+                <Ikon
+                    aria-hidden="true"
+                    className="size-3.5 shrink-0 text-brand-600"
+                />
+                {label}
+            </dt>
+            <dd className="text-kecil font-bold text-ink-900 tabular-nums">
+                {nilai}
+            </dd>
+        </div>
+    );
+}
+
 function TandaBukuKia() {
     return (
-        <span className="ml-2 inline-flex rounded-pill border border-ink-400 px-2 text-keterangan font-bold whitespace-nowrap text-ink-700">
-            Dari Buku KIA
+        <span className="inline-flex items-center gap-1 rounded-pill border border-brand-200 bg-brand-50 px-2 py-0.5 text-keterangan font-bold whitespace-nowrap text-brand-700">
+            <NotebookText aria-hidden="true" className="size-3" />
+            Buku KIA
         </span>
     );
+}
+
+function chipStatusNt(status: RiwayatPengukuran['statusNt']) {
+    if (status === 'N') {
+        return { varian: 'normal' as const, label: 'Berat naik' };
+    }
+
+    if (status === 'T') {
+        return { varian: 'waspada' as const, label: 'Berat tidak naik' };
+    }
+
+    if (status === 'tidak_ditimbang') {
+        return { varian: 'info' as const, label: 'Tidak ditimbang' };
+    }
+
+    return null;
 }
 
 /**
@@ -112,16 +230,16 @@ export default function DetailDataAnak({
     return (
         <>
             <Head title={anak.nama} />
-            <div className="flex min-h-dvh flex-col bg-paper">
+            <div className="flex min-h-dvh flex-col bg-gradient-to-b from-brand-50/70 via-paper to-paper">
                 <HeaderAnak
                     nama={anak.nama}
-                    keterangan={`${laki ? 'Laki-laki' : 'Perempuan'} · ${formatUmurTahunBulan(anak.umurBulan)}`}
+                    keterangan={`${laki ? 'Laki-laki' : 'Perempuan'} · ${formatUmurLengkap(anak.umurBulan)}`}
                     jenisKelamin={anak.jenisKelamin}
                     kembali={dataAnak()}
                     kembaliLewatPost={false}
                 />
 
-                <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-4 tablet:px-5">
+                <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-4 pb-2 tablet:px-5">
                     <Tab<IdTab>
                         label="Bagian detail anak"
                         aktif={tab}
@@ -138,27 +256,65 @@ export default function DetailDataAnak({
                             {...propsPanel('ringkasan')}
                             className="flex flex-col gap-4"
                         >
-                            <Kartu labelSeksi="Identitas anak">
-                                <dl className="divide-y divide-ink-200">
-                                    <Baris label="Nama" nilai={anak.nama} />
-                                    <Baris
-                                        label="Jenis kelamin"
-                                        nilai={laki ? 'Laki-laki' : 'Perempuan'}
+                            {/* Ringkasan cepat: umur, jenis kelamin, Buku KIA. */}
+                            <div className="grid grid-cols-3 gap-2">
+                                <div className="relative isolate overflow-hidden rounded-md border border-brand-100 bg-gradient-to-br from-white via-brand-50/70 to-brand-100 px-2.5 py-2 shadow-1">
+                                    <Baby
+                                        aria-hidden="true"
+                                        className="pointer-events-none absolute -right-2 -bottom-2 size-9 text-brand-200/70"
                                     />
-                                    <Baris
-                                        label="Tempat, tanggal lahir"
-                                        nilai={[
-                                            anak.tempatLahir,
-                                            anak.tanggalLahir,
-                                        ]
-                                            .filter(Boolean)
-                                            .join(', ')}
+                                    <p className="relative text-keterangan text-ink-500">
+                                        Umur
+                                    </p>
+                                    <p className="relative mt-0.5 text-kecil leading-tight font-bold text-brand-900 tabular-nums">
+                                        {pecahUmur(anak.umurBulan).tahun > 0
+                                            ? `${pecahUmur(anak.umurBulan).tahun} th ${pecahUmur(anak.umurBulan).bulan} bln`
+                                            : `${pecahUmur(anak.umurBulan).bulan} bulan`}
+                                    </p>
+                                    {pecahUmur(anak.umurBulan).tahun > 0 && (
+                                        <p className="relative text-keterangan leading-tight text-ink-500 tabular-nums">
+                                            {
+                                                pecahUmur(anak.umurBulan)
+                                                    .teksBulan
+                                            }
+                                        </p>
+                                    )}
+                                </div>
+                                <div className="relative isolate overflow-hidden rounded-md border border-brand-100 bg-gradient-to-br from-white via-brand-50/70 to-brand-100 px-2.5 py-2 shadow-1">
+                                    <User
+                                        aria-hidden="true"
+                                        className="pointer-events-none absolute -right-2 -bottom-2 size-9 text-brand-200/70"
                                     />
+                                    <p className="relative text-keterangan text-ink-500">
+                                        Jenis kelamin
+                                    </p>
+                                    <p className="relative mt-0.5 text-kecil leading-tight font-bold text-brand-900">
+                                        {laki ? 'Laki-laki' : 'Perempuan'}
+                                    </p>
+                                </div>
+                                <div className="relative isolate overflow-hidden rounded-md border border-brand-100 bg-gradient-to-br from-white via-brand-50/70 to-brand-100 px-2.5 py-2 shadow-1">
+                                    <NotebookText
+                                        aria-hidden="true"
+                                        className="pointer-events-none absolute -right-2 -bottom-2 size-9 text-brand-200/70"
+                                    />
+                                    <p className="relative text-keterangan text-ink-500">
+                                        Buku KIA
+                                    </p>
+                                    <p className="relative mt-0.5 text-kecil leading-tight font-bold text-brand-900">
+                                        {anak.punyaBukuKia === null
+                                            ? 'Belum diisi'
+                                            : anak.punyaBukuKia
+                                              ? 'Punya'
+                                              : 'Tidak punya'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <Seksi judul="Identitas anak" ikon={IdCard}>
+                                <dl className="grid tablet:grid-cols-2 tablet:gap-x-6">
                                     <Baris
-                                        label="Umur"
-                                        nilai={formatUmurTahunBulan(
-                                            anak.umurBulan,
-                                        )}
+                                        label="Nama lengkap"
+                                        nilai={anak.nama}
                                     />
                                     <Baris
                                         label="NIK"
@@ -171,6 +327,28 @@ export default function DetailDataAnak({
                                         }
                                     />
                                     <Baris
+                                        label="Tempat, tanggal lahir"
+                                        nilai={[
+                                            anak.tempatLahir,
+                                            anak.tanggalLahir,
+                                        ]
+                                            .filter(Boolean)
+                                            .join(', ')}
+                                        ikon={CalendarDays}
+                                    />
+                                    <Baris
+                                        label="Umur saat ini"
+                                        nilai={formatUmurLengkap(
+                                            anak.umurBulan,
+                                        )}
+                                        ikon={Baby}
+                                    />
+                                    <Baris
+                                        label="Jenis kelamin"
+                                        nilai={laki ? 'Laki-laki' : 'Perempuan'}
+                                        ikon={User}
+                                    />
+                                    <Baris
                                         label="Punya Buku KIA"
                                         nilai={
                                             anak.punyaBukuKia === null
@@ -179,38 +357,54 @@ export default function DetailDataAnak({
                                                   ? 'Ya'
                                                   : 'Tidak'
                                         }
+                                        ikon={NotebookText}
                                     />
                                 </dl>
-                            </Kartu>
-                            <Kartu labelSeksi="Orang tua">
-                                <dl className="divide-y divide-ink-200">
+                            </Seksi>
+
+                            <Seksi judul="Orang tua" ikon={Users}>
+                                <dl className="grid tablet:grid-cols-2 tablet:gap-x-6">
                                     <Baris
                                         label="Nama ibu"
                                         nilai={anak.namaIbu}
+                                        ikon={User}
                                     />
                                     <Baris
                                         label="NIK ibu"
                                         nilai={anak.nikIbu}
+                                        ikon={IdCard}
                                     />
                                     <Baris
                                         label="Nama ayah"
                                         nilai={anak.namaAyah}
+                                        ikon={User}
                                     />
                                     <Baris
                                         label="NIK ayah"
                                         nilai={anak.nikAyah}
+                                        ikon={IdCard}
                                     />
-                                    <Baris label="Nomor HP" nilai={anak.noHp} />
+                                    <Baris
+                                        label="Nomor HP"
+                                        nilai={anak.noHp}
+                                        ikon={Phone}
+                                    />
                                 </dl>
-                            </Kartu>
-                            <Kartu labelSeksi="Alamat">
-                                <dl className="divide-y divide-ink-200">
+                            </Seksi>
+
+                            <Seksi judul="Alamat" ikon={MapPin}>
+                                <dl className="grid tablet:grid-cols-2 tablet:gap-x-6">
                                     <Baris label="Alamat" nilai={alamat} />
                                     <Baris label="Dusun" nilai={anak.dusun} />
                                 </dl>
-                            </Kartu>
+                            </Seksi>
+
                             {perubahanTerakhir && (
-                                <p className="text-kecil text-ink-700">
+                                <p className="flex items-center gap-1.5 text-keterangan text-ink-500">
+                                    <History
+                                        aria-hidden="true"
+                                        className="size-3.5"
+                                    />
                                     Diubah terakhir oleh{' '}
                                     {perubahanTerakhir.oleh},{' '}
                                     {perubahanTerakhir.pada}
@@ -271,186 +465,199 @@ export default function DetailDataAnak({
                                     atau riwayat dari Buku KIA dimasukkan.
                                 </Banner>
                             ) : (
-                                // Kepala kartu DESIGN 7.1: garis atas 6 px warna
-                                // jenis kelamin, nama, indeks, lencana.
-                                <Kartu
+                                <section
                                     aria-label="Grafik pertumbuhan"
-                                    className={clsx(
-                                        'flex flex-col gap-3 border-t-6',
-                                        laki
-                                            ? 'border-t-boy-700'
-                                            : 'border-t-girl-700',
-                                    )}
+                                    className="overflow-hidden rounded-lg border border-brand-100 bg-white shadow-1"
                                 >
-                                    <div className="flex flex-wrap items-start justify-between gap-2">
-                                        <div className="min-w-0">
-                                            <p className="text-judul-2 text-ink-900">
-                                                {anak.nama}
-                                            </p>
-                                            <p className="text-kecil text-ink-700">
-                                                {grafik.daftar[tabGrafik].judul}
-                                            </p>
-                                        </div>
+                                    <div className="relative isolate overflow-hidden bg-gradient-to-br from-brand-900 via-brand-800 to-brand-600 px-4 pt-3.5 pb-3 text-white">
                                         <span
-                                            className={clsx(
-                                                'rounded-pill px-3 py-1 text-kecil font-bold whitespace-nowrap',
-                                                laki
-                                                    ? 'bg-boy-100 text-boy-700'
-                                                    : 'bg-girl-100 text-girl-700',
-                                            )}
-                                        >
-                                            {laki ? 'Laki-laki' : 'Perempuan'}
-                                        </span>
-                                    </div>
-                                    <Tab<IndeksGrafik>
-                                        label="Jenis grafik"
-                                        aktif={tabGrafik}
-                                        onUbah={setTabGrafik}
-                                        varian="pil"
-                                        item={[
-                                            { id: 'kms', label: 'KMS' },
-                                            { id: 'bb_u', label: 'BB/U' },
-                                            {
-                                                id: 'pb_tb_u',
-                                                label: grafik.pakaiPanjang
-                                                    ? 'PB/U'
-                                                    : 'TB/U',
-                                            },
-                                            {
-                                                id: 'bb_pb_tb',
-                                                label: grafik.pakaiPanjang
-                                                    ? 'BB/PB'
-                                                    : 'BB/TB',
-                                            },
-                                            { id: 'imt_u', label: 'IMT/U' },
-                                            { id: 'lk_u', label: 'LK' },
-                                        ]}
-                                    />
-                                    <div
-                                        id={`panel-${tabGrafik}`}
-                                        role="tabpanel"
-                                        aria-labelledby={`tab-${tabGrafik}`}
-                                    >
-                                        <GrafikPertumbuhan
-                                            data={grafik.daftar[tabGrafik]}
-                                            indeks={tabGrafik}
-                                            jenisKelamin={anak.jenisKelamin}
+                                            aria-hidden="true"
+                                            className="pointer-events-none absolute -top-12 -right-10 size-32 rounded-pill bg-brand-300/20 blur-2xl"
                                         />
+                                        <div className="relative flex flex-wrap items-start justify-between gap-2">
+                                            <div className="min-w-0">
+                                                <p className="flex items-center gap-1.5 text-label-seksi tracking-[0.14em] text-brand-200 uppercase">
+                                                    <LineChart
+                                                        aria-hidden="true"
+                                                        className="size-3.5"
+                                                    />
+                                                    Grafik pertumbuhan
+                                                </p>
+                                                <p className="mt-1 text-judul-2 text-white">
+                                                    {anak.nama}
+                                                </p>
+                                                <p className="text-kecil text-brand-100">
+                                                    {
+                                                        grafik.daftar[tabGrafik]
+                                                            .judul
+                                                    }
+                                                </p>
+                                            </div>
+                                            <span
+                                                className={clsx(
+                                                    'rounded-pill border border-white/25 bg-white/15 px-2.5 py-1 text-keterangan font-bold whitespace-nowrap text-white backdrop-blur-sm',
+                                                )}
+                                            >
+                                                {laki
+                                                    ? 'Laki-laki'
+                                                    : 'Perempuan'}{' '}
+                                                · {anak.umurBulan} bln
+                                            </span>
+                                        </div>
                                     </div>
-                                </Kartu>
+
+                                    <div className="flex flex-col gap-3 px-4 py-3">
+                                        <Tab<IndeksGrafik>
+                                            label="Jenis grafik"
+                                            aktif={tabGrafik}
+                                            onUbah={setTabGrafik}
+                                            varian="pil"
+                                            item={[
+                                                { id: 'kms', label: 'KMS' },
+                                                { id: 'bb_u', label: 'BB/U' },
+                                                {
+                                                    id: 'pb_tb_u',
+                                                    label: grafik.pakaiPanjang
+                                                        ? 'PB/U'
+                                                        : 'TB/U',
+                                                },
+                                                {
+                                                    id: 'bb_pb_tb',
+                                                    label: grafik.pakaiPanjang
+                                                        ? 'BB/PB'
+                                                        : 'BB/TB',
+                                                },
+                                                { id: 'imt_u', label: 'IMT/U' },
+                                                { id: 'lk_u', label: 'LK' },
+                                            ]}
+                                        />
+                                        <div
+                                            id={`panel-${tabGrafik}`}
+                                            role="tabpanel"
+                                            aria-labelledby={`tab-${tabGrafik}`}
+                                        >
+                                            <GrafikPertumbuhan
+                                                data={grafik.daftar[tabGrafik]}
+                                                indeks={tabGrafik}
+                                                jenisKelamin={anak.jenisKelamin}
+                                            />
+                                        </div>
+                                    </div>
+                                </section>
                             )}
-                            <Kartu labelSeksi="Hasil ukur">
+
+                            <Seksi
+                                judul="Hasil ukur"
+                                ikon={Scale}
+                                aksi={
+                                    pengukuran.length > 0 ? (
+                                        <span className="rounded-pill border border-brand-200 bg-brand-50 px-2 py-0.5 text-keterangan font-bold text-brand-700">
+                                            {pengukuran.length} kali
+                                        </span>
+                                    ) : undefined
+                                }
+                            >
                                 {pengukuran.length === 0 ? (
-                                    <p className="py-2 text-teks text-ink-700">
+                                    <p className="py-3 text-teks text-ink-600">
                                         Belum ada pengukuran.
                                     </p>
                                 ) : (
-                                    <div className="-mx-4 overflow-x-auto">
-                                        <table className="w-full min-w-[560px] text-left text-kecil">
-                                            <caption className="sr-only">
-                                                Hasil ukur {anak.nama}, terbaru
-                                                di atas
-                                            </caption>
-                                            <thead>
-                                                <tr className="border-b border-ink-200 text-ink-700">
-                                                    <th
-                                                        scope="col"
-                                                        className="sticky left-0 bg-white px-4 py-2"
-                                                    >
-                                                        Tanggal
-                                                    </th>
-                                                    <th
-                                                        scope="col"
-                                                        className="px-2 py-2"
-                                                    >
-                                                        Umur
-                                                    </th>
-                                                    <th
-                                                        scope="col"
-                                                        className="px-2 py-2 text-right"
-                                                    >
-                                                        BB
-                                                    </th>
-                                                    <th
-                                                        scope="col"
-                                                        className="px-2 py-2 text-right"
-                                                    >
-                                                        PB/TB
-                                                    </th>
-                                                    <th
-                                                        scope="col"
-                                                        className="px-2 py-2 text-right"
-                                                    >
-                                                        LiLA
-                                                    </th>
-                                                    <th
-                                                        scope="col"
-                                                        className="px-2 py-2 text-right"
-                                                    >
-                                                        LK
-                                                    </th>
-                                                    <th
-                                                        scope="col"
-                                                        className="px-4 py-2"
-                                                    >
-                                                        N/T
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-ink-200 text-ink-900 tabular-nums">
-                                                {pengukuran.map((ukur) => (
-                                                    <tr key={ukur.id}>
-                                                        <th
-                                                            scope="row"
-                                                            className="sticky left-0 bg-white px-4 py-3 font-bold"
-                                                        >
-                                                            {ukur.tanggal}
+                                    <ul className="flex flex-col gap-2 py-2.5">
+                                        {pengukuran.map((ukur) => {
+                                            const status = chipStatusNt(
+                                                ukur.statusNt,
+                                            );
+
+                                            return (
+                                                <li
+                                                    key={ukur.id}
+                                                    className="rounded-md border border-brand-100 bg-gradient-to-br from-white via-brand-50/60 to-brand-100/80 p-3"
+                                                >
+                                                    <div className="flex flex-wrap items-start justify-between gap-2">
+                                                        <div className="flex min-w-0 items-center gap-2">
+                                                            <span className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-gradient-to-br from-brand-600 to-brand-900 text-white shadow-1">
+                                                                <CalendarDays
+                                                                    aria-hidden="true"
+                                                                    className="size-4"
+                                                                />
+                                                            </span>
+                                                            <div className="min-w-0">
+                                                                <p className="text-kecil font-bold text-ink-900">
+                                                                    {
+                                                                        ukur.tanggal
+                                                                    }
+                                                                </p>
+                                                                <p className="text-keterangan text-ink-600">
+                                                                    Umur{' '}
+                                                                    {formatUmurLengkap(
+                                                                        ukur.umurBulan,
+                                                                    )}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-wrap items-center gap-1.5">
+                                                            {status && (
+                                                                <ChipStatus
+                                                                    varian={
+                                                                        status.varian
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        status.label
+                                                                    }
+                                                                </ChipStatus>
+                                                            )}
                                                             {ukur.dariBukuKia && (
                                                                 <TandaBukuKia />
                                                             )}
-                                                        </th>
-                                                        <td className="px-2 py-3">
-                                                            {ukur.umurBulan} bln
-                                                        </td>
-                                                        <td className="px-2 py-3 text-right">
-                                                            {nilaiUkur(
+                                                        </div>
+                                                    </div>
+
+                                                    <dl className="mt-2.5 grid grid-cols-2 gap-2 tablet:grid-cols-4">
+                                                        <PetakUkur
+                                                            label="Berat"
+                                                            nilai={nilaiUkur(
                                                                 ukur.bb,
                                                                 'kg',
                                                             )}
-                                                        </td>
-                                                        <td className="px-2 py-3 text-right">
-                                                            {nilaiUkur(
+                                                            ikon={Scale}
+                                                        />
+                                                        <PetakUkur
+                                                            label={
+                                                                ukur.caraUkur ===
+                                                                'telentang'
+                                                                    ? 'Panjang'
+                                                                    : 'Tinggi'
+                                                            }
+                                                            nilai={nilaiUkur(
                                                                 ukur.pbTb,
                                                                 'cm',
                                                             )}
-                                                        </td>
-                                                        <td className="px-2 py-3 text-right">
-                                                            {nilaiUkur(
+                                                            ikon={Ruler}
+                                                        />
+                                                        <PetakUkur
+                                                            label="LiLA"
+                                                            nilai={nilaiUkur(
                                                                 ukur.lila,
                                                                 'cm',
                                                             )}
-                                                        </td>
-                                                        <td className="px-2 py-3 text-right">
-                                                            {nilaiUkur(
+                                                            ikon={Activity}
+                                                        />
+                                                        <PetakUkur
+                                                            label="Lingkar kepala"
+                                                            nilai={nilaiUkur(
                                                                 ukur.lk,
                                                                 'cm',
                                                             )}
-                                                        </td>
-                                                        <td className="px-4 py-3">
-                                                            {ukur.statusNt ===
-                                                                'N' ||
-                                                            ukur.statusNt ===
-                                                                'T'
-                                                                ? ukur.statusNt
-                                                                : KOSONG}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                            ikon={Baby}
+                                                        />
+                                                    </dl>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
                                 )}
-                            </Kartu>
+                            </Seksi>
                         </div>
                     )}
 
@@ -464,75 +671,120 @@ export default function DetailDataAnak({
                                 varian="sekunder"
                                 lebarPenuh
                             >
+                                <Plus aria-hidden="true" className="size-4" />
                                 Tambah dari Buku KIA
                             </TombolTautan>
-                            <Kartu labelSeksi="Layanan">
+
+                            <Seksi
+                                judul="Layanan"
+                                ikon={Syringe}
+                                aksi={
+                                    layanan.length > 0 ? (
+                                        <span className="rounded-pill border border-brand-200 bg-brand-50 px-2 py-0.5 text-keterangan font-bold text-brand-700">
+                                            {layanan.length} catatan
+                                        </span>
+                                    ) : undefined
+                                }
+                            >
                                 {layanan.length === 0 ? (
-                                    <p className="py-2 text-teks text-ink-700">
+                                    <p className="py-3 text-teks text-ink-600">
                                         Belum ada imunisasi, vitamin A, atau
                                         obat cacing tercatat.
                                     </p>
                                 ) : (
-                                    <ul className="divide-y divide-ink-200">
+                                    <ul className="divide-y divide-brand-100 py-1">
                                         {layanan.map((satu) => (
                                             <li
                                                 key={satu.id}
-                                                className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3"
+                                                className="flex items-start gap-2.5 py-2.5"
                                             >
-                                                <span className="text-teks text-ink-900">
-                                                    <span className="font-bold">
-                                                        {satu.jenis}
-                                                    </span>{' '}
-                                                    · {satu.detail}
-                                                    {satu.dariBukuKia && (
-                                                        <TandaBukuKia />
-                                                    )}
+                                                <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-pill bg-gradient-to-br from-brand-600 to-brand-900 text-white shadow-1">
+                                                    <Syringe
+                                                        aria-hidden="true"
+                                                        className="size-3.5"
+                                                    />
                                                 </span>
-                                                <span className="text-kecil text-ink-700">
-                                                    {satu.tanggal}
-                                                    {satu.nomorBatch &&
-                                                        ` · Batch ${satu.nomorBatch}`}
-                                                </span>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-kecil text-ink-900">
+                                                        <span className="font-bold">
+                                                            {satu.jenis}
+                                                        </span>{' '}
+                                                        · {satu.detail}
+                                                    </p>
+                                                    <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-keterangan text-ink-600">
+                                                        {satu.tanggal}
+                                                        {satu.nomorBatch &&
+                                                            ` · Batch ${satu.nomorBatch}`}
+                                                        {satu.dariBukuKia && (
+                                                            <TandaBukuKia />
+                                                        )}
+                                                    </p>
+                                                </div>
                                             </li>
                                         ))}
                                     </ul>
                                 )}
-                            </Kartu>
-                            <Kartu labelSeksi="Kunjungan">
+                            </Seksi>
+
+                            <Seksi
+                                judul="Kunjungan"
+                                ikon={Stethoscope}
+                                aksi={
+                                    kunjungan.length > 0 ? (
+                                        <span className="rounded-pill border border-brand-200 bg-brand-50 px-2 py-0.5 text-keterangan font-bold text-brand-700">
+                                            {kunjungan.length} kunjungan
+                                        </span>
+                                    ) : undefined
+                                }
+                            >
                                 {kunjungan.length === 0 ? (
-                                    <p className="py-2 text-teks text-ink-700">
+                                    <p className="py-3 text-teks text-ink-600">
                                         Belum pernah datang ke posyandu.
                                     </p>
                                 ) : (
-                                    <ul className="divide-y divide-ink-200">
+                                    <ul className="divide-y divide-brand-100 py-1">
                                         {kunjungan.map((satu) => (
                                             <li
                                                 key={satu.id}
-                                                className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3"
+                                                className="flex items-start gap-2.5 py-2.5"
                                             >
-                                                <span className="text-teks font-bold text-ink-900">
-                                                    {satu.tanggal}
+                                                <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-pill bg-gradient-to-br from-brand-600 to-brand-900 text-white shadow-1">
+                                                    <CalendarDays
+                                                        aria-hidden="true"
+                                                        className="size-3.5"
+                                                    />
                                                 </span>
-                                                <span className="text-kecil text-ink-700">
-                                                    #
-                                                    {String(
-                                                        satu.nomorAntrean,
-                                                    ).padStart(2, '0')}{' '}
-                                                    · {satu.keadaan}
-                                                </span>
-                                                {satu.catatanPelayanan && (
-                                                    <p className="basis-full text-kecil text-ink-700">
-                                                        <span className="font-bold text-ink-900">
-                                                            Catatan pelayanan:
-                                                        </span>{' '}
-                                                        {satu.catatanPelayanan}
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                                                        <p className="text-kecil font-bold text-ink-900">
+                                                            {satu.tanggal}
+                                                        </p>
+                                                        <span className="rounded-pill border border-brand-200 bg-white px-2 py-0.5 text-keterangan font-bold text-brand-700 tabular-nums">
+                                                            Antrean #
+                                                            {String(
+                                                                satu.nomorAntrean,
+                                                            ).padStart(2, '0')}
+                                                        </span>
+                                                    </div>
+                                                    <p className="mt-0.5 text-keterangan text-ink-600">
+                                                        {satu.keadaan}
                                                     </p>
-                                                )}
+                                                    {satu.catatanPelayanan && (
+                                                        <p className="mt-1 rounded-sm border border-brand-100 bg-brand-50/70 px-2 py-1 text-keterangan text-ink-700">
+                                                            <span className="font-bold text-brand-800">
+                                                                Catatan:
+                                                            </span>{' '}
+                                                            {
+                                                                satu.catatanPelayanan
+                                                            }
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </li>
                                         ))}
                                     </ul>
                                 )}
-                            </Kartu>
+                            </Seksi>
                         </div>
                     )}
 
