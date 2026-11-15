@@ -35,8 +35,10 @@ export function HeaderAnak({
         <header
             className={clsx(
                 'transition-colors',
-                jenisKelamin === 'L' && 'bg-boy-700 text-white',
-                jenisKelamin === 'P' && 'bg-girl-700 text-white',
+                jenisKelamin === 'L' &&
+                    'bg-gradient-to-br from-boy-700 via-boy-700 to-ink-900 text-white',
+                jenisKelamin === 'P' &&
+                    'bg-gradient-to-br from-girl-700 via-girl-700 to-brand-900 text-white',
                 !berwarna && 'border-b border-ink-200 bg-white text-ink-900',
             )}
         >
