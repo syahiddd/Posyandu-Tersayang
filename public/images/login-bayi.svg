@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220" fill="none" role="img" aria-label="Ilustrasi bayi yang ceria">
+  <!-- Latar blush lembut, senada dengan referensi ungu-merah muda. -->
+  <rect width="640" height="220" rx="28" fill="#fbe4ee"/>
+  <circle cx="320" cy="112" r="86" fill="#fff8eb"/>
+  <ellipse cx="320" cy="198" rx="120" ry="14" fill="#f6d0e0"/>
+  <circle cx="126" cy="54" r="5" fill="#e9a8c0"/>
+  <circle cx="512" cy="166" r="5" fill="#e9a8c0"/>
+  <circle cx="540" cy="56" r="4" fill="#e9a8c0"/>
+
+  <!-- Hati kecil mengapung di kiri dan kanan. -->
+  <path d="M204 78c0-7 5-12 11-12 4 0 7 2 9 5 2-3 5-5 9-5 6 0 11 5 11 12 0 12-20 23-20 23s-20-11-20-23Z" fill="#d98bab"/>
+  <path d="M432 62c0-6 4-10 9-10 3 0 6 2 7 4 1-2 4-4 7-4 5 0 9 4 9 10 0 10-16 19-16 19s-16-9-16-19Z" fill="#e9a8c0"/>
+
+  <!-- Ranting daun sebagai aksen tumbuh kembang. -->
+  <path d="M214 190c-12-26-9-53 8-74" stroke="#7f9a6d" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M208 158c-15-1-25-11-27-25 14 0 25 10 27 25Z" fill="#9aaf8a"/>
+  <path d="M215 133c0-14 9-24 23-27 1 14-8 25-23 27Z" fill="#7f9a6d"/>
+  <path d="M426 190c12-26 9-53-8-74" stroke="#7f9a6d" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M432 158c15-1 25-11 27-25-14 0-25 10-27 25Z" fill="#9aaf8a"/>
+  <path d="M425 133c0-14-9-24-23-27-1 14 8 25 23 27Z" fill="#7f9a6d"/>
+
+  <!-- Bayi duduk menghadap depan. -->
+  <g stroke="#5e2f45" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Kaki mungil. -->
+    <ellipse cx="300" cy="198" rx="16" ry="9" fill="#f7cdb4" stroke-width="3.5"/>
+    <ellipse cx="340" cy="198" rx="16" ry="9" fill="#f7cdb4" stroke-width="3.5"/>
+    <path d="M294 199h4m6 0h4m26 0h4m6 0h4" stroke-width="2"/>
+
+    <!-- Badan dan lengan. -->
+    <path d="M284 128c0-10 14-16 36-16s36 6 36 16l6 48c2 10-6 18-18 18h-48c-12 0-20-8-18-18l6-48Z" fill="#b85c8a" stroke-width="3.5"/>
+    <path d="M290 142c-12-4-24-14-31-26" stroke="#5e2f45" stroke-width="14"/>
+    <path d="M290 142c-12-4-24-14-31-26" stroke="#f7cdb4" stroke-width="8"/>
+    <circle cx="256" cy="112" r="9" fill="#f7cdb4" stroke-width="3.5"/>
+    <path d="M350 140c10 2 16 10 15 20" stroke="#5e2f45" stroke-width="14"/>
+    <path d="M350 140c10 2 16 10 15 20" stroke="#f7cdb4" stroke-width="8"/>
+    <circle cx="365" cy="161" r="9" fill="#f7cdb4" stroke-width="3.5"/>
+
+    <!-- Kerah krem dan hati di dada. -->
+    <path d="M296 124c4-6 13-10 24-10s20 4 24 10c-6 5-14 8-24 8s-18-3-24-8Z" fill="#fdf6ec" stroke-width="3"/>
+    <path d="M320 173c-2-2-17-12-17-21 0-6 4-9 8-8 3 1 6 4 9 8 3-4 6-7 9-8 4-1 8 2 8 8 0 9-15 19-17 21Z" fill="#fdf6ec" stroke-width="2.5"/>
+
+    <!-- Kepala, telinga, dan rambut. -->
+    <circle cx="278" cy="92" r="10" fill="#f7cdb4" stroke-width="3.5"/>
+    <circle cx="362" cy="92" r="10" fill="#f7cdb4" stroke-width="3.5"/>
+    <circle cx="320" cy="90" r="42" fill="#f7cdb4" stroke-width="3.5"/>
+    <path d="M278 80c-4-26 14-44 42-44s46 18 42 44c-8-12-18-20-30-22-6 10-18 14-30 12-10-2-18 2-24 10Z" fill="#4c2a3a" stroke-width="3.5"/>
+    <path d="M318 37c1-8 9-12 16-7-5 0-8 4-8 9" fill="#4c2a3a" stroke-width="3.5"/>
+
+    <!-- Wajah. -->
+    <circle cx="304" cy="90" r="4" fill="#3b1f2b" stroke="none"/>
+    <circle cx="336" cy="90" r="4" fill="#3b1f2b" stroke="none"/>
+    <circle cx="305.5" cy="88.5" r="1.2" fill="#fff" stroke="none"/>
+    <circle cx="337.5" cy="88.5" r="1.2" fill="#fff" stroke="none"/>
+    <ellipse cx="290" cy="103" rx="8" ry="4.5" fill="#eda6b8" stroke="none"/>
+    <ellipse cx="350" cy="103" rx="8" ry="4.5" fill="#eda6b8" stroke="none"/>
+    <path d="M312 102c5 7 11 7 16 0" fill="none" stroke-width="3.5"/>
+  </g>
+
+  <!-- Kilau kecil di sekitar bayi. -->
+  <path d="M250 44v12m-6-6h12M390 38v10m-5-5h10" stroke="#fff8eb" stroke-width="3" stroke-linecap="round"/>
+</svg>

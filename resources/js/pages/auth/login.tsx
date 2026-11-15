@@ -1,5 +1,4 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
-import { HeartPulse } from 'lucide-react';
+import { Head, useForm } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { IsianTeks } from '@/components/dasar/isian-teks';
@@ -14,7 +13,6 @@ type GalatIsian = { username?: string; password?: string };
  * Pesan gagal dari server bersifat umum dan tampil di bawah tombol.
  */
 export default function Masuk() {
-    const { name } = usePage<{ name: string }>().props;
     const form = useForm({ username: '', password: '' });
     const [galatIsian, setGalatIsian] = useState<GalatIsian>({});
     const refUsername = useRef<HTMLInputElement>(null);
@@ -53,22 +51,44 @@ export default function Masuk() {
     return (
         <>
             <Head title="Masuk" />
-            {/* Ponsel: rata di atas kertas seperti Gambar 3. Tablet ke atas:
-                satu kartu (DESIGN 3.6) agar formulir tidak mengambang. */}
-            <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pt-7 pb-4 tablet:justify-center tablet:py-7">
+            {/* Ponsel: mengalir dari atas dengan bantuan menempel di bawah.
+                Tablet ke atas: satu kartu di tengah (DESIGN 3.6). */}
+            <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pt-7 pb-4 tablet:max-w-[26rem] tablet:justify-center tablet:py-7">
                 <div className="flex flex-1 flex-col tablet:flex-none tablet:rounded-lg tablet:border tablet:border-ink-200 tablet:bg-white tablet:p-6 tablet:shadow-1">
-                    <header className="mt-6 flex items-center gap-4 tablet:mt-0">
-                        <span
+                    {/* Ilustrasi kartun ringan di awal layar: menyapa kader
+                        dengan warna blush yang senada dengan logo. */}
+                    <img
+                        src="/images/login-bayi.svg"
+                        alt=""
+                        aria-hidden="true"
+                        width={640}
+                        height={220}
+                        fetchPriority="high"
+                        decoding="async"
+                        className="mb-5 block w-full select-none tablet:mb-6"
+                    />
+                    <header className="flex items-center gap-4">
+                        <img
+                            src="/images/logo-posyandu-tersayang.svg"
+                            alt=""
                             aria-hidden="true"
-                            className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-brand-700 text-white shadow-1"
-                        >
-                            <HeartPulse className="size-7" />
-                        </span>
+                            width={80}
+                            height={80}
+                            decoding="async"
+                            className="size-16 shrink-0 tablet:size-20"
+                        />
                         <div className="min-w-0">
-                            <h1 className="text-judul-1 text-ink-900">
-                                {name}
+                            <p
+                                aria-hidden="true"
+                                className="text-label-seksi tracking-[0.18em] text-brand-700 uppercase"
+                            >
+                                Posyandu
+                            </p>
+                            <h1 className="mt-1 text-display tracking-tight text-ink-900">
+                                <span className="sr-only">Posyandu </span>
+                                Tersayang
                             </h1>
-                            <p className="text-teks text-ink-700">
+                            <p className="mt-1 text-kecil text-ink-700">
                                 Khusus kader posyandu
                             </p>
                         </div>
@@ -77,7 +97,7 @@ export default function Masuk() {
                     <form
                         noValidate
                         onSubmit={kirim}
-                        className="mt-7 mb-6 flex flex-col gap-5"
+                        className="mt-7 mb-6 flex flex-col gap-5 tablet:mt-6"
                     >
                         <IsianTeks
                             ref={refUsername}
@@ -87,6 +107,7 @@ export default function Masuk() {
                             autoCapitalize="none"
                             autoCorrect="off"
                             spellCheck={false}
+                            enterKeyHint="next"
                             required
                             value={form.data.username}
                             onChange={(event) =>
@@ -100,6 +121,7 @@ export default function Masuk() {
                             label="Kata sandi"
                             name="password"
                             autoComplete="current-password"
+                            enterKeyHint="go"
                             required
                             value={form.data.password}
                             onChange={(event) =>
@@ -108,7 +130,7 @@ export default function Masuk() {
                             galat={galatIsian.password}
                         />
 
-                        <div className="mt-2 flex flex-col gap-3">
+                        <div className="mt-1 flex flex-col gap-3">
                             <Tombol
                                 type="submit"
                                 lebarPenuh
@@ -130,7 +152,7 @@ export default function Masuk() {
 
                     {/* Bantuan tetap, bukan status: kotak info tanpa garis kiri
                     seperti Gambar 3; di dalam kartu cukup garis pemisah. */}
-                    <p className="mt-auto rounded-md bg-status-info-latar px-4 py-3 text-status-info-teks tablet:rounded-none tablet:border-t tablet:bg-transparent tablet:px-0 tablet:pt-5 tablet:pb-0">
+                    <p className="mt-auto rounded-md bg-status-info-latar px-4 py-3 text-status-info-teks tablet:rounded-none tablet:border-t tablet:border-ink-200 tablet:bg-transparent tablet:px-0 tablet:pt-5 tablet:pb-0">
                         Akun dibuat oleh Ketua Kader. Lupa kata sandi? Minta
                         Ketua Kader mengatur ulang.
                     </p>
