@@ -3,6 +3,7 @@ import { clsx } from 'clsx';
 import {
     Baby,
     CalendarDays,
+    CalendarRange,
     Filter,
     MapPin,
     RotateCcw,
@@ -14,6 +15,14 @@ import type { LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Bidang } from '@/components/dasar/bidang';
 import { IsianTeks } from '@/components/dasar/isian-teks';
+import {
+    JadwalImunisasi,
+    KeteranganJadwal,
+} from '@/components/dasar/jadwal-imunisasi';
+import type {
+    BarisJadwal,
+    KolomJadwal,
+} from '@/components/dasar/jadwal-imunisasi';
 import { PilihanTarik } from '@/components/dasar/pilihan-tarik';
 import { Seksi } from '@/components/dasar/seksi';
 import { Tombol, TombolTautan } from '@/components/dasar/tombol';
@@ -50,6 +59,8 @@ type Props = {
     }[];
     jumlahPerDosis: number[];
     cakupan: { kode: string; nama: string; jumlah: number }[];
+    /** Jadwal acuan tabel Pelayanan Imunisasi: kolom umur dan baris vaksin. */
+    jadwal: { kolom: KolomJadwal[]; baris: BarisJadwal[] };
 };
 
 /** Parameter URL tanpa nilai kosong agar alamat tetap pendek. */
@@ -158,6 +169,7 @@ export default function RekapImunisasi({
     baris,
     jumlahPerDosis,
     cakupan,
+    jadwal,
 }: Props) {
     const [dari, setDari] = useState(penyaring.dari);
     const [sampai, setSampai] = useState(penyaring.sampai);
@@ -359,6 +371,32 @@ export default function RekapImunisasi({
                                     ))}
                                 </div>
                             </section>
+
+                            <Seksi
+                                judul="Jadwal imunisasi menurut umur"
+                                ikon={CalendarRange}
+                                isiClassName="py-0"
+                                aksi={
+                                    <span className="hidden shrink-0 rounded-pill border border-brand-200 bg-brand-50 px-2 py-0.5 text-keterangan font-bold whitespace-nowrap text-brand-700 tablet:inline-flex">
+                                        Buku KIA hlm. 125
+                                    </span>
+                                }
+                            >
+                                <div className="-mx-3.5 flex flex-col gap-3 border-b border-brand-100 py-3">
+                                    <JadwalImunisasi
+                                        kolom={jadwal.kolom}
+                                        baris={jadwal.baris}
+                                    />
+                                </div>
+                                <div className="-mx-3.5 px-3.5 py-3">
+                                    <KeteranganJadwal
+                                        catatan={[
+                                            'Angka pada sel menunjukkan nomor dosis. Putih menandai usia tepat, kuning usia yang masih boleh dilengkapi, merah muda imunisasi kejar, dan abu-abu usia yang tidak diperbolehkan.',
+                                            'Kolom umur mengikuti tabel Pelayanan Imunisasi Buku KIA 2024 hlm. 125: bulan 0 (lahir) sampai 12 bulan, 18 bulan, lalu kolom kejar 23–59 bulan. Imunisasi khusus daerah endemis hanya ditawarkan bila wilayah posyandu termasuk endemis.',
+                                        ]}
+                                    />
+                                </div>
+                            </Seksi>
 
                             <Seksi
                                 judul="Tabel dosis"

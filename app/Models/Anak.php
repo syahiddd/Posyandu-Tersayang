@@ -27,6 +27,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string|null $tempat_lahir
  * @property Carbon $tanggal_lahir
  * @property string|null $nik
+ * @property string|null $no_kk
  * @property bool|null $punya_buku_kia
  * @property string $nama_ibu
  * @property string|null $nik_ibu
@@ -41,7 +42,7 @@ use Spatie\Activitylog\Support\LogOptions;
  */
 #[Table('anak')]
 #[Fillable([
-    'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'nik', 'punya_buku_kia',
+    'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'nik', 'no_kk', 'punya_buku_kia',
     'nama_ibu', 'nik_ibu', 'nama_ayah', 'nik_ayah', 'no_hp',
     'alamat', 'rt', 'rw', 'dusun',
 ])]
@@ -74,7 +75,7 @@ class Anak extends Model
         return LogOptions::defaults()
             ->useLogName('anak')
             ->logOnly([
-                'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'nik', 'punya_buku_kia',
+                'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'nik', 'no_kk', 'punya_buku_kia',
                 'nama_ibu', 'nik_ibu', 'nama_ayah', 'nik_ayah', 'no_hp',
                 'alamat', 'rt', 'rw', 'dusun',
             ])

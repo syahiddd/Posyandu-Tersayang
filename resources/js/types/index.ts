@@ -69,6 +69,8 @@ export type RingkasanAnak = {
     ukurTerakhir?: UkurTerakhir | null;
     /** Status imunisasi; hanya diisi pada kartu daftar Data Anak (FR-50). */
     imunisasi?: StatusImunisasi;
+    /** Status stunting; hanya diisi pada kartu daftar Data Anak (FR-50). */
+    stunting?: StatusStunting;
 };
 
 /** Hasil ukur terakhir anak di kartu daftar Data Anak (FR-50). */
@@ -86,6 +88,24 @@ export type StatusImunisasi = {
     berikutnya: string | null;
     /** Dosis berikutnya sudah melewati jadwal umurnya. */
     terlambat: boolean;
+};
+
+/** Hasil skrining stunting (PRD 5.8, Tabel 28; FR-42). */
+export type HasilStunting =
+    | 'normal'
+    | 'berisiko_stunting'
+    | 'diprediksi_berisiko'
+    | 'stunting';
+
+/**
+ * Status stunting anak: aman (normal), rentan (berisiko/diprediksi
+ * berisiko), atau stunting. Dipakai di Meja 5 dan Data Anak.
+ */
+export type StatusStunting = {
+    hasil: HasilStunting;
+    judul: string;
+    alasan: string | null;
+    tindakan: string;
 };
 
 /** Statistik seluruh anak di atas daftar Data Anak (FR-50). */
@@ -128,6 +148,8 @@ export type DetailAnak = {
     tempatLahir: string | null;
     tanggalLahir: string;
     nik: string | null;
+    /** Nomor Kartu Keluarga; boleh kosong. */
+    noKk: string | null;
     /** Huruf K pada SKDN (FR-61); null bila belum diisi. */
     punyaBukuKia: boolean | null;
     namaIbu: string;

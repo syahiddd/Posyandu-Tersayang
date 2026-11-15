@@ -3,8 +3,11 @@
 namespace App\Antrean;
 
 use App\Enums\JenisLayanan;
+use App\Gizi\DeteksiStunting;
+use App\Gizi\HasilAntropometri;
 use App\Models\Anak;
 use App\Models\Layanan;
+use App\Models\Pengukuran;
 use App\Pelayanan\JadwalImunisasi;
 use App\Support\Nik;
 use App\Support\Tanggal;
@@ -59,8 +62,9 @@ final class TampilanAnak
 
     /**
      * Ringkasan lengkap untuk kartu daftar Data Anak: ringkasan dasar ditambah
-     * hasil ukur terakhir dan status imunisasi (FR-70). Butuh relasi dari
-     * denganUkurTerakhir() agar tidak N+1.
+     * hasil ukur terakhir, status imunisasi (FR-70), dan status stunting
+     * (FR-42) agar aman/rentan/stunting terlihat sejak daftar. Butuh relasi
+     * dari denganUkurTerakhir() agar tidak N+1.
      *
      * @return array<string, mixed>
      */
@@ -94,12 +98,49 @@ final class TampilanAnak
                 'berikutnya' => $jatuhTempo[0]['nama'] ?? null,
                 'terlambat' => $jatuhTempo[0]['terlambat'] ?? false,
             ],
+            'stunting' => self::stunting($anak),
         ];
     }
 
     /**
-     * Memuat hasil ukur terakhir dan riwayat imunisasi untuk daftar panjang
-     * dalam satu query tambahan per relasi.
+     * Status stunting anak dari seluruh riwayat ukurnya (PRD 5.8). Diambil
+     * dari perhitungan yang sama dengan Meja 5 agar kesimpulannya konsisten.
+     * Null bila anak belum pernah diukur: tanpa data, status tidak dapat
+     * ditentukan dan tidak boleh terlihat "aman".
+     *
+     * @return array{hasil: string, judul: string, alasan: string|null, tindakan: string}|null
+     */
+    private static function stunting(Anak $anak): ?array
+    {
+        $riwayat = array_values(($anak->relationLoaded('pengukuran')
+            ? $anak->pengukuran
+            : $anak->pengukuran()->orderBy('tanggal_ukur')->orderBy('id')->get())
+            ->sortBy(fn (Pengukuran $ukur) => [$ukur->tanggal_ukur->toDateString(), $ukur->id])
+            ->map(function (Pengukuran $ukur) use ($anak) {
+                $hasil = HasilAntropometri::riwayat($anak, $ukur);
+
+                return [
+                    'tanggal' => $hasil['tanggal'],
+                    'umurBulan' => $hasil['umurBulan'],
+                    'zscore' => $hasil['zscore'],
+                    'statusNt' => $hasil['statusNt'],
+                ];
+            })
+            ->all());
+
+        if ($riwayat === []) {
+            return null;
+        }
+
+        $hasil = DeteksiStunting::nilai($riwayat);
+
+        return [...$hasil, 'hasil' => $hasil['hasil']->value];
+    }
+
+    /**
+     * Memuat hasil ukur terakhir, riwayat ukur (untuk status stunting), dan
+     * riwayat imunisasi untuk daftar panjang dalam satu query tambahan per
+     * relasi.
      *
      * @param  Builder<Anak>  $query
      * @return Builder<Anak>
@@ -108,6 +149,7 @@ final class TampilanAnak
     {
         return $query->with([
             'pengukuranTerakhir',
+            'pengukuran' => fn (HasMany $q) => $q->orderBy('tanggal_ukur')->orderBy('id'),
             'layanan' => fn (HasMany $q) => $q->where('jenis', JenisLayanan::Imunisasi->value),
         ]);
     }

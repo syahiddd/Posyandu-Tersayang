@@ -13,6 +13,7 @@ import {
     Plus,
     Ruler,
     Scale,
+    ShieldAlert,
     Stethoscope,
     Syringe,
     User,
@@ -33,6 +34,12 @@ import { GrafikPertumbuhan } from '@/components/grafik-pertumbuhan';
 import { formatDesimal } from '@/lib/desimal';
 import type { DataGrafik, IndeksGrafik } from '@/lib/grafik';
 import { formatUmurLengkap, pecahUmur } from '@/lib/umur';
+import {
+    KELAS_TINGKAT_STUNTING,
+    KETERANGAN_TINGKAT_STUNTING,
+    LABEL_TINGKAT_STUNTING,
+    tingkatStunting,
+} from '@/lib/stunting';
 import { dataAnak, riwayatBukuKia } from '@/routes';
 import { hapus as hapusAnak, ubah } from '@/routes/data-anak';
 import type {
@@ -40,6 +47,7 @@ import type {
     RiwayatKunjungan,
     RiwayatLayanan,
     RiwayatPengukuran,
+    StatusStunting,
 } from '@/types';
 
 type Props = {
@@ -51,6 +59,8 @@ type Props = {
     bolehHapus: boolean;
     /** Tab yang dibuka lebih dulu, dari aksi cepat daftar Data Anak (FR-50). */
     tabAwal: IdTab;
+    /** Status stunting; null bila anak belum pernah diukur (FR-42). */
+    stunting: StatusStunting | null;
     /** Null bila anak belum punya pengukuran. */
     grafik: {
         tabAwal: IndeksGrafik;
@@ -200,6 +210,7 @@ export default function DetailDataAnak({
     perubahanTerakhir,
     bolehHapus,
     tabAwal,
+    stunting,
     grafik,
 }: Props) {
     const [tab, setTab] = useState<IdTab>(tabAwal);
@@ -310,6 +321,68 @@ export default function DetailDataAnak({
                                 </div>
                             </div>
 
+                            {stunting !== null && (
+                                <Seksi
+                                    judul="Status stunting"
+                                    ikon={ShieldAlert}
+                                >
+                                    <div className="py-2.5">
+                                        <div
+                                            className={clsx(
+                                                'flex items-start gap-2.5 rounded-md border px-3 py-2.5',
+                                                KELAS_TINGKAT_STUNTING[
+                                                    tingkatStunting(
+                                                        stunting.hasil,
+                                                    )
+                                                ],
+                                            )}
+                                        >
+                                            <ShieldAlert
+                                                aria-hidden="true"
+                                                className="mt-0.5 size-4 shrink-0"
+                                            />
+                                            <div className="flex min-w-0 flex-col gap-0.5">
+                                                <span className="text-kecil font-bold">
+                                                    {
+                                                        LABEL_TINGKAT_STUNTING[
+                                                            tingkatStunting(
+                                                                stunting.hasil,
+                                                            )
+                                                        ]
+                                                    }
+                                                </span>
+                                                <span className="text-keterangan leading-relaxed">
+                                                    {
+                                                        KETERANGAN_TINGKAT_STUNTING[
+                                                            tingkatStunting(
+                                                                stunting.hasil,
+                                                            )
+                                                        ]
+                                                    }
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {stunting.alasan && (
+                                            <p className="mt-2 text-justify text-kecil leading-relaxed text-ink-900">
+                                                {stunting.alasan}.
+                                            </p>
+                                        )}
+                                        <p className="mt-2 text-justify text-kecil leading-relaxed text-ink-900">
+                                            <span className="font-bold">
+                                                Tindakan:{' '}
+                                            </span>
+                                            {stunting.tindakan}.
+                                        </p>
+                                        <p className="mt-2 text-justify text-keterangan leading-relaxed text-ink-600">
+                                            Hasil skrining, bukan diagnosis.
+                                            Konfirmasi oleh tenaga kesehatan.
+                                            Sumber: Buku KIA 2024 hlm. 44–47,
+                                            122–125.
+                                        </p>
+                                    </div>
+                                </Seksi>
+                            )}
+
                             <Seksi judul="Identitas anak" ikon={IdCard}>
                                 <dl className="grid tablet:grid-cols-2 tablet:gap-x-6">
                                     <Baris
@@ -322,6 +395,16 @@ export default function DetailDataAnak({
                                             anak.nik && (
                                                 <span className="tabular-nums">
                                                     {anak.nik}
+                                                </span>
+                                            )
+                                        }
+                                    />
+                                    <Baris
+                                        label="No. KK"
+                                        nilai={
+                                            anak.noKk && (
+                                                <span className="tabular-nums">
+                                                    {anak.noKk}
                                                 </span>
                                             )
                                         }

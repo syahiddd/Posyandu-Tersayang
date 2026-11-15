@@ -13,6 +13,8 @@ export type DataIdentitasAnak = {
     tempat_lahir: string;
     tanggal_lahir: string;
     nik: string;
+    /** Nomor Kartu Keluarga (boleh kosong). */
+    no_kk: string;
     /** "1" = Ya, "0" = Tidak, "" = belum dipilih (huruf K SKDN, FR-61). */
     punya_buku_kia: string;
     nama_ibu: string;
@@ -32,6 +34,7 @@ export const IDENTITAS_KOSONG: DataIdentitasAnak = {
     tempat_lahir: '',
     tanggal_lahir: '',
     nik: '',
+    no_kk: '',
     punya_buku_kia: '',
     nama_ibu: '',
     nik_ibu: '',
@@ -168,13 +171,22 @@ export function IsianIdentitasAnak({
                     />
                 </div>
 
-                <IsianAngka
-                    jenis="digit"
-                    label="NIK anak"
-                    petunjuk="16 digit, boleh dikosongkan"
-                    maxLength={16}
-                    {...angka('nik')}
-                />
+                <div className="grid grid-cols-1 gap-4 tablet:grid-cols-2">
+                    <IsianAngka
+                        jenis="digit"
+                        label="NIK anak"
+                        petunjuk="16 digit, boleh dikosongkan"
+                        maxLength={16}
+                        {...angka('nik')}
+                    />
+                    <IsianAngka
+                        jenis="digit"
+                        label="No. KK"
+                        petunjuk="16 digit, boleh dikosongkan"
+                        maxLength={16}
+                        {...angka('no_kk')}
+                    />
+                </div>
 
                 <KontrolSegmen
                     id="isian-punya_buku_kia"

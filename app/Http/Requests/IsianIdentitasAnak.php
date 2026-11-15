@@ -14,7 +14,7 @@ trait IsianIdentitasAnak
 {
     /** Kolom yang disimpan ke tabel anak. */
     public const KOLOM_IDENTITAS = [
-        'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'nik',
+        'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'nik', 'no_kk',
         'punya_buku_kia', 'nama_ibu', 'nik_ibu', 'nama_ayah', 'nik_ayah', 'no_hp',
         'alamat', 'rt', 'rw', 'dusun',
     ];
@@ -41,6 +41,8 @@ trait IsianIdentitasAnak
             'tempat_lahir' => ['nullable', 'string', 'max:100'],
             'tanggal_lahir' => ['required', 'date', 'before_or_equal:today'],
             'nik' => ['nullable', 'digits:16', Rule::unique('anak', 'nik')->ignore($abaikan)],
+            // No. KK dipakai bersama anggota keluarga lain, jadi tidak unik.
+            'no_kk' => ['nullable', 'digits:16'],
             // Huruf K pada SKDN (FR-61); wajib dipilih, termasuk data lama saat diubah.
             'punya_buku_kia' => ['required', 'boolean'],
             'nama_ibu' => ['required', 'string', 'max:100'],

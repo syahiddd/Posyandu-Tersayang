@@ -1,9 +1,14 @@
 import { Link } from '@inertiajs/react';
 import { clsx } from 'clsx';
-import { CircleCheck, Clock, Scale } from 'lucide-react';
+import { CircleCheck, Clock, Scale, ShieldCheck } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { ChipStatus } from '@/components/dasar/chip-status';
 import { formatDesimal } from '@/lib/desimal';
+import {
+    KELAS_TINGKAT_STUNTING,
+    LABEL_TINGKAT_STUNTING,
+    tingkatStunting,
+} from '@/lib/stunting';
 import { formatUmurTahunBulan } from '@/lib/umur';
 import { inisial } from '@/lib/waktu';
 import type { RingkasanAnak } from '@/types';
@@ -64,6 +69,29 @@ function teksImunisasi(anak: RingkasanAnak): string | null {
     return imunisasi.terlambat
         ? `Imunisasi kejar: ${imunisasi.berikutnya}`
         : `Imunisasi berikutnya: ${imunisasi.berikutnya}`;
+}
+
+/** Badge status stunting: hijau aman, kuning rentan, merah stunting. */
+function BadgeStunting({ anak }: { anak: RingkasanAnak }) {
+    const stunting = anak.stunting;
+
+    if (!stunting) {
+        return null;
+    }
+
+    const tingkat = tingkatStunting(stunting.hasil);
+
+    return (
+        <span
+            className={clsx(
+                'inline-flex items-center gap-1.5 rounded-pill border px-2.5 py-1 text-keterangan font-bold',
+                KELAS_TINGKAT_STUNTING[tingkat],
+            )}
+        >
+            <ShieldCheck aria-hidden="true" className="size-3.5 shrink-0" />
+            {LABEL_TINGKAT_STUNTING[tingkat]}
+        </span>
+    );
 }
 
 export function KartuHasilAnak({
@@ -225,7 +253,10 @@ export function KartuHasilAnak({
                 <div className="flex items-start gap-3">{identitas}</div>
             )}
 
-            {(teksUkurAnak || teksImunisasiAnak || catatan) && (
+            {(teksUkurAnak ||
+                teksImunisasiAnak ||
+                anak.stunting ||
+                catatan) && (
                 <div
                     className={clsx(
                         'mt-2.5 flex flex-col items-start gap-1.5 border-t pt-2.5',
@@ -254,6 +285,7 @@ export function KartuHasilAnak({
                             {teksImunisasiAnak}
                         </ChipStatus>
                     )}
+                    <BadgeStunting anak={anak} />
                     {catatan && (
                         <span className="text-kecil text-ink-700">
                             {catatan}

@@ -44,8 +44,10 @@ final class GrafikPertumbuhan
                     'KMS',
                     $rentangAwal,
                     $rentangAkhir,
-                    $umurBulan < 24 ? 1 : ($jenisKelamin === 'P' ? 8 : 8),
-                    $jenisKelamin === 'P' && $rentangAwal === 24 ? 30 : 28,
+                    // KMS Buku KIA hlm. 131, 132, 142, 143: 0–2 tahun 1–18 kg;
+                    // 2–5 tahun 8–28 kg (laki-laki) dan 8–30 kg (perempuan).
+                    $umurBulan < 24 ? 1 : 8,
+                    $rentangAwal === 0 ? 18 : ($jenisKelamin === 'P' ? 30 : 28),
                     $riwayat,
                     'bb_u',
                     kms: true,
@@ -55,7 +57,10 @@ final class GrafikPertumbuhan
                     'Berat badan menurut umur',
                     $rentangAwal,
                     $rentangAkhir,
-                    $rentangAwal === 0 ? 2 : ($jenisKelamin === 'P' ? 7 : 8),
+                    // Sumbu Y mengikuti Buku KIA hlm. 133–134 dan 145–146:
+                    // 0–2 tahun 2–17 kg; 2–5 tahun 7–28 kg (laki-laki) dan
+                    // 7–30 kg (perempuan).
+                    $rentangAwal === 0 ? 2 : 7,
                     $rentangAwal === 0 ? 17 : ($jenisKelamin === 'P' ? 30 : 28),
                     $riwayat,
                     'bb_u',
@@ -248,10 +253,14 @@ final class GrafikPertumbuhan
     private static function grafikBeratMenurutPanjang(string $jenisKelamin, bool $pakaiPanjang, array $riwayat): array
     {
         $cara = $pakaiPanjang ? 'pb' : 'tb';
+        // Buku KIA hlm. 137, 149: BB/PB 0–2 tahun 45–110 cm (laki-laki) dan
+        // 45–120 cm (perempuan). BB/TB 2–5 tahun 65–120 cm untuk keduanya.
         $minimumX = $pakaiPanjang ? 45 : 65;
-        $maksimumX = $pakaiPanjang ? 110 : 120;
+        $maksimumX = $pakaiPanjang && $jenisKelamin === 'L' ? 110 : 120;
+        // Buku KIA hlm. 137, 138, 150, 151: 0–2 tahun 2–24 kg; 2–5 tahun
+        // 6–32 kg untuk laki-laki maupun perempuan.
         $minimumY = $pakaiPanjang ? 2 : 6;
-        $maksimumY = $pakaiPanjang ? 24 : ($jenisKelamin === 'P' ? 32 : 30);
+        $maksimumY = $pakaiPanjang ? 24 : 32;
 
         return [
             'judul' => $pakaiPanjang ? 'Berat badan menurut panjang badan' : 'Berat badan menurut tinggi badan',

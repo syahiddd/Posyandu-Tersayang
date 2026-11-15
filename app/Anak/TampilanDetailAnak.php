@@ -34,6 +34,7 @@ final class TampilanDetailAnak
             'tempatLahir' => $anak->tempat_lahir,
             'tanggalLahir' => Tanggal::singkat($anak->tanggal_lahir),
             'nik' => $anak->nik,
+            'noKk' => $anak->no_kk,
             'punyaBukuKia' => $anak->punya_buku_kia,
             'namaIbu' => $anak->nama_ibu,
             'nikIbu' => $anak->nik_ibu,
@@ -140,6 +141,7 @@ final class TampilanDetailAnak
             'tempat_lahir' => $anak->tempat_lahir ?? '',
             'tanggal_lahir' => $anak->tanggal_lahir->toDateString(),
             'nik' => $anak->nik ?? '',
+            'no_kk' => $anak->no_kk ?? '',
             'punya_buku_kia' => match ($anak->punya_buku_kia) {
                 true => '1',
                 false => '0',

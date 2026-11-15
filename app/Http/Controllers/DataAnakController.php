@@ -79,12 +79,13 @@ class DataAnakController extends Controller
         }
 
         return BerkasCsv::unduh('data-anak', [
-            'Nama', 'NIK', 'Punya Buku KIA', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Umur (bulan)',
+            'Nama', 'NIK', 'No KK', 'Punya Buku KIA', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Umur (bulan)',
             'Nama Ibu', 'NIK Ibu', 'Nama Ayah', 'NIK Ayah', 'No HP',
             'Alamat', 'RT', 'RW', 'Dusun', 'Kunjungan Terakhir',
         ], $query->cursor()->map(fn (Anak $anak) => [
             $anak->nama,
             BerkasCsv::teks($anak->nik),
+            BerkasCsv::teks($anak->no_kk),
             match ($anak->punya_buku_kia) {
                 true => 'Ya',
                 false => 'Tidak',
@@ -116,6 +117,7 @@ class DataAnakController extends Controller
 
         return Inertia::render('data-anak/detail', [
             'tabAwal' => $this->tabAwal($request),
+            'stunting' => $grafik['riwayat'] === [] ? null : $grafik['deteksiStunting'],
             'grafik' => $grafik['riwayat'] === [] ? null : [
                 'tabAwal' => $grafik['tabAwal'],
                 // Sama dengan rentang grafik: umur pada pengukuran terakhir.

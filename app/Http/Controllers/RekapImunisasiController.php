@@ -22,6 +22,18 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class RekapImunisasiController extends Controller
 {
+    /**
+     * Umur terakhir (bulan) yang masih termasuk "bawah dua tahun". Dosis
+     * dengan umur_maks 23 bulan ke atas masih boleh di kolom kejar.
+     */
+    private const UMUR_KEJAR = 23;
+
+    /**
+     * Umur semu untuk kolom "23–59" (imunisasi kejar): semua dosis yang
+     * umur_maks-nya di atas 23 bulan dianggap masih boleh pada kolom ini.
+     */
+    private const UMUR_RENTANG_KEJAR = 24;
+
     public function index(Request $request): Response
     {
         $penyaring = $this->penyaring($request);
@@ -59,7 +71,88 @@ class RekapImunisasiController extends Controller
                     'jumlah' => $jumlah,
                 ])
                 ->values(),
+            'jadwal' => $this->jadwal(),
         ]);
+    }
+
+    /**
+     * Jadwal imunisasi bayi dan baduta (Tabel 29, Buku KIA 2024) untuk tabel
+     * acuan: kolom = umur, baris = kelompok vaksin, sel = nomor dosis beserta
+     * rentang umur pemberiannya. Data diambil dari config/imunisasi.php
+     * sehingga dapat diperbarui tanpa mengubah program (PRD 6.1).
+     *
+     * @return array{kolom: list<array{label: string, umur: int, jenis: 'bulan'|'kejar'}>, baris: list<array{kelompok: string, nama: string, dosis: list<array{nomor: int, umurBulan: int, umurTepatMin: int, umurMaks: int, endemis: bool}>}>}
+     */
+    private function jadwal(): array
+    {
+        /** @var array<string, string> $kelompok */
+        $kelompok = config('imunisasi.kelompok_vaksin');
+        /** @var array<string, array{nama: string, umur_bulan: int, kelompok: string, umur_maks?: int, umur_tepat_min?: int, khusus_endemis?: bool}> $vaksin */
+        $vaksin = config('imunisasi.vaksin');
+
+        $umurTerjauh = collect($vaksin)->max('umur_bulan') ?? 0;
+        $maksTerjauh = collect($vaksin)->max('umur_maks') ?? $umurTerjauh;
+
+        // Kolom mengikuti tabel Pelayanan Imunisasi Buku KIA hlm. 125:
+        // 0 (lahir) sampai 12 bulan, 18 bulan, 23 bulan, lalu kolom rentang
+        // 23–59 bulan untuk imunisasi kejar. Kolom tanpa dosis dilewati agar
+        // tabel tidak memuat kolom kosong.
+        $kolom = [['label' => 'Lahir', 'umur' => 0, 'jenis' => 'bulan']];
+
+        foreach (range(1, 12) as $umur) {
+            if ($umur <= $umurTerjauh) {
+                $kolom[] = ['label' => (string) $umur, 'umur' => $umur, 'jenis' => 'bulan'];
+            }
+        }
+
+        foreach ([18] as $umur) {
+            if ($umur <= $umurTerjauh) {
+                $kolom[] = ['label' => (string) $umur, 'umur' => $umur, 'jenis' => 'bulan'];
+            }
+        }
+
+        // Kolom 23 bulan dan rentang kejar 23–59 bulan hanya muncul bila ada
+        // dosis yang masih boleh dilengkapi sampai bawah dua tahun.
+        if ($maksTerjauh >= self::UMUR_KEJAR) {
+            $kolom[] = ['label' => (string) self::UMUR_KEJAR, 'umur' => self::UMUR_KEJAR, 'jenis' => 'bulan'];
+
+            if ($maksTerjauh > self::UMUR_KEJAR) {
+                $kolom[] = ['label' => '23–59', 'umur' => self::UMUR_RENTANG_KEJAR, 'jenis' => 'kejar'];
+            }
+        }
+
+        $baris = [];
+
+        foreach ($kelompok as $kode => $nama) {
+            $dosis = array_values(collect($vaksin)
+                ->filter(fn (array $satu) => $satu['kelompok'] === $kode)
+                ->map(function (array $satu, string $kodeDosis) {
+                    // Nomor dosis diambil dari angka terakhir kode ("OPV 2" => 2).
+                    preg_match('/(\d+)$/', $kodeDosis, $cocok);
+
+                    return [
+                        'nomor' => isset($cocok[1]) ? (int) $cocok[1] : 1,
+                        'umurBulan' => $satu['umur_bulan'],
+                        'umurTepatMin' => $satu['umur_tepat_min'] ?? $satu['umur_bulan'],
+                        'umurMaks' => $satu['umur_maks'] ?? $satu['umur_bulan'],
+                        'endemis' => (bool) ($satu['khusus_endemis'] ?? false),
+                    ];
+                })
+                ->all());
+
+            if ($dosis === []) {
+                continue;
+            }
+
+            $baris[] = [
+                'kelompok' => $kode,
+                // Nama pendek: "Polio tetes (OPV)" => "Polio tetes".
+                'nama' => trim(preg_replace('/\s*\(.*\)$/', '', $nama) ?? $nama),
+                'dosis' => $dosis,
+            ];
+        }
+
+        return ['kolom' => $kolom, 'baris' => $baris];
     }
 
     /**

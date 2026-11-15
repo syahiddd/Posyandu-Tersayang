@@ -43,8 +43,8 @@ return [
 
     'vaksin' => [
         'HB0' => ['nama' => 'Hepatitis B (HB0)', 'umur_bulan' => 0, 'kelompok' => 'HB0', 'umur_maks' => 0],
-        'BCG' => ['nama' => 'BCG', 'umur_bulan' => 1, 'kelompok' => 'BCG', 'umur_maks' => 11],
-        'OPV 1' => ['nama' => 'Polio tetes (OPV) 1', 'umur_bulan' => 1, 'kelompok' => 'OPV', 'umur_maks' => 59],
+        'BCG' => ['nama' => 'BCG', 'umur_bulan' => 1, 'umur_tepat_min' => 0, 'kelompok' => 'BCG', 'umur_maks' => 11],
+        'OPV 1' => ['nama' => 'Polio tetes (OPV) 1', 'umur_bulan' => 1, 'umur_tepat_min' => 0, 'kelompok' => 'OPV', 'umur_maks' => 59],
         'DPT-HB-Hib 1' => ['nama' => 'DPT-HB-Hib 1', 'umur_bulan' => 2, 'kelompok' => 'DPT-HB-Hib', 'umur_maks' => 59],
         'OPV 2' => ['nama' => 'Polio tetes (OPV) 2', 'umur_bulan' => 2, 'kelompok' => 'OPV', 'umur_maks' => 59],
         'PCV 1' => ['nama' => 'PCV 1', 'umur_bulan' => 2, 'kelompok' => 'PCV', 'umur_maks' => 59],

@@ -187,7 +187,52 @@ test('anak belum punya pengukuran tetap tampil di kartu daftar (FR-50)', functio
     Anak::factory()->create();
 
     daftar_anak()->assertInertia(fn ($page) => $page
-        ->where('anak.data.0.ukurTerakhir', null));
+        ->where('anak.data.0.ukurTerakhir', null)
+        ->where('anak.data.0.stunting', null));
+});
+
+test('kartu daftar memuat status stunting aman, rentan, atau stunting (FR-42, FR-70)', function (float $zPanjang, string $harapan) {
+    $anak = Anak::factory()->create([
+        'jenis_kelamin' => 'P',
+        'tanggal_lahir' => today()->subMonthsNoOverflow(30)->toDateString(),
+    ]);
+    $hari = (int) $anak->tanggal_lahir->diffInDays(today());
+
+    Pengukuran::factory()->for($anak)->create([
+        'tanggal_ukur' => today()->toDateString(),
+        'bb' => round(baris_who('perempuan', 'bb_u', 30)[1], 1),
+        'pb_tb' => round(nilai_pada_z(baris_who('perempuan', 'pb_tb_u', $hari), $zPanjang), 1),
+        'cara_ukur' => 'berdiri',
+    ]);
+
+    daftar_anak()->assertInertia(fn ($page) => $page
+        ->where('anak.data.0.stunting.hasil', $harapan)
+        ->where('anak.data.0.stunting.judul', fn ($nilai) => is_string($nilai) && $nilai !== '')
+        ->where('anak.data.0.stunting.tindakan', fn ($nilai) => is_string($nilai) && $nilai !== ''));
+})->with([
+    'aman' => [0.0, 'normal'],
+    'stunting' => [-2.5, 'stunting'],
+]);
+
+test('detail anak memuat status stunting dan null bila belum diukur (FR-42)', function () {
+    $anak = Anak::factory()->create([
+        'jenis_kelamin' => 'L',
+        'tanggal_lahir' => today()->subMonthsNoOverflow(30)->toDateString(),
+    ]);
+
+    $this->get(route('data-anak.detail', $anak))
+        ->assertInertia(fn ($page) => $page->where('stunting', null));
+
+    $hari = (int) $anak->tanggal_lahir->diffInDays(today());
+    Pengukuran::factory()->for($anak)->create([
+        'tanggal_ukur' => today()->toDateString(),
+        'bb' => round(baris_who('laki', 'bb_u', 30)[1], 1),
+        'pb_tb' => round(nilai_pada_z(baris_who('laki', 'pb_tb_u', $hari), -2.5), 1),
+        'cara_ukur' => 'berdiri',
+    ]);
+
+    $this->get(route('data-anak.detail', $anak))
+        ->assertInertia(fn ($page) => $page->where('stunting.hasil', 'stunting'));
 });
 
 test('detail anak membuka tab dari ?tab= untuk aksi cepat KMS (FR-71)', function () {
@@ -274,6 +319,7 @@ function isian_ubah(Anak $anak, array $ganti = []): array
         'tempat_lahir' => $anak->tempat_lahir,
         'tanggal_lahir' => $anak->tanggal_lahir->toDateString(),
         'nik' => $anak->nik,
+        'no_kk' => $anak->no_kk,
         'punya_buku_kia' => $anak->punya_buku_kia === null ? '' : ($anak->punya_buku_kia ? '1' : '0'),
         'nama_ibu' => $anak->nama_ibu,
         'nik_ibu' => $anak->nik_ibu,
@@ -478,6 +524,7 @@ test('unduh CSV Data Anak sesuai PRD 7.3: BOM, titik koma, DD/MM/YYYY, NIK teks,
         'tempat_lahir' => 'Bandar Lampung',
         'tanggal_lahir' => '2025-05-09',
         'nik' => '1871010101010042',
+        'no_kk' => '1871010101010099',
         'punya_buku_kia' => true,
         'nama_ibu' => 'Dewi "Ani"',
         'nik_ibu' => null,
@@ -500,8 +547,8 @@ test('unduh CSV Data Anak sesuai PRD 7.3: BOM, titik koma, DD/MM/YYYY, NIK teks,
 
     expect($isi)->toStartWith("\xEF\xBB\xBF")
         ->and(explode("\r\n", substr($isi, 3)))->toBe([
-            'Nama;NIK;"Punya Buku KIA";"Jenis Kelamin";"Tempat Lahir";"Tanggal Lahir";"Umur (bulan)";"Nama Ibu";"NIK Ibu";"Nama Ayah";"NIK Ayah";"No HP";Alamat;RT;RW;Dusun;"Kunjungan Terakhir"',
-            '"Nayla; Putri";"=""1871010101010042""";Ya;Perempuan;"Bandar Lampung";09/05/2025;17;"Dewi ""Ani""";;;;"=""081234567890""";"Jl. Melati 5";3;;Melati;05/10/2026',
+            'Nama;NIK;"No KK";"Punya Buku KIA";"Jenis Kelamin";"Tempat Lahir";"Tanggal Lahir";"Umur (bulan)";"Nama Ibu";"NIK Ibu";"Nama Ayah";"NIK Ayah";"No HP";Alamat;RT;RW;Dusun;"Kunjungan Terakhir"',
+            '"Nayla; Putri";"=""1871010101010042""";"=""1871010101010099""";Ya;Perempuan;"Bandar Lampung";09/05/2025;17;"Dewi ""Ani""";;;;"=""081234567890""";"Jl. Melati 5";3;;Melati;05/10/2026',
             '',
         ]);
 

@@ -50,6 +50,21 @@ test('rekap memakai periode bawaan 1 Januari sampai hari ini dan kolom dosis Tab
         ->has('daftarVaksin', 9));
 });
 
+test('jadwal acuan memakai kolom umur tabel Pelayanan Imunisasi Buku KIA hlm. 125', function () {
+    rekap()->assertInertia(fn ($page) => $page
+        // Lahir, 1–12 bulan, 18 bulan, 23 bulan, lalu kolom kejar 23–59 bulan.
+        ->has('jadwal.kolom', 16)
+        ->where('jadwal.kolom.0.label', 'Lahir')
+        ->where('jadwal.kolom.12.label', '12')
+        ->where('jadwal.kolom.13.label', '18')
+        ->where('jadwal.kolom.14.label', '23')
+        ->where('jadwal.kolom.15.label', '23–59')
+        ->where('jadwal.kolom.15.jenis', 'kejar')
+        ->where('jadwal.baris.1.dosis.0.umurTepatMin', 0)
+        ->where('jadwal.baris.2.dosis.0.umurTepatMin', 0)
+        ->has('jadwal.baris', 9));
+});
+
 test('semua balita tampil; sel berisi tanggal dalam periode dan tanda Buku KIA (FR-55, FR-66)', function () {
     $raka = Anak::factory()->create(['nama' => 'Raka', 'tanggal_lahir' => '2026-02-01', 'dusun' => 'Melati']);
     $ayu = Anak::factory()->create(['nama' => 'Ayu', 'tanggal_lahir' => '2025-06-01', 'dusun' => 'Mawar']);

@@ -1,4 +1,5 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { clsx } from 'clsx';
 import {
     Activity,
     AlertTriangle,
@@ -38,6 +39,12 @@ import { useDaftarLayarAnak } from '@/hooks/use-layar-anak';
 import { formatSatuDesimal, formatZ } from '@/lib/grafik';
 import type { DataGrafik, IndeksGrafik } from '@/lib/grafik';
 import { teksKbm } from '@/lib/perbandingan';
+import {
+    KELAS_TINGKAT_STUNTING,
+    KETERANGAN_TINGKAT_STUNTING,
+    LABEL_TINGKAT_STUNTING,
+    tingkatStunting,
+} from '@/lib/stunting';
 import { formatUmurBulan } from '@/lib/umur';
 import { lepas, selesai, tunda } from '@/routes/kunjungan';
 import { panduanKia } from '@/routes';
@@ -185,12 +192,8 @@ const LABEL_TINGKAT: Record<TindakLanjut['tingkat'], string> = {
     pantau: 'Pantau bulan depan',
 };
 
-const VARIAN_STUNTING: Record<Props['stunting']['hasil'], VarianChip> = {
-    normal: 'normal',
-    berisiko_stunting: 'waspada',
-    diprediksi_berisiko: 'waspada',
-    stunting: 'bahaya',
-};
+/** Tiga tingkat stunting dengan warna hijau, kuning, merah (PRD 5.8). */
+const TINGKAT_STUNTING = tingkatStunting;
 
 function tambahSekaliSaja(daftar: string[], nilai: string): string[] {
     return daftar.includes(nilai) ? daftar : [...daftar, nilai];
@@ -788,21 +791,45 @@ export default function Penyuluhan(props: Props) {
                                 </Seksi>
 
                                 <Seksi
-                                    judul="Deteksi risiko stunting"
+                                    judul="Status stunting"
                                     ikon={ShieldAlert}
                                     isiClassName="px-3.5 py-3"
                                 >
-                                    <div className="flex flex-col gap-2">
-                                        <div>
-                                            <ChipStatus
-                                                varian={
-                                                    VARIAN_STUNTING[
-                                                        stunting.hasil
-                                                    ]
-                                                }
-                                            >
-                                                {stunting.judul}
-                                            </ChipStatus>
+                                    <div className="flex flex-col gap-2.5">
+                                        <div
+                                            className={clsx(
+                                                'flex items-start gap-2.5 rounded-md border px-3 py-2.5',
+                                                KELAS_TINGKAT_STUNTING[
+                                                    TINGKAT_STUNTING(
+                                                        stunting.hasil,
+                                                    )
+                                                ],
+                                            )}
+                                        >
+                                            <ShieldAlert
+                                                aria-hidden="true"
+                                                className="mt-0.5 size-4 shrink-0"
+                                            />
+                                            <div className="flex min-w-0 flex-col gap-0.5">
+                                                <span className="text-kecil font-bold">
+                                                    {
+                                                        LABEL_TINGKAT_STUNTING[
+                                                            TINGKAT_STUNTING(
+                                                                stunting.hasil,
+                                                            )
+                                                        ]
+                                                    }
+                                                </span>
+                                                <span className="text-keterangan leading-relaxed">
+                                                    {
+                                                        KETERANGAN_TINGKAT_STUNTING[
+                                                            TINGKAT_STUNTING(
+                                                                stunting.hasil,
+                                                            )
+                                                        ]
+                                                    }
+                                                </span>
+                                            </div>
                                         </div>
                                         {stunting.alasan && (
                                             <p className="text-justify text-kecil leading-relaxed text-ink-900">
@@ -818,6 +845,8 @@ export default function Penyuluhan(props: Props) {
                                         <p className="text-justify text-keterangan leading-relaxed text-ink-600">
                                             Hasil skrining, bukan diagnosis.
                                             Konfirmasi oleh tenaga kesehatan.
+                                            Sumber: Buku KIA 2024 hlm. 44–47,
+                                            122–125.
                                         </p>
                                     </div>
                                 </Seksi>
