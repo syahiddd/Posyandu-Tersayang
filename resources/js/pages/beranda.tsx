@@ -1,5 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
+    ArrowRight,
     ArrowUpRight,
     Baby,
     BookOpen,
@@ -177,35 +178,41 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
                 </section>
 
                 <section aria-labelledby="judul-ringkasan">
-                    <div className="mb-3">
-                        <p className="text-label-seksi text-brand-700 uppercase">
-                            Aktivitas hari ini
-                        </p>
-                        <h2
-                            id="judul-ringkasan"
-                            className="mt-1 text-judul-2 text-ink-900"
-                        >
-                            Ringkasan pelayanan
-                        </h2>
+                    <div className="mb-3 flex items-end justify-between gap-3">
+                        <div>
+                            <p className="text-label-seksi text-brand-700 uppercase">
+                                Aktivitas hari ini
+                            </p>
+                            <h2
+                                id="judul-ringkasan"
+                                className="mt-1 text-judul-2 text-ink-900"
+                            >
+                                Ringkasan pelayanan
+                            </h2>
+                        </div>
+                        <span className="mb-0.5 inline-flex shrink-0 items-center gap-1.5 rounded-pill border border-brand-100 bg-white px-2.5 py-1 text-keterangan font-bold text-brand-700 shadow-1">
+                            <span
+                                aria-hidden="true"
+                                className="size-1.5 rounded-pill bg-brand-600"
+                            />
+                            Hari ini
+                        </span>
                     </div>
                     <div className="grid grid-cols-3 gap-3 max-[359px]:gap-2">
                         <KartuRingkasan
                             angka={ringkasan.terdaftar}
                             label="Terdaftar hari ini"
                             ikon={Baby}
-                            warna="pink"
                         />
                         <KartuRingkasan
                             angka={ringkasan.sudahDitimbang}
                             label="Sudah ditimbang"
                             ikon={Scale}
-                            warna="biru"
                         />
                         <KartuRingkasan
                             angka={ringkasan.selesai}
                             label="Selesai dilayani"
                             ikon={CircleCheck}
-                            warna="hijau"
                         />
                     </div>
                     {ringkasan.terdaftar === 0 && (
@@ -252,9 +259,29 @@ export default function Beranda({ tanggal, ringkasan, antrean }: Props) {
 
                 {mejaAktif && (
                     <KakiTombol className="desktop:max-w-md">
-                        <TombolTautan href={meja(mejaAktif.nomor)} lebarPenuh>
-                            Buka antrean Meja {mejaAktif.nomor} ·{' '}
-                            {antreanSaya?.menunggu ?? 0} anak
+                        <TombolTautan
+                            href={meja(mejaAktif.nomor)}
+                            lebarPenuh
+                            className="group relative isolate overflow-hidden bg-gradient-to-r from-brand-800 via-brand-700 to-brand-600 shadow-2"
+                        >
+                            <span
+                                aria-hidden="true"
+                                className="pointer-events-none absolute -top-10 right-0 size-28 rounded-pill bg-white/10 blur-2xl"
+                            />
+                            <ClipboardList
+                                aria-hidden="true"
+                                className="relative size-5 shrink-0"
+                            />
+                            <span className="relative flex-1 text-left whitespace-nowrap">
+                                Buka antrean Meja {mejaAktif.nomor}
+                            </span>
+                            <span className="relative inline-flex min-h-7 shrink-0 items-center rounded-pill border border-white/20 bg-white/15 px-2.5 text-keterangan font-bold tabular-nums max-[359px]:hidden">
+                                {antreanSaya?.menunggu ?? 0} anak
+                            </span>
+                            <ArrowRight
+                                aria-hidden="true"
+                                className="relative size-5 shrink-0 transition-transform group-hover:translate-x-0.5"
+                            />
                         </TombolTautan>
                     </KakiTombol>
                 )}
@@ -339,67 +366,45 @@ function PintasanBeranda({
     );
 }
 
-/** Ringkasan layanan dengan ikon berwarna dan aksen lembut per kategori. */
+/**
+ * Kartu ringkasan layanan. Ketiganya memakai satu keluarga warna plum agar
+ * tidak ramai: gradien blush lembut, garis aksen di tepi atas, ikon bergradien,
+ * dan ikon samar sebagai latar. Angka menjadi fokus utama.
+ */
 function KartuRingkasan({
     angka,
     label,
     ikon: Ikon,
-    warna,
 }: {
     angka: number;
     label: string;
     ikon: LucideIcon;
-    warna: 'pink' | 'biru' | 'hijau';
 }) {
-    const tema = {
-        pink: {
-            kartu: 'border-girl-100 bg-gradient-to-br from-white to-girl-50',
-            ikon: 'bg-girl-100 text-girl-700 ring-girl-200',
-            aksen: 'bg-girl-700',
-        },
-        biru: {
-            kartu: 'border-boy-100 bg-gradient-to-br from-white to-boy-50',
-            ikon: 'bg-boy-100 text-boy-700 ring-boy-100',
-            aksen: 'bg-boy-700',
-        },
-        hijau: {
-            kartu: 'border-status-normal-latar bg-gradient-to-br from-white to-status-normal-latar',
-            ikon: 'bg-status-normal-latar text-status-normal-teks ring-status-normal-latar',
-            aksen: 'bg-status-normal-teks',
-        },
-    }[warna];
-
     return (
-        <article
-            className={`relative isolate flex min-h-[138px] flex-col justify-between overflow-hidden rounded-lg border p-3 shadow-1 transition-shadow hover:shadow-2 ${tema.kartu}`}
-        >
+        <article className="relative isolate flex min-h-[136px] flex-col justify-between overflow-hidden rounded-lg border border-brand-100 bg-gradient-to-br from-white via-brand-50/80 to-brand-100 p-3 shadow-1 transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-2">
             <span
                 aria-hidden="true"
-                className={`absolute top-0 left-0 h-1 w-full ${tema.aksen}`}
+                className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-800 via-brand-600 to-brand-300"
             />
             <span
                 aria-hidden="true"
-                className={`absolute -right-7 -bottom-8 size-20 rounded-pill opacity-50 ${tema.ikon}`}
+                className="pointer-events-none absolute -top-7 -right-7 size-20 rounded-pill bg-brand-200/60 blur-2xl"
             />
-            <div className="relative flex items-center justify-between gap-2">
-                <span
-                    className={`flex size-11 items-center justify-center rounded-md ring-1 ${tema.ikon}`}
-                >
-                    <Ikon
-                        aria-hidden="true"
-                        className="size-6"
-                        strokeWidth={2.2}
-                    />
-                </span>
-                <span className="rounded-pill bg-white/80 px-2 py-1 text-label-seksi text-ink-500 uppercase">
-                    Hari ini
-                </span>
-            </div>
+            <Ikon
+                aria-hidden="true"
+                className="pointer-events-none absolute -right-5 -bottom-6 size-20 text-brand-200/50"
+                strokeWidth={1.2}
+            />
+
+            <span className="relative flex size-10 items-center justify-center rounded-md bg-gradient-to-br from-brand-600 to-brand-900 text-white shadow-1">
+                <Ikon aria-hidden="true" className="size-5" strokeWidth={2.2} />
+            </span>
+
             <div className="relative mt-3">
-                <p className="text-display text-ink-900 tabular-nums">
+                <p className="text-display leading-none tracking-tight text-brand-900 tabular-nums">
                     {angka.toLocaleString('id-ID')}
                 </p>
-                <p className="mt-1 text-keterangan leading-tight font-bold text-ink-600">
+                <p className="mt-1.5 text-keterangan leading-tight font-bold text-ink-600">
                     {label}
                 </p>
             </div>
