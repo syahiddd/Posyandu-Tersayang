@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Railway memutus HTTPS di proxy; tanpa ini URL aset & redirect jadi http://.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'meja.dipilih' => EnsureMejaDipilih::class,
         ]);

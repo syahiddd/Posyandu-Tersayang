@@ -27,6 +27,11 @@ class DatabaseSeeder extends Seeder
             throw new RuntimeException('DatabaseSeeder berisi akun dan anak contoh; jangan dijalankan di produksi.');
         }
 
+        // Dijalankan tiap deploy demo (railway.json); jangan isi ulang bila sudah ada data.
+        if (User::query()->exists()) {
+            return;
+        }
+
         $sandi = config('posyandu.seed_password');
 
         if (! is_string($sandi) || $sandi === '') {
