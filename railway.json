@@ -1,7 +1,10 @@
 {
     "$schema": "https://railway.com/railway.schema.json",
     "deploy": {
-        "preDeployCommand": ["php artisan migrate --force", "php artisan db:seed --force"],
+        "preDeployCommand": [
+            "php artisan migrate --force",
+            "php artisan db:seed --force"
+        ],
         "healthcheckPath": "/up"
     }
 }
