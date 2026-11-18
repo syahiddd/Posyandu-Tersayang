@@ -35,24 +35,29 @@ class DatabaseSeeder extends Seeder
 
         Posyandu::factory()->create([
             'nama' => 'Posyandu Tersayang',
-            'desa_kelurahan' => 'Desa Sukamaju',
-            'kecamatan' => 'Kecamatan Sukasari',
-            'puskesmas_pembina' => 'Puskesmas Sukasari',
-            'jadwal_kegiatan' => 'Setiap tanggal 5',
+            'desa_kelurahan' => 'Desa Purwodadi Simpang',
+            'kecamatan' => 'Tj. Bintang',
+            'kabupaten_kota' => 'Lampung Selatan',
+            'puskesmas_pembina' => '-',
+            'alamat' => '-',
+            'jadwal_kegiatan' => 'Setiap tanggal 19',
         ]);
 
         User::factory()->ketua()->create([
-            'name' => 'Sri Wahyuni',
+            'name' => 'Tri Desiyanti',
             'username' => 'ketua',
+            'meja_biasa' => Meja::Pendataan,
             'password' => $sandi,
         ]);
 
         // Nomor HP fiktif dan meja yang biasa dipegang (FR-60).
+        // Susunan langkah: 1 Nuning, 2 Irawati, 3 Tri Desiyanti (ketua),
+        // 4 Elmi Kurnia, 5 Windarsih.
         $kader = collect([
-            ['Dewi Lestari', 'dewi', '081200000001', Meja::Pengukuran],
-            ['Siti Rahma', 'sitirahma', '081200000002', Meja::Pendaftaran],
-            ['Yuni Astuti', 'yuni', '081200000003', Meja::Pelayanan],
-            ['Lestari Ningsih', 'lestari', null, null],
+            ['Nuning Ari Wiworo', 'nuning', '081200000001', Meja::Pendaftaran],
+            ['Irawati', 'irawati', '081200000002', Meja::Pengukuran],
+            ['Elmi Kurnia', 'elmi', '081200000003', Meja::Pelayanan],
+            ['Windarsih', 'windarsih', '081200000004', Meja::Penyuluhan],
         ])->map(fn (array $data) => User::factory()->create([
             'name' => $data[0],
             'username' => $data[1],
@@ -62,7 +67,7 @@ class DatabaseSeeder extends Seeder
         ]));
 
         User::factory()->nonaktif()->create([
-            'name' => 'Rina Kartika',
+            'name' => 'No Name',
             'username' => 'rina',
             'password' => $sandi,
         ]);
