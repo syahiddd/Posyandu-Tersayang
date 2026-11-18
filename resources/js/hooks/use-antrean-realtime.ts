@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { router, usePoll } from '@inertiajs/react';
 import { useConnectionStatus, useEcho } from '@laravel/echo-react';
 import { useEffect, useRef } from 'react';
 
@@ -16,7 +16,7 @@ type PerubahanAntrean = { meja: number[] };
  * @param props Nama props Inertia yang dimuat ulang.
  * @param meja Bila diisi, hanya bereaksi pada perubahan meja tersebut.
  */
-export function useAntreanRealtime(
+function useAntreanReverb(
     props: string[],
     meja?: number,
     onBerubah?: (perubahan: PerubahanAntrean) => void,
@@ -65,3 +65,19 @@ export function useAntreanRealtime(
             document.removeEventListener('visibilitychange', saatTerlihat);
     }, [kunciProps]);
 }
+
+/**
+ * Cadangan tanpa server Reverb (TECHSTACK: polling setiap 3 detik, tetap
+ * memenuhi target 3 detik NFR-02). Dipakai bila VITE_REVERB_APP_KEY kosong.
+ */
+function useAntreanPolling(props: string[]) {
+    usePoll(3000, { only: props });
+}
+
+export const useAntreanRealtime: (
+    props: string[],
+    meja?: number,
+    onBerubah?: (perubahan: PerubahanAntrean) => void,
+) => void = import.meta.env.VITE_REVERB_APP_KEY
+    ? useAntreanReverb
+    : useAntreanPolling;

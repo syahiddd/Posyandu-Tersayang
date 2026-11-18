@@ -8,9 +8,12 @@ import TataLetakAplikasi from '@/layouts/tata-letak-aplikasi';
 import TataLetakMeja from '@/layouts/tata-letak-meja';
 
 // Antrean realtime lewat Reverb (FR-09, NFR-02); konfigurasi dari VITE_REVERB_*.
-configureEcho({
-    broadcaster: 'reverb',
-});
+// Tanpa key (mis. hosting tanpa Reverb) antrean memakai polling 3 detik.
+if (import.meta.env.VITE_REVERB_APP_KEY) {
+    configureEcho({
+        broadcaster: 'reverb',
+    });
+}
 
 const appName = import.meta.env.VITE_APP_NAME || 'Posyandu Lima Meja';
 
