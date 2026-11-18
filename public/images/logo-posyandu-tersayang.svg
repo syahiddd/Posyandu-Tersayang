@@ -1,25 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-label="Posyandu Tersayang">
-  <!-- Lencana merek: bidang plum membulat, dibuat rata tanpa gradien agar
-       tetap tajam di layar ponsel dan saat dicetak. -->
+  <!-- Lencana merek: bidang plum membulat, tanpa gradien agar tetap tajam di
+       layar ponsel dan saat dicetak (DESIGN 2.3). -->
   <rect x="4" y="4" width="120" height="120" rx="30" fill="#4c2a3a"/>
-  <rect x="11.5" y="11.5" width="105" height="105" rx="23" stroke="#d9a8bd" stroke-opacity="0.45" stroke-width="2"/>
+  <rect x="11.5" y="11.5" width="105" height="105" rx="23" stroke="#d9a8bd" stroke-opacity="0.4" stroke-width="2"/>
 
-  <!-- Hati sebagai lambang kasih sayang. -->
+  <!-- Hati krem: "Tersayang", kasih sayang keluarga. -->
   <path
-    d="M64 84C61.4 82.1 35 62.7 35 44.4 35 33 44 25.6 53.8 28.4c4.6 1.3 8.3 4.6 10.2 8.8 1.9-4.2 5.6-7.5 10.2-8.8C84 25.6 93 33 93 44.4 93 62.7 66.6 82.1 64 84Z"
+    d="M64 90C43 75.5 27 62.5 27 46.5 27 33 37.5 24 48.5 24c8.5 0 13.5 4.5 15.5 10.5 2-6 7-10.5 15.5-10.5C90.5 24 101 33 101 46.5 101 62.5 85 75.5 64 90Z"
     fill="#fdf6ec"/>
 
-  <!-- Tunas di dalam hati: tumbuh kembang anak. -->
-  <path d="M64 73V53" stroke="#7f9a6d" stroke-width="4.5" stroke-linecap="round"/>
-  <path d="M64 63c-3-8-10.5-11.5-18.5-9.5 1.5 8 8.5 12.5 18.5 9.5Z" fill="#9aaf8a"/>
-  <path d="M64 55c3.5-8.5 11.5-11 19-8-1.5 8.5-9 12-19 8Z" fill="#7f9a6d"/>
+  <!-- Ibu memeluk anak: pendampingan kader ke ibu dan balita. -->
+  <circle cx="55" cy="45.5" r="8.4" fill="#4c2a3a"/>
+  <path d="M41 80.5c0-18 6-27 14-27s14 9 14 27Z" fill="#4c2a3a"/>
+  <circle cx="76" cy="58" r="6.2" fill="#8b4f69"/>
+  <path d="M67.5 80.5c0-11.5 3.8-18.5 8.5-18.5s8.5 7 8.5 18.5Z" fill="#8b4f69"/>
+  <path d="M64 60.5c3.2 6.5 7 9.5 13 8" stroke="#4c2a3a" stroke-width="4" stroke-linecap="round"/>
 
   <!-- Lima titik untuk lima meja posyandu. -->
   <g fill="#e9ccd9">
-    <circle cx="48" cy="100" r="2.6"/>
-    <circle cx="56" cy="100" r="2.6"/>
-    <circle cx="64" cy="100" r="2.6"/>
-    <circle cx="72" cy="100" r="2.6"/>
-    <circle cx="80" cy="100" r="2.6"/>
+    <circle cx="48" cy="100.5" r="3"/>
+    <circle cx="56" cy="100.5" r="3"/>
+    <circle cx="64" cy="100.5" r="3"/>
+    <circle cx="72" cy="100.5" r="3"/>
+    <circle cx="80" cy="100.5" r="3"/>
   </g>
 </svg>
